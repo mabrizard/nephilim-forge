@@ -2276,31 +2276,65 @@ function buildMagie(){
         onClick:()=>{S.magie.sorts=Math.min(domVal,(S.magie.sorts||0)+1);render();}},'✚'));
       cptRow.appendChild(h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`/ ${domVal} · au-delà = "sur focus"`));
       sbox.appendChild(cptRow);
-      const cerclesOk=['Basse Magie'];
-      if((S.magie.haut||0)>0) cerclesOk.push('Haute Magie');
-      const sortsDispos=SORTS.filter(s=>cerclesOk.includes(s.cercle)&&(s.ka==='Variable'||s.ka==='Choix'||s.ka===S.ka_dom));
-      if(sortsDispos.length>0){
-        sbox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},'📖 Grimoire accessible :'));
-        const sortGrid=h('div',{cls:'il'});
-        for(const sort of sortsDispos){
-          const isSel=(S.magie.sorts_choisis||[]).includes(sort.id);
-          const row=h('div',{cls:`ir ${isSel?'sel':''}`,style:{cursor:'pointer'},
-            onClick:()=>{
-              if(!S.magie.sorts_choisis)S.magie.sorts_choisis=[];
-              if(isSel){S.magie.sorts_choisis=S.magie.sorts_choisis.filter(x=>x!==sort.id);}
-              else if(S.magie.sorts_choisis.length<(S.magie.sorts||0)){S.magie.sorts_choisis.push(sort.id);}
-              render();
-            }});
-          row.appendChild(h('div',{cls:'ir-nm'},
-            h('strong',{},sort.nm),
-            h('small',{},` [${sort.cercle}·Ka ${sort.ka}·Deg.${sort.deg}] ${sort.dc}`),
-            h('br',{}),
-            h('small',{style:{color:'var(--gold-d)'}},`Portée:${sort.portee} · Durée:${sort.duree}`),
-          ));
-          row.appendChild(h('span',{style:{color:isSel?'var(--gold)':'var(--gold-d)',fontSize:'.8rem'}},isSel?'✓':'◦'));
-          sortGrid.appendChild(row);
+      // ── Sorts choisis via le Grimoire Supabase ──────────
+      {
+        const effets=grimGetEffets();
+        const sortsGraves=(effets.gravés||[]).filter(e=>e.tab==='sorts');
+        const sortsFocus=(effets.focus||[]).filter(e=>e.tab==='sorts');
+        const totalChoisis=sortsGraves.length+sortsFocus.length;
+
+        const grimoireBox=h('div',{style:{
+          marginTop:'.8rem',padding:'.8rem',
+          border:'1px solid rgba(155,143,192,.25)',
+          borderRadius:'8px',background:'rgba(155,143,192,.04)'}});
+
+        // Titre + bouton Grimoire
+        const grimHd=h('div',{style:{display:'flex',alignItems:'center',
+          justifyContent:'space-between',marginBottom:'.5rem'}});
+        grimHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'#c0a0ff'}},
+          `📖 Sorts choisis via le Grimoire (${totalChoisis} / ${S.magie.sorts||0})`));
+        const btnGrimOpen=h('button',{
+          style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',padding:'.25rem .7rem',
+            border:'1px solid rgba(155,143,192,.4)',borderRadius:'5px',
+            background:'rgba(155,143,192,.1)',color:'#c0a0ff',cursor:'pointer'},
+          onClick:()=>{
+            // Ouvrir le grimoire sur l'onglet Magie
+            grimTab='sorts';grimSearch='';grimFilters={cercle:'',element:''};
+            showGrimoire();
+          }
+        },'✦ Ouvrir le Grimoire');
+        grimHd.appendChild(btnGrimOpen);
+        grimoireBox.appendChild(grimHd);
+
+        if(totalChoisis===0){
+          grimoireBox.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',fontSize:'.82rem'}},
+            'Aucun sort sélectionné. Utilisez le Grimoire pour choisir vos sorts.'));
+        } else {
+          const listDiv=h('div',{cls:'il',style:{gap:'.3rem'}});
+
+          sortsGraves.forEach(e=>{
+            const row=h('div',{cls:'ir sel',style:{padding:'.4rem .7rem'}});
+            row.appendChild(h('div',{cls:'ir-nm'},
+              h('strong',{},e.nom||''),
+              h('small',{style:{color:'var(--gold-d)'}},
+                ` · ${(e.cercle||'').replace('1-','').replace('2-','')} · ${e.element||''}`)));
+            row.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.75rem',flexShrink:0}},'🔮 gravé'));
+            listDiv.appendChild(row);
+          });
+
+          sortsFocus.forEach(e=>{
+            const row=h('div',{cls:'ir',style:{padding:'.4rem .7rem',opacity:'.75'}});
+            row.appendChild(h('div',{cls:'ir-nm'},
+              h('strong',{},e.nom||''),
+              h('small',{style:{color:'var(--gold-d)'}},
+                ` · ${(e.cercle||'').replace('1-','').replace('2-','')}`)));
+            row.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.75rem',flexShrink:0}},'focus'));
+            listDiv.appendChild(row);
+          });
+
+          grimoireBox.appendChild(listDiv);
         }
-        sbox.appendChild(sortGrid);
+        sbox.appendChild(grimoireBox);
       }
       box.appendChild(sbox);
     }
@@ -2470,6 +2504,38 @@ function buildKabbale(){
       if(mDc) mbox.appendChild(h('p',{cls:'lbl',style:{color:'var(--seph)',marginTop:'.4rem',fontStyle:'italic'}},mDc.dc));
     }
     wrap.appendChild(mbox);
+  }
+
+  // ── Invocations choisies via le Grimoire ────────────
+  {
+    const effKab=grimGetEffets();
+    const invGraves=(effKab.gravés||[]).filter(e=>e.tab==='invocations');
+    const invBox=h('div',{style:{marginTop:'1rem',padding:'.8rem',
+      border:'1px solid rgba(155,143,192,.2)',borderRadius:'8px',background:'rgba(155,143,192,.04)'}});
+    const invHd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.5rem'}});
+    invHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'#c0a0ff'}},
+      '📖 Invocations choisies (' + invGraves.length + ')'));
+    invHd.appendChild(h('button',{
+      style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',padding:'.25rem .7rem',
+        border:'1px solid rgba(155,143,192,.35)',borderRadius:'5px',
+        background:'rgba(155,143,192,.08)',color:'#c0a0ff',cursor:'pointer'},
+      onClick:()=>{grimTab='invocations';grimSearch='';grimFilters={cercle:'',element:''};showGrimoire();}
+    },'Grimoire Kabbale'));
+    invBox.appendChild(invHd);
+    if(invGraves.length===0){
+      invBox.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',fontSize:'.8rem'}},
+        'Aucune invocation — utilisez le Grimoire.'));
+    } else {
+      const invList=h('div',{cls:'il',style:{gap:'.25rem'}});
+      invGraves.forEach(e=>{
+        const row=h('div',{cls:'ir sel',style:{padding:'.35rem .7rem'}});
+        row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||'')));
+        row.appendChild(h('span',{style:{color:'var(--seph)',fontSize:'.75rem'}},'invocation'));
+        invList.appendChild(row);
+      });
+      invBox.appendChild(invList);
+    }
+    wrap.appendChild(invBox);
   }
   return wrap;
 }
@@ -2746,6 +2812,38 @@ function buildAlchimie(){
       fbox.appendChild(fgrid);
     }
     wrap.appendChild(fbox);
+  }
+
+  // ── Formules choisies via le Grimoire ───────────────
+  {
+    const effAlch=grimGetEffets();
+    const formGraves=(effAlch.gravés||[]).filter(e=>e.tab==='formules');
+    const formBox=h('div',{style:{marginTop:'1rem',padding:'.8rem',
+      border:'1px solid rgba(224,92,42,.18)',borderRadius:'8px',background:'rgba(224,92,42,.03)'}});
+    const formHd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.5rem'}});
+    formHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'#e8a080'}},
+      '📖 Formules choisies (' + formGraves.length + ')'));
+    formHd.appendChild(h('button',{
+      style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',padding:'.25rem .7rem',
+        border:'1px solid rgba(224,92,42,.28)',borderRadius:'5px',
+        background:'rgba(224,92,42,.06)',color:'#e8a080',cursor:'pointer'},
+      onClick:()=>{grimTab='formules';grimSearch='';grimFilters={cercle:'',element:''};showGrimoire();}
+    },'Grimoire Alchimie'));
+    formBox.appendChild(formHd);
+    if(formGraves.length===0){
+      formBox.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',fontSize:'.8rem'}},
+        'Aucune formule — utilisez le Grimoire.'));
+    } else {
+      const formList=h('div',{cls:'il',style:{gap:'.25rem'}});
+      formGraves.forEach(e=>{
+        const row=h('div',{cls:'ir sel',style:{padding:'.35rem .7rem'}});
+        row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||'')));
+        row.appendChild(h('span',{style:{color:'#e8a080',fontSize:'.75rem'}},'formule'));
+        formList.appendChild(row);
+      });
+      formBox.appendChild(formList);
+    }
+    wrap.appendChild(formBox);
   }
   return wrap;
 }
