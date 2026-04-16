@@ -1034,6 +1034,8 @@ let S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:
   // Chutes officielles (3 seules valides) + bonus PI calculé automatiquement
   stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,
   sci_tab:'magie', inc_tab:null,
+,
+  effets_magiques:{gravés:[],focus:[]}, arcane:null,
 };
 
 let syncStatus='idle'; // idle | saving | saved | error
@@ -1149,7 +1151,7 @@ function calcTotauxCumules(){
     }
 
     // Bonus arcane adopté : degrés supplémentaires sur la quête
-    if(inc.arcane_id){
+    if(inc&&inc.arcane_id){
       const epA=EPOQUES.find(e=>e.id===id);
       const arcDeg=inc.arcane_deg||epA&&epA.arcane_bonus||0;
       if(arcDeg>0&&inc.quete){
@@ -1280,121 +1282,91 @@ function h(tag,attr={},...ch){
 function buildActionBar(){
   const old=document.querySelector('.action-bar');if(old)old.remove();
   const bar=document.createElement('div');bar.className='action-bar';
+  const sep=()=>{const s=document.createElement('div');s.style.cssText='width:1px;height:18px;background:var(--gold-d);margin:0 .2rem;flex-shrink:0';return s;};
 
+  // ── GROUPE 1 : Statut local ──────────────────────────
   const dot=document.createElement('div');dot.className='autosave-dot';dot.id='autosave-dot';
-  const lbl=document.createElement('span');lbl.className='action-bar-lbl';
-  lbl.id='autosave-lbl';lbl.textContent='Sauvegarde locale';
+  const lbl=document.createElement('span');lbl.className='action-bar-lbl';lbl.id='autosave-lbl';lbl.textContent='Local';
   bar.appendChild(dot);bar.appendChild(lbl);
-
-  const sep=()=>{const s=document.createElement('div');s.style.cssText='width:1px;height:20px;background:var(--gold-d);margin:0 .3rem';return s;};
   bar.appendChild(sep());
 
+  // ── GROUPE 2 : Compte & cloud ────────────────────────
   if(supaCurrentUser){
-    // ── Connecté ──────────────────────────────────────
     const userLbl=document.createElement('span');
-    userLbl.className='action-bar-lbl';
-    userLbl.style.color='var(--ok)';
-    userLbl.textContent='⚡ '+supaCurrentUser.email;
+    userLbl.className='action-bar-lbl';userLbl.style.cssText='color:var(--ok);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    userLbl.title=supaCurrentUser.email;
+    userLbl.textContent=supaCurrentUser.email.split('@')[0];
     bar.appendChild(userLbl);
-    bar.appendChild(sep());
 
-    // Sauvegarder
-    const btnSave=document.createElement('button');
-    btnSave.className='btn btn-cloud';
-    btnSave.innerHTML='☁ Sauvegarder';
-    btnSave.onclick=async()=>{
-      if(!S.nom||!S.nom.trim()){toastError('Donnez un nom à votre personnage (étape 1)');return;}
-      // Optionnel : demander un label de version
-      const label = prompt('Label de cette version (optionnel) :', 'Sauvegarde — '+new Date().toLocaleDateString('fr-FR')) || 'Sauvegarde automatique';
-      btnSave.disabled=true;btnSave.textContent='⟳ Envoi…';
+    const btnSaveCloud=document.createElement('button');btnSaveCloud.className='btn btn-cloud';btnSaveCloud.innerHTML='☁ Cloud';
+    btnSaveCloud.title='Sauvegarder dans la base';
+    btnSaveCloud.onclick=async()=>{
+      if(!S.nom||!S.nom.trim()){toastError('Donnez un nom (étape 1)');return;}
+      const label='Sauvegarde — '+new Date().toLocaleDateString('fr-FR');
+      btnSaveCloud.disabled=true;btnSaveCloud.textContent='⟳';
       const ok=await saveToSupabase(label);
-      if(ok){
-        btnSave.innerHTML='✓ Sauvegardé !';
-        btnSave.style.cssText='border-color:var(--ok);color:var(--ok);background:rgba(107,142,107,.15)';
-        toastSuccess('Sauvegardé dans Supabase !');
-        setTimeout(()=>{btnSave.disabled=false;btnSave.innerHTML='☁ Sauvegarder';btnSave.style.cssText='';},3000);
-      } else {
-        btnSave.disabled=false;btnSave.innerHTML='☁ Sauvegarder';btnSave.style.cssText='';
-      }
+      if(ok){btnSaveCloud.innerHTML='✓';btnSaveCloud.style.cssText='border-color:var(--ok);color:var(--ok)';setTimeout(()=>{btnSaveCloud.disabled=false;btnSaveCloud.innerHTML='☁ Cloud';btnSaveCloud.style.cssText='';},2500);}
+      else{btnSaveCloud.disabled=false;btnSaveCloud.innerHTML='☁ Cloud';}
     };
-    bar.appendChild(btnSave);
+    bar.appendChild(btnSaveCloud);
 
-    // Charger
-    const btnLoad=document.createElement('button');
-    btnLoad.className='btn btn-s';
-    btnLoad.innerHTML='📂 Charger';
-    btnLoad.onclick=loadListFromSupabase;
-    bar.appendChild(btnLoad);
+    const btnLoad=document.createElement('button');btnLoad.className='btn btn-s';btnLoad.innerHTML='📂 Mes fiches';btnLoad.title='Charger une fiche sauvegardée';
+    btnLoad.onclick=loadListFromSupabase;bar.appendChild(btnLoad);
 
-    // Historique
-    const btnVer=document.createElement('button');
-    btnVer.className='btn btn-s';
-    btnVer.innerHTML='🕰 Versions';
-    btnVer.onclick=showVersionsModal;
-    bar.appendChild(btnVer);
+    const btnVer=document.createElement('button');btnVer.className='btn btn-s';btnVer.innerHTML='🕰 Historique';btnVer.title='Voir les versions sauvegardées';
+    btnVer.onclick=showVersionsModal;bar.appendChild(btnVer);
 
-    bar.appendChild(sep());
-
-    // Déconnexion
-    const btnOut=document.createElement('button');
-    btnOut.className='btn btn-s';
+    const btnOut=document.createElement('button');btnOut.className='btn btn-s';btnOut.innerHTML='↩ Déconnexion';btnOut.title='Se déconnecter du compte';
     btnOut.style.color='var(--parch-d)';
-    btnOut.innerHTML='⎋ Déconnexion';
     btnOut.onclick=()=>{if(confirm('Se déconnecter ?')) supaSignOut();};
     bar.appendChild(btnOut);
 
-  } else if(SUPA_URL && SUPA_KEY) {
-    // ── Config OK mais non connecté ────────────────────
-    const btnLogin=document.createElement('button');
-    btnLogin.className='btn btn-cloud';
-    btnLogin.innerHTML='⚡ Se connecter';
-    btnLogin.onclick=()=>showAuthPanel();
-    bar.appendChild(btnLogin);
+  } else if(SUPA_URL && SUPA_KEY){
+    const btnLogin=document.createElement('button');btnLogin.className='btn btn-cloud';btnLogin.innerHTML='⚡ Connexion';
+    btnLogin.title='Se connecter pour sauvegarder en ligne';
+    btnLogin.onclick=()=>showAuthPanel();bar.appendChild(btnLogin);
   } else {
-    // ── Pas configuré ──────────────────────────────────
-    const hint=document.createElement('span');
-    hint.className='action-bar-lbl';
-    hint.style.color='var(--blood-l)';
-    hint.textContent='⚠ Supabase non configuré';
-    bar.appendChild(hint);
+    const hint=document.createElement('span');hint.className='action-bar-lbl';hint.style.color='var(--blood-l)';
+    hint.textContent='⚠ Non configuré';bar.appendChild(hint);
   }
 
   bar.appendChild(sep());
 
-  // ── Bouton Enregistrer ────────────────────────────────
+  // ── GROUPE 3 : Enregistrer (toujours visible) ────────
   const btnSaveMain=document.createElement('button');
   btnSaveMain.id='btn-save-main';btnSaveMain.className='btn btn-save';btnSaveMain.innerHTML='💾 Enregistrer';
+  btnSaveMain.title='Sauvegarder localement (+ cloud si connecté)';
   btnSaveMain.onclick=async()=>{
-    if(!S.nom||!S.nom.trim()){toastError('Donnez un nom (étape 1)');return;}
+    if(!S.nom||!S.nom.trim()){toastError('Donnez un nom à votre personnage (étape 1)');return;}
     doLocalSave();
     btnSaveMain.innerHTML='✓ Enregistré';btnSaveMain.className='btn btn-save saved';
     if(supaCurrentUser){const label='Sauvegarde — '+new Date().toLocaleDateString('fr-FR');await saveToSupabase(label);}
     else toastSuccess('Sauvegardé localement');
     setTimeout(()=>{btnSaveMain.innerHTML='💾 Enregistrer';btnSaveMain.className='btn btn-save';},2500);
   };
-  bar.appendChild(btnSaveMain);bar.appendChild(sep());
-  // Export JSON
-  const btnEJ=document.createElement('button');btnEJ.className='btn btn-s';btnEJ.innerHTML='⬇ JSON';
+  bar.appendChild(btnSaveMain);
+  bar.appendChild(sep());
+
+  // ── GROUPE 4 : Outils fichiers ───────────────────────
+  const btnEJ=document.createElement('button');btnEJ.className='btn btn-s';btnEJ.innerHTML='📤 Export';btnEJ.title='Télécharger la fiche en JSON';
   btnEJ.onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${S.nom||'nephilim'}_${new Date().toISOString().slice(0,10)}.json`;a.click();toastSuccess('Exporté en JSON');};
   bar.appendChild(btnEJ);
 
-  // Import JSON
-  const btnIJ=document.createElement('button');btnIJ.className='btn btn-s';btnIJ.innerHTML='⬆ JSON';
+  const btnIJ=document.createElement('button');btnIJ.className='btn btn-s';btnIJ.innerHTML='📥 Import';btnIJ.title='Charger une fiche depuis un fichier JSON';
   btnIJ.onclick=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=e=>{const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);Object.keys(S).forEach(k=>delete S[k]);Object.assign(S,d);supaPersonnageId=null;doLocalSave();render();toastSuccess('Fiche importée !');}catch{toastError('JSON invalide');}};r.readAsText(e.target.files[0]);};inp.click();};
   bar.appendChild(btnIJ);
 
-  // Nouveau
-  const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='✦ Nouveau';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]},arcane:null};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
+  bar.appendChild(sep());
+
+  // ── GROUPE 5 : Actions ───────────────────────────────
+  const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='+ Nouveau';btnNew.title='Créer un nouveau personnage';
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]},arcane:null};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
   bar.appendChild(btnNew);
 
-  // ── Grimoire (visible à partir étape 4) ──────────────
   if(S.step>=4){
-    const btnGrim=document.createElement('button');
-    btnGrim.className='btn btn-grimoire';
-    btnGrim.innerHTML='✦ Grimoire';
-    btnGrim.onclick=()=>showGrimoire();
-    bar.appendChild(btnGrim);
+    const btnGrim=document.createElement('button');btnGrim.className='btn btn-grimoire';btnGrim.innerHTML='✦ Grimoire';
+    btnGrim.title='Consulter le grimoire des sorts, invocations et formules';
+    btnGrim.onclick=()=>showGrimoire();bar.appendChild(btnGrim);
   }
 
   document.body.appendChild(bar);
@@ -2536,12 +2508,24 @@ function getArcanesForEpoque(epId){
   return ARCANES.filter(a=>list.includes(a.id));
 }
 function getArcaneAdopte(){
+  if(!S.incarnations) return null;
   for(const[epId,inc] of Object.entries(S.incarnations)){
     if(inc&&inc.arcane_id) return {epId,arcaneId:inc.arcane_id,deg:inc.arcane_deg||0};
   }
   return null;
 }
 
+
+// ═══════════════════════════════════════════════════════
+// CONSTRUCT TYPES (Alchimie — Étape 5)
+// ═══════════════════════════════════════════════════════
+const CONSTRUCT_TYPES=[
+  {id:'athanor', nm:'Athanor',   ico:'🔥', dc:'Four alchimique. Base de toute transmutation par le Feu.'},
+  {id:'creuset', nm:'Creuset',   ico:'⚗️', dc:'Récipient de fusion. Permet la combinaison des substances.'},
+  {id:'cornue',  nm:'Cornue',    ico:'🌡️', dc:'Distillateur en verre. Raffine les liqueurs et vapeurs.'},
+  {id:'alambic', nm:'Alambic',   ico:'💧', dc:'Appareil de distillation. Extrait les quintessences aqueuses.'},
+  {id:'aludel',  nm:'Aludel',    ico:'🌑', dc:'Vase poreux lunaire. Capte les influences cosmiques nocturnes.'},
+];
 function buildAlchimie(){
   const sc=kaScores();
   const wrap=h('div',{});
@@ -2707,23 +2691,26 @@ function buildAlchimie(){
     if((S.alchimie.noir||0)>0) oeuvresOk.push('Noir');
     if((S.alchimie.blanc||0)>0) oeuvresOk.push('Blanc');
     if((S.alchimie.rouge||0)>0) oeuvresOk.push('Rouge');
-    const formDispos=FORMULES.filter(f=>oeuvresOk.includes(f.oeuvre));
+    const formDispos=(FORMULES||[]).filter(f=>{
+      const oeuvre=(f.oeuvre||f.cercle||'').replace('1-Oeuvre au ','').replace('2-Oeuvre au ','');
+      return oeuvresOk.some(o=>oeuvre.toLowerCase().includes(o.toLowerCase()));
+    });
     if(formDispos.length===0){
       fbox.appendChild(h('p',{cls:'lbl'},'Progressez dans les Œuvres pour débloquer des formules.'));
     } else {
+      fbox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.5rem'}},`${formDispos.length} formules accessibles`));
       const fgrid=h('div',{cls:'il'});
-      for(const fm of formDispos){
-        const hasC=(S.constructs[fm.construct.toLowerCase()]||0)>0;
-        fgrid.appendChild(h('div',{cls:`ir ${hasC?'sel':''}`,style:{opacity:hasC?'1':'0.55'}},
+      for(const fm of formDispos.slice(0,20)){
+        const construct=fm.construct||fm.substance||'';
+        const hasC=construct?((S.constructs[construct.toLowerCase()]||0)>0):true;
+        fgrid.appendChild(h('div',{cls:`ir ${hasC?'sel':''}`,style:{opacity:hasC||!construct?'1':'0.55'}},
           h('div',{cls:'ir-nm'},
-            h('strong',{},fm.nm),
-            h('small',{},` [${fm.oeuvre}·Ka ${fm.ka}·Deg.${fm.deg}] ${fm.dc}`),
-            h('br',{}),
-            h('small',{style:{color:hasC?'var(--ok)':'var(--blood-l)'}},
-              `Construct: ${fm.construct} ${hasC?'✓':'✕ manquant'}`),
+            h('strong',{},fm.nm||''),
+            h('small',{},` ${fm.dc||fm.effet||''}`),
           ),
         ));
       }
+      if(formDispos.length>20) fgrid.appendChild(h('p',{cls:'lbl',style:{textAlign:'center',marginTop:'.4rem'}},`… et ${formDispos.length-20} autres`));
       fbox.appendChild(fgrid);
     }
     wrap.appendChild(fbox);
@@ -3046,7 +3033,7 @@ function exportTXT(){
     }),
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
-    ...(()=>{const ad=getArcaneAdopte();if(ad){const a=ARCANES.find(x=>x.id===ad.arcaneId);return ['  Arcane      : '+(a?a.num+' '+a.nm:'?')+' ('+ad.deg+'°)'];}return ['  Arcane      : —'];})(),
+    ...(()=>{try{const ad=getArcaneAdopte();if(ad){const a=ARCANES.find(x=>x.id===ad.arcaneId);return ['  Arcane      : '+(a?a.num+' '+a.nm:'?')+' ('+ad.deg+'°)'];}return ['  Arcane      : —'];}catch(e){return ['  Arcane      : —'];}})(),
     `  Sorts       : ${S.magie.sorts||0} connus`,
     ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='sorts').length>0)?[
       '  Sorts gravés :',
@@ -3092,12 +3079,22 @@ function doLocalLoad(){
     if(sv){
       const loaded=JSON.parse(sv);
       Object.assign(S,loaded);
-      // Ensure new inc fields exist for compatibility
+      // Compatibilité ascendante — champs modernes
       for(const inc of Object.values(S.incarnations||{})){
         if(!inc.vecus_deg) inc.vecus_deg={};
         if(!inc.savoirs_extra) inc.savoirs_extra={};
         if(!inc.sciences_extra) inc.sciences_extra={};
+        if(inc.arcane_adopte!==undefined&&!inc.arcane_id){
+          inc.arcane_id=null;inc.arcane_deg=0;
+          delete inc.arcane_adopte;
+        }
+        if(!('arcane_id' in inc)){inc.arcane_id=null;inc.arcane_deg=0;}
       }
+      // Champs state modernes
+      if(!S.effets_magiques||typeof S.effets_magiques!=='object') S.effets_magiques={gravés:[],focus:[]};
+      if(!Array.isArray(S.effets_magiques.gravés)) S.effets_magiques.gravés=[];
+      if(!Array.isArray(S.effets_magiques.focus)) S.effets_magiques.focus=[];
+      if(S.arcane===undefined) S.arcane=null;
     }
   }catch(e){}
 }
@@ -3232,10 +3229,12 @@ function grimItemAccess(item, tab){
 
 // ── Gestion sélection effets ──────────────────────────
 function grimIsGrave(item){
-  return (grimGetEffets().gravés||[]).some(e=>e.id===item.id&&e.tab===grimTab);
+  if(!item||!item.id) return false;
+  return (grimGetEffets().gravés||[]).some(e=>e&&e.id===item.id&&e.tab===grimTab);
 }
 function grimIsFocus(item){
-  return (grimGetEffets().focus||[]).some(e=>e.id===item.id&&e.tab===grimTab);
+  if(!item||!item.id) return false;
+  return (grimGetEffets().focus||[]).some(e=>e&&e.id===item.id&&e.tab===grimTab);
 }
 function grimAddEffet(item){
   if(!S.effets_magiques||typeof S.effets_magiques!=='object')S.effets_magiques={gravés:[],focus:[]};if(!S.effets_magiques.gravés)S.effets_magiques.gravés=[];if(!S.effets_magiques.focus)S.effets_magiques.focus=[];
