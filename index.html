@@ -1498,14 +1498,20 @@ function showAuthPanel(){
   const title=document.createElement('h1');title.className='login-title';title.textContent='Forge des Âmes';
   const sub=document.createElement('p');sub.className='login-sub';
   sub.textContent="Connectez-vous pour sauvegarder vos personnages sur tous vos appareils.";
-  const inp=document.createElement('input');inp.className='login-input';inp.type='email';
-  inp.placeholder='votre@email.com';inp.autocomplete='email';
+  const inp=document.createElement('input');inp.className='login-input';inp.type='text';
+  inp.placeholder='votre@email.com';inp.autocomplete='email';inp.autocapitalize='off';inp.spellcheck=false;
   const msgDiv=document.createElement('div');msgDiv.className='login-msg';
   const btn=document.createElement('button');btn.className='login-btn';
   btn.textContent='Recevoir le lien de connexion';
   btn.onclick=async()=>{
-    const email=inp.value.trim();
-    if(!email.includes('@')){msgDiv.className='login-msg err';msgDiv.textContent='Email invalide.';return;}
+    const raw=inp.value||'';
+    const email=raw.replace(/[\s\u200B-\u200D\uFEFF]/g,'').toLowerCase().trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+      msgDiv.className='login-msg err';
+      msgDiv.textContent='Adresse invalide — vérifiez le format (ex: nom@domaine.fr)';
+      return;
+    }
+    inp.value=email;
     btn.disabled=true;btn.textContent='⟳ Envoi…';
     const {error}=await supaSignIn(email);
     if(error){msgDiv.className='login-msg err';msgDiv.textContent='Erreur : '+error;btn.disabled=false;btn.textContent='Recevoir le lien';}
