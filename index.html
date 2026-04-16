@@ -2533,10 +2533,18 @@ function getArcanesForEpoque(epId){
 }
 function getArcaneAdopte(){
   if(!S.incarnations) return null;
+  // Trouver l'arcane ET cumuler TOUS les degrés acquis sur l'ensemble des incarnations
+  let arcaneId = null;
+  let firstEpId = null;
+  let totalDeg = 0;
   for(const[epId,inc] of Object.entries(S.incarnations)){
-    if(inc&&inc.arcane_id) return {epId,arcaneId:inc.arcane_id,deg:inc.arcane_deg||0};
+    if(inc&&inc.arcane_id){
+      if(!arcaneId){ arcaneId=inc.arcane_id; firstEpId=epId; }
+      totalDeg += (inc.arcane_deg||0);
+    }
   }
-  return null;
+  if(!arcaneId) return null;
+  return {epId:firstEpId, arcaneId, deg:totalDeg};
 }
 
 
@@ -3186,8 +3194,23 @@ function s9(){
     rc.appendChild(qSection);
   }
   const arcAdopte=getArcaneAdopte();
-  if(arcAdopte){const ao=ARCANES.find(x=>x.id===arcAdopte.arcaneId);
-    addS('🂠 Arcane',[['Lame',ao?ao.num+' — '+ao.nm:'?'],['Ka thématique',ao&&ao.ka?ao.ka:'—'],['Degrés',arcAdopte.deg]]);}
+  if(arcAdopte){
+    const ao=ARCANES.find(x=>x.id===arcAdopte.arcaneId);
+    // Détail des degrés par époque
+    const arcDetailRows=[
+      ['Lame', ao?ao.num+' — '+ao.nm:'?'],
+      ['Ka thématique', ao&&ao.ka?ao.ka:'—'],
+      ['Degrés totaux acquis', `${arcAdopte.deg}°`],
+    ];
+    // Lister les degrés par époque
+    Object.entries(S.incarnations).forEach(([epId,inc])=>{
+      if(inc&&inc.arcane_id===arcAdopte.arcaneId&&inc.arcane_deg>0){
+        const ep=EPOQUES.find(e=>e.id===epId);
+        arcDetailRows.push([`  ${ep?ep.ico+' '+ep.nm:epId}`, `+${inc.arcane_deg}°`]);
+      }
+    });
+    addS('🂠 Arcane', arcDetailRows);
+  }
   addS('🔮 Magie — TOTAUX CUMULÉS',[
     ['Basse Magie (total)',  `${tots.sciences.magie} degrés (${S.magie.bas||0} achetés + ${tots.sciences.magie-(S.magie.bas||0)-(S.magie.haut||0)-(S.magie.grand||0)>0?tots.sciences.magie-(S.magie.bas||0)-(S.magie.haut||0)-(S.magie.grand||0):0} offerts)`],
     ['Haute Magie',   S.magie.haut||0],
@@ -3301,7 +3324,22 @@ function exportTXT(){
     })(),
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
-    ...(()=>{try{const ad=getArcaneAdopte();if(ad){const a=ARCANES.find(x=>x.id===ad.arcaneId);return ['  Arcane      : '+(a?a.num+' '+a.nm:'?')+' ('+ad.deg+'°)'];}return ['  Arcane      : —'];}catch(e){return ['  Arcane      : —'];}})(),
+    ...(()=>{
+      try{
+        const ad=getArcaneAdopte();
+        if(!ad) return ['  Arcane      : —'];
+        const a=ARCANES.find(x=>x.id===ad.arcaneId);
+        const lines2=['  Arcane      : '+(a?a.num+' '+a.nm:'?')+' ('+ad.deg+'° cumulés)'];
+        // Détail par époque
+        Object.entries(S.incarnations).forEach(([epId,inc])=>{
+          if(inc&&inc.arcane_id===ad.arcaneId&&inc.arcane_deg>0){
+            const ep2=EPOQUES.find(e=>e.id===epId);
+            lines2.push('    +'+inc.arcane_deg+'° via '+(ep2?ep2.nm:epId));
+          }
+        });
+        return lines2;
+      }catch(e){return ['  Arcane      : —'];}
+    })(),
     `  Sorts       : ${S.magie.sorts||0} connus`,
     ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='sorts').length>0)?[
       '  Sorts gravés :',

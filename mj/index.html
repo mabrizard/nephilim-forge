@@ -563,12 +563,12 @@ async function renderFiche(p, loadVersions = true){
 
     <!-- ARCANE -->
     ${arcane?`
-    <div class="section-title">🂠 Arcane</div>
+    <div class="section-title">🂠 Arcane adopté</div>
     <div class="arcane-card">
       <span class="arcane-num">${arcane.num}</span>
       <div class="arcane-info">
         <div class="arcane-nm">${arcane.nm}</div>
-        <div class="arcane-sub">Ka thématique : ${arcane.ka||'—'} · ${arcane.deg}° acquis</div>
+        <div class="arcane-sub">Ka thématique : ${arcane.ka||'—'} · <strong style="color:var(--seph)">${arcane.deg}° acquis au total</strong></div>
       </div>
     </div>`:''}
 
@@ -738,25 +738,25 @@ async function previewVersion(pid, vid){
 function kaScoresFrom(S){
   const dom = S.ka_dom;
   if(!dom) return {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
-  const domMap = {
-    Air:{neu:['Feu','Eau'],opp:['Terre','Lune']},
-    Feu:{neu:['Air','Terre'],opp:['Eau','Lune']},
-    Terre:{neu:['Feu','Eau'],opp:['Air','Lune']},
-    Eau:{neu:['Air','Terre'],opp:['Feu','Lune']},
-    Lune:{neu:['Air','Feu'],opp:['Terre','Eau']},
+  // Miroir exact de kaScores() dans l'application principale
+  // Dom=5, Neutres=4, Opp selon profil (Éveillé:3/2, Révélé:2/1, Immortel:1/0)
+  const KA_APP = {
+    Air:  {neu:['Feu','Eau'],   opp:['Terre','Lune']},
+    Feu:  {neu:['Air','Terre'], opp:['Eau','Lune']},
+    Terre:{neu:['Feu','Eau'],   opp:['Air','Lune']},
+    Eau:  {neu:['Air','Terre'], opp:['Feu','Lune']},
+    Lune: {neu:['Air','Feu'],   opp:['Terre','Eau']},
   };
-  const sc = {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
-  // Lire les valeurs depuis les incarnations si disponibles
-  const incs = Object.values(S.incarnations||{});
-  // Calculer à partir du Ka dominant (valeur par défaut simplifiée)
-  // Valeur exacte dépend des incarnations — on utilise les valeurs stockées si dispo
-  if(S.ka_scores) return S.ka_scores;
-  // Sinon calcul simplifié
-  const domVal = Math.max(5, Math.min(10, 5 + Object.keys(S.incarnations||{}).length));
+  const d = KA_APP[dom];
+  const domVal = 5;
+  const neuVal = 4;
+  let opp1 = 3, opp2 = 2;
+  if(S.profil === 'Révélé')  { opp1 = 2; opp2 = 1; }
+  if(S.profil === 'Immortel'){ opp1 = 1; opp2 = 0; }
+  const sc = {Air:neuVal,Feu:neuVal,Terre:neuVal,Eau:neuVal,Lune:neuVal};
   sc[dom] = domVal;
-  const d = domMap[dom];
-  (d.neu||[]).forEach(k=> sc[k] = Math.max(3, domVal-2));
-  (d.opp||[]).forEach(k=> sc[k] = Math.max(1, domVal-4));
+  if(d.opp[0]) sc[d.opp[0]] = opp1;
+  if(d.opp[1]) sc[d.opp[1]] = opp2;
   return sc;
 }
 
@@ -817,13 +817,21 @@ const ARCANES_MJ = [
 ];
 
 function getArcaneAdopteFrom(S){
+  // Chercher l'arcane adopté ET cumuler tous les degrés acquis
+  // (adoption initiale + progressions dans d'autres époques)
+  let arcaneId = null;
+  let totalDeg = 0;
   for(const inc of Object.values(S.incarnations||{})){
-    if(inc&&inc.arcane_id){
-      const a = ARCANES_MJ.find(x=>x.id===inc.arcane_id);
-      if(a) return {...a, deg:inc.arcane_deg||0};
+    if(!inc) continue;
+    if(inc.arcane_id){
+      arcaneId = inc.arcane_id;
+      totalDeg += (inc.arcane_deg||0);
     }
   }
-  return null;
+  if(!arcaneId) return null;
+  const a = ARCANES_MJ.find(x=>x.id===arcaneId);
+  if(!a) return null;
+  return {...a, deg:totalDeg};
 }
 
 // ════════════════════════════════════════════════════════
