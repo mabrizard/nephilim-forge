@@ -499,9 +499,16 @@ async function showVersionsModal(){
   } else {
     for(const v of data){
       const row = h('div',{cls:'ver-item'});
-      const info = h('div');
+      const info = h('div',{style:{flex:'1',minWidth:'0'}});
+      // Titre = label (contient le résumé des changements saisi par le joueur)
       info.appendChild(h('div',{cls:'ver-lbl'}, v.label || 'Version'));
-      info.appendChild(h('div',{cls:'ver-date'}, new Date(v.saved_at).toLocaleString('fr-FR') + (v.nom_snapshot ? ' · '+v.nom_snapshot : '')));
+      // Sous-titre : date + nom snapshot + PI
+      const subParts=[];
+      subParts.push(new Date(v.saved_at).toLocaleString('fr-FR'));
+      if(v.nom_snapshot) subParts.push(v.nom_snapshot);
+      if(v.pi_snapshot!=null) subParts.push(`${v.pi_snapshot} PI`);
+      if(v.ka_snapshot) subParts.push(`Ka ${v.ka_snapshot}`);
+      info.appendChild(h('div',{cls:'ver-date'}, subParts.join(' · ')));
       const btnRestore = h('button',{cls:'ver-btn', onClick:async()=>{
         if(confirm('Restaurer cette version ? Les modifications non sauvegardées seront perdues.')){
           Object.assign(S, v.data_json);
@@ -2911,6 +2918,194 @@ function s9(){
     ),
   ));
   const at=calcAttrs(),sc=kaScores(),mt=getMetier();
+
+  // ── PENTACLE SVG DYNAMIQUE ────────────────────────────
+  {
+    const pentBox=h('div',{cls:'box',style:{marginBottom:'1.5rem',textAlign:'center'}});
+    pentBox.appendChild(h('h3',{},'✡ Pentacle des Ka'));
+
+    const ORDER=['Feu','Air','Eau','Lune','Terre']; // sens horaire
+    const KA_COLORS={Feu:'#e05c2a',Air:'#7eb8d4',Eau:'#3a6b8a',Lune:'#9b8fc0',Terre:'#6b8e4e'};
+    const KA_ICONS={Feu:'🜂',Air:'🜁',Eau:'🜄',Lune:'☽',Terre:'🜃'};
+    const domMap2={
+      Air:{neu:['Feu','Eau'],opp:['Terre','Lune']},
+      Feu:{neu:['Air','Terre'],opp:['Eau','Lune']},
+      Terre:{neu:['Feu','Eau'],opp:['Air','Lune']},
+      Eau:{neu:['Air','Terre'],opp:['Feu','Lune']},
+      Lune:{neu:['Air','Feu'],opp:['Terre','Eau']},
+    };
+    const dom2=S.ka_dom;
+    const sc2=kaScores();
+    const chuteKhaiba=S.chutes&&S.chutes.khaiba||0;
+
+    const W=320,H=320,CX=160,CY=160,R=110,RLbl=138;
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    svg.setAttribute('width','320');svg.setAttribute('height','320');
+    svg.style.cssText='max-width:100%;display:inline-block';
+
+    // Fond + cercles de référence
+    for(const r2 of [R*0.25,R*0.5,R*0.75,R]){
+      const circle=document.createElementNS(ns,'circle');
+      circle.setAttribute('cx',CX);circle.setAttribute('cy',CY);circle.setAttribute('r',r2);
+      circle.setAttribute('fill','none');circle.setAttribute('stroke','rgba(201,168,76,0.12)');
+      circle.setAttribute('stroke-width','0.5');
+      svg.appendChild(circle);
+    }
+
+    // Sommets (sens horaire, départ haut = Feu)
+    const pts=ORDER.map((ka,i)=>{
+      const angle=(i/5)*Math.PI*2-Math.PI/2;
+      return {ka,x:CX+Math.cos(angle)*R,y:CY+Math.sin(angle)*R,
+        lx:CX+Math.cos(angle)*RLbl,ly:CY+Math.sin(angle)*RLbl,angle};
+    });
+
+    // Lignes du pentagramme (connexions 1-3, 2-4, 3-0, 4-1, 0-2)
+    [[0,2],[1,3],[2,4],[3,0],[4,1]].forEach(([a2,b2])=>{
+      const line=document.createElementNS(ns,'line');
+      line.setAttribute('x1',pts[a2].x);line.setAttribute('y1',pts[a2].y);
+      line.setAttribute('x2',pts[b2].x);line.setAttribute('y2',pts[b2].y);
+      line.setAttribute('stroke','rgba(201,168,76,0.15)');line.setAttribute('stroke-width','0.8');
+      svg.appendChild(line);
+    });
+
+    // Axes vers les sommets
+    pts.forEach(p=>{
+      const line=document.createElementNS(ns,'line');
+      line.setAttribute('x1',CX);line.setAttribute('y1',CY);
+      line.setAttribute('x2',p.x);line.setAttribute('y2',p.y);
+      line.setAttribute('stroke','rgba(201,168,76,0.1)');line.setAttribute('stroke-width','0.5');
+      svg.appendChild(line);
+    });
+
+    // Polygone des scores (radar)
+    const maxKa=Math.max(...Object.values(sc2),1);
+    const polyPts=pts.map(p=>{
+      const val=sc2[p.ka]||0;
+      const r3=(val/Math.max(maxKa,10))*R;
+      const angle=p.angle;
+      return `${CX+Math.cos(angle)*r3},${CY+Math.sin(angle)*r3}`;
+    });
+    // Remplissage
+    const poly=document.createElementNS(ns,'polygon');
+    poly.setAttribute('points',polyPts.join(' '));
+    // Couleur selon Khaïba
+    if(chuteKhaiba>=2){
+      poly.setAttribute('fill','rgba(139,26,26,0.25)');
+      poly.setAttribute('stroke','rgba(139,26,26,0.8)');
+    } else if(chuteKhaiba===1){
+      poly.setAttribute('fill','rgba(139,26,26,0.12)');
+      poly.setAttribute('stroke','rgba(201,168,76,0.6)');
+    } else {
+      poly.setAttribute('fill','rgba(201,168,76,0.12)');
+      poly.setAttribute('stroke','rgba(201,168,76,0.7)');
+    }
+    poly.setAttribute('stroke-width','1.5');
+    svg.appendChild(poly);
+
+    // Points sur les sommets + lignes colorées du dominant
+    pts.forEach(p=>{
+      const val=sc2[p.ka]||0;
+      const r3=(val/Math.max(maxKa,10))*R;
+      const angle=p.angle;
+      const px=CX+Math.cos(angle)*r3;
+      const py=CY+Math.sin(angle)*r3;
+      const color=KA_COLORS[p.ka];
+      const isDom=p.ka===dom2;
+      // Ligne colorée de l'axe pour le dominant
+      if(isDom){
+        const glow=document.createElementNS(ns,'line');
+        glow.setAttribute('x1',CX);glow.setAttribute('y1',CY);
+        glow.setAttribute('x2',p.x);glow.setAttribute('y2',p.y);
+        glow.setAttribute('stroke',color);glow.setAttribute('stroke-width','1.5');glow.setAttribute('opacity','0.4');
+        svg.appendChild(glow);
+      }
+      // Point score
+      const dot=document.createElementNS(ns,'circle');
+      dot.setAttribute('cx',px);dot.setAttribute('cy',py);
+      dot.setAttribute('r',isDom?5:3.5);
+      dot.setAttribute('fill',color);
+      dot.setAttribute('stroke','rgba(13,11,8,0.8)');dot.setAttribute('stroke-width','1');
+      svg.appendChild(dot);
+    });
+
+    // Étiquettes sommets
+    pts.forEach(p=>{
+      const isDom=p.ka===dom2;
+      const val=sc2[p.ka]||0;
+      const color=KA_COLORS[p.ka];
+      // Fond étiquette
+      const g=document.createElementNS(ns,'g');
+      // Texte ka
+      const t1=document.createElementNS(ns,'text');
+      t1.setAttribute('x',p.lx);t1.setAttribute('y',p.ly-(isDom?2:1));
+      t1.setAttribute('text-anchor','middle');t1.setAttribute('dominant-baseline','middle');
+      t1.setAttribute('font-family','Cinzel, serif');t1.setAttribute('font-size',isDom?'10':'9');
+      t1.setAttribute('fill',isDom?color:'rgba(201,168,76,0.7)');
+      t1.setAttribute('font-weight',isDom?'bold':'normal');
+      t1.textContent=KA_ICONS[p.ka]+' '+p.ka;
+      // Score
+      const t2=document.createElementNS(ns,'text');
+      t2.setAttribute('x',p.lx);t2.setAttribute('y',p.ly+(isDom?10:9));
+      t2.setAttribute('text-anchor','middle');t2.setAttribute('dominant-baseline','middle');
+      t2.setAttribute('font-family','Cinzel Decorative, serif');t2.setAttribute('font-size',isDom?'13':'11');
+      t2.setAttribute('fill',isDom?'#e8c97a':color);
+      t2.textContent=String(val);
+      g.appendChild(t1);g.appendChild(t2);
+      svg.appendChild(g);
+    });
+
+    // Ka-Soleil au centre
+    const kaSol=kaSoleil();
+    const centerCircle=document.createElementNS(ns,'circle');
+    centerCircle.setAttribute('cx',CX);centerCircle.setAttribute('cy',CY);
+    centerCircle.setAttribute('r',16);
+    centerCircle.setAttribute('fill','rgba(201,168,76,0.15)');
+    centerCircle.setAttribute('stroke','rgba(201,168,76,0.6)');
+    centerCircle.setAttribute('stroke-width','1');
+    svg.appendChild(centerCircle);
+    const solText=document.createElementNS(ns,'text');
+    solText.setAttribute('x',CX);solText.setAttribute('y',CY-3);
+    solText.setAttribute('text-anchor','middle');solText.setAttribute('dominant-baseline','middle');
+    solText.setAttribute('font-family','Cinzel, serif');solText.setAttribute('font-size','7');
+    solText.setAttribute('fill','rgba(201,168,76,0.7)');
+    solText.textContent='☀️';
+    const solVal=document.createElementNS(ns,'text');
+    solVal.setAttribute('x',CX);solVal.setAttribute('y',CY+7);
+    solVal.setAttribute('text-anchor','middle');solVal.setAttribute('dominant-baseline','middle');
+    solVal.setAttribute('font-family','Cinzel Decorative, serif');solVal.setAttribute('font-size','10');
+    solVal.setAttribute('fill','#c9a84c');
+    solVal.textContent=String(kaSol);
+    svg.appendChild(solText);svg.appendChild(solVal);
+
+    // Indicateur Khaïba
+    if(chuteKhaiba>0){
+      const kText=document.createElementNS(ns,'text');
+      kText.setAttribute('x',CX);kText.setAttribute('y',H-8);
+      kText.setAttribute('text-anchor','middle');kText.setAttribute('font-family','Cinzel,serif');
+      kText.setAttribute('font-size','8');kText.setAttribute('fill','rgba(192,80,74,0.8)');
+      kText.textContent=`💀 Khaïba ${chuteKhaiba}° — pentacle altéré`;
+      svg.appendChild(kText);
+    }
+
+    pentBox.appendChild(svg);
+
+    // Légende Ka-Soleil et Vision-Ka
+    const legDiv=h('div',{style:{display:'flex',justifyContent:'center',gap:'1.5rem',
+      marginTop:'.5rem',flexWrap:'wrap',fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--gold-d)'}});
+    legDiv.appendChild(h('span',{},`☀️ Ka-Soleil : ${kaSol}`));
+    legDiv.appendChild(h('span',{},`👁 Vision-Ka : ${sc2[dom2]||0}`));
+    if(S.ka_dom){
+      const dMap=domMap2[S.ka_dom];
+      if(dMap){
+        const oppMaj=dMap.opp[1]||dMap.opp[0];
+        if(oppMaj==='Lune') legDiv.appendChild(h('span',{style:{color:'var(--parch-d)'}},'☽ Opposition Lune — faible attirance pour les illusions'));
+      }
+    }
+    pentBox.appendChild(legDiv);
+    d.insertBefore(pentBox, d.querySelector('.box'));
+  }
   const rc=h('div',{cls:'box'});rc.appendChild(h('h3',{},'📜 Fiche Complète'));
   function addS(ttl,rows){const s=h('div',{cls:'rc-sec'},h('h3',{},ttl));for(const[k,v]of rows)s.appendChild(rcRow(k,v));rc.appendChild(s);}
   addS('🔮 Identité',[['Nom',S.nom||'—'],['Joueur',S.joueur||'—'],['Ka Dominant',S.ka_dom||'—'],['Métamorphe',S.metamorphe||'—'],['Profil',S.profil||'—'],['Métier',mt?mt.nm:'—'],['Objet-Stase',S.stase||'—']]);
@@ -2943,12 +3138,53 @@ function s9(){
   // Totaux cumulés (gratuités époques + achats PI)
   const tots=calcTotauxCumules();
 
-  addS('📚 Incarnations',[
-    ['Époques choisies', Object.keys(S.incarnations).length],
-    ['Détail', incList],
-    ['Savoirs acquis', savoirsList],
-    ['Quêtes', Object.entries(tots.quetes).map(([q,d])=>`${q} (${d})`).join(', ')||'—'],
-  ]);
+  // ── Incarnations détaillées avec Vécu et degrés ──────
+  {
+    const incSection=h('div',{cls:'rc-sec'});
+    incSection.appendChild(h('h3',{},'📚 Incarnations'));
+    const incTotal=Object.keys(S.incarnations).length;
+    incSection.appendChild(rcRow('Époques choisies', String(incTotal)));
+    // Chaque époque sur sa propre ligne avec Vécu + degrés
+    Object.entries(S.incarnations).forEach(([id,inc])=>{
+      const ep=EPOQUES.find(e=>e.id===id);
+      if(!ep) return;
+      const vecusList2=ep.vecus_data||[];
+      const vDobj=vecusList2.find(v=>v.nm===inc.vecu);
+      const isKaDom=vDobj&&vDobj.ka===S.ka_dom;
+      const baseDeg=isKaDom?2:1;
+      const extraDeg=inc.vecus_deg&&inc.vecus_deg[inc.vecu]||0;
+      const totalVecuDeg=baseDeg+extraDeg;
+      const vecuStr=inc.vecu
+        ? `${inc.vecu} (${totalVecuDeg}° ${isKaDom?'⭐':''})`
+        : '— Vécu non choisi';
+      const savoirsStr=(inc.savoirs||[]).join(', ')||'—';
+      const queteStr=inc.quete||'—';
+      incSection.appendChild(rcRow(
+        `${ep.ico||'📜'} ${ep.nm}`,
+        `Vécu : ${vecuStr} · Quête : ${queteStr}`
+      ));
+      if(savoirsStr!=='—'){
+        incSection.appendChild(rcRow('  Savoirs', savoirsStr));
+      }
+    });
+    // Savoirs cumulés tous vécus
+    incSection.appendChild(rcRow('Savoirs totaux', savoirsList));
+    rc.appendChild(incSection);
+  }
+  // ── Quêtes regroupées avec total par quête ────────────
+  {
+    const qSection=h('div',{cls:'rc-sec'});
+    qSection.appendChild(h('h3',{},'⚜ Quêtes ésotériques'));
+    const qEntries=Object.entries(tots.quetes);
+    if(qEntries.length===0){
+      qSection.appendChild(rcRow('Quêtes','—'));
+    } else {
+      qEntries.sort(([,a],[,b])=>b-a).forEach(([qnm,deg])=>{
+        qSection.appendChild(rcRow(qnm, `${deg}°`));
+      });
+    }
+    rc.appendChild(qSection);
+  }
   const arcAdopte=getArcaneAdopte();
   if(arcAdopte){const ao=ARCANES.find(x=>x.id===arcAdopte.arcaneId);
     addS('🂠 Arcane',[['Lame',ao?ao.num+' — '+ao.nm:'?'],['Ka thématique',ao&&ao.ka?ao.ka:'—'],['Degrés',arcAdopte.deg]]);}
@@ -3046,8 +3282,23 @@ function exportTXT(){
     '── INCARNATIONS ───────────────────────────',
     ...Object.entries(S.incarnations).map(([id,inc])=>{
       const ep=EPOQUES.find(e=>e.id===id);
-      return `  ${ep?ep.nm:id} (${ep?ep.per:'?'}) — Vécu: ${inc.vecu||'—'} — Savoirs: ${(inc.savoirs||[]).join(', ')||'—'}`;
+      if(!ep) return `  ${id} — Vécu: ${inc.vecu||'—'}`;
+      const vecusList3=ep.vecus_data||[];
+      const vDobj3=vecusList3.find(v=>v.nm===inc.vecu);
+      const isKaDom3=vDobj3&&vDobj3.ka===S.ka_dom;
+      const baseDeg3=isKaDom3?2:1;
+      const extraDeg3=inc.vecus_deg&&inc.vecus_deg[inc.vecu]||0;
+      const totalVDeg3=baseDeg3+extraDeg3;
+      const vecuStr3=inc.vecu?`${inc.vecu} (${totalVDeg3}°${isKaDom3?' ⭐':''})`: '—';
+      return `  ${ep.nm} (${ep.per}) — Vécu: ${vecuStr3}${inc.quete?' · Quête: '+inc.quete:''} — Savoirs: ${(inc.savoirs||[]).join(', ')||'—'}`;
     }),
+    ...(()=>{
+      const tots2=calcTotauxCumules();
+      const qEntries=Object.entries(tots2.quetes);
+      if(qEntries.length===0) return [];
+      return ['  ','── QUÊTES ÉSOTÉRIQUES (cumulées) ──────────',
+        ...qEntries.sort(([,a],[,b])=>b-a).map(([q,d])=>`  ${q} : ${d}°`)];
+    })(),
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
     ...(()=>{try{const ad=getArcaneAdopte();if(ad){const a=ARCANES.find(x=>x.id===ad.arcaneId);return ['  Arcane      : '+(a?a.num+' '+a.nm:'?')+' ('+ad.deg+'°)'];}return ['  Arcane      : —'];}catch(e){return ['  Arcane      : —'];}})(),
