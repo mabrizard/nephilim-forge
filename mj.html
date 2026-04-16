@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nephilim — Interface MJ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --gold:#c9a84c;--gold-l:#e8c97a;--gold-d:#7a6030;
+  --ink:#0d0b08;--parch:#f0e6c8;--parch-d:#d4c49a;
+  --blood:#8b1a1a;--blood-l:#c0504a;
+  --air:#7eb8d4;--fire:#e05c2a;--earth:#6b8e4e;--water:#3a6b8a;--moon:#9b8fc0;
+  --seph:#c0a0ff;--ok:#6b8e6b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0b08;color:var(--parch);font-family:'EB Garamond',serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(201,168,76,.06) 0%,transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(139,26,26,.08) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* ── LOGIN ─────────────────────────────────────────── */
+.login-screen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem;background:#0d0b08}
+.login-box{background:#1a150e;border:1px solid var(--gold-d);border-radius:14px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center}
+.login-sigil{font-size:2.5rem;display:inline-block;animation:spin 20s linear infinite;opacity:.7;margin-bottom:.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.login-title{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.3rem;margin-bottom:.2rem}
+.login-sub{color:var(--parch-d);font-style:italic;font-size:.85rem;margin-bottom:1.5rem}
+.login-input{width:100%;background:rgba(13,11,8,.85);border:1px solid var(--gold-d);color:var(--parch);padding:.65rem .9rem;border-radius:6px;font-family:'EB Garamond',serif;font-size:.95rem;text-align:center;margin-bottom:.8rem;transition:border-color .2s}
+.login-input:focus{outline:none;border-color:var(--gold)}
+.login-btn{width:100%;font-family:'Cinzel',serif;font-size:.85rem;padding:.75rem;border-radius:6px;cursor:pointer;border:1px solid var(--gold);background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--ink);font-weight:700;transition:all .2s;margin-bottom:.5rem}
+.login-btn:hover{opacity:.88}
+.login-btn:disabled{opacity:.45;cursor:not-allowed}
+.login-msg{font-size:.82rem;min-height:1.2em;font-style:italic;color:var(--blood-l)}
+.login-msg.ok{color:var(--ok)}
+.login-setup{margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(201,168,76,.15)}
+.login-setup p{font-size:.75rem;color:var(--parch-d);margin-bottom:.5rem}
+.login-setup input{font-size:.8rem;padding:.4rem .7rem;margin-bottom:.3rem}
+.login-setup .save-btn{width:auto;padding:.4rem 1rem;font-size:.75rem;background:rgba(201,168,76,.1);border:1px solid var(--gold-d);color:var(--gold);border-radius:5px;cursor:pointer;font-family:'Cinzel',serif}
+
+/* ── APP ────────────────────────────────────────────── */
+.app{display:none;position:relative;z-index:1;min-height:100vh}
+.app.visible{display:block}
+
+/* ── HEADER ─────────────────────────────────────────── */
+.mj-header{background:rgba(13,11,8,.95);border-bottom:1px solid var(--gold-d);padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(4px)}
+.mj-header-left{display:flex;align-items:center;gap:.8rem}
+.mj-logo{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.1rem}
+.mj-badge{font-family:'Cinzel',serif;font-size:.65rem;padding:.15rem .5rem;border-radius:10px;background:rgba(139,26,26,.2);border:1px solid var(--blood-l);color:var(--blood-l);letter-spacing:.05em}
+.mj-header-right{display:flex;align-items:center;gap:.7rem}
+.mj-user{font-size:.78rem;color:var(--parch-d);font-style:italic}
+.mj-live-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse .8s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.mj-btn{font-family:'Cinzel',serif;font-size:.73rem;padding:.4rem .9rem;border-radius:5px;cursor:pointer;border:1px solid var(--gold-d);background:transparent;color:var(--parch-d);transition:all .15s}
+.mj-btn:hover{border-color:var(--gold);color:var(--parch)}
+.mj-btn.danger{border-color:rgba(139,26,26,.4);color:var(--blood-l)}
+.mj-btn.danger:hover{background:rgba(139,26,26,.15)}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.mj-layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 53px)}
+@media(max-width:768px){.mj-layout{grid-template-columns:1fr}.sidebar{display:none}}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar{border-right:1px solid var(--gold-d);background:rgba(13,11,8,.4);padding:1.2rem;overflow-y:auto;max-height:calc(100vh - 53px);position:sticky;top:53px}
+.sidebar-title{font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold-d);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.9rem;padding-bottom:.4rem;border-bottom:1px solid rgba(201,168,76,.12)}
+.player-item{display:flex;align-items:center;gap:.7rem;padding:.65rem .8rem;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:.3rem;border:1px solid transparent}
+.player-item:hover{background:rgba(201,168,76,.05);border-color:var(--gold-d)}
+.player-item.active{background:rgba(201,168,76,.08);border-color:var(--gold)}
+.player-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;border:1px solid rgba(201,168,76,.2)}
+.player-info{flex:1;min-width:0}
+.player-nom{font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-sub{font-size:.7rem;color:var(--parch-d);font-style:italic}
+.player-step{font-size:.65rem;font-family:'Cinzel',serif;color:var(--gold-d);background:rgba(201,168,76,.08);padding:.1rem .35rem;border-radius:4px;flex-shrink:0}
+
+/* ── MAIN PANEL ──────────────────────────────────────── */
+.main-panel{padding:1.5rem;overflow-y:auto}
+.panel-empty{text-align:center;padding:4rem 2rem;color:var(--parch-d)}
+.panel-empty .empty-sigil{font-size:2.5rem;opacity:.3;display:block;margin-bottom:.8rem}
+.panel-empty p{font-style:italic;font-size:.9rem}
+
+/* ── FICHE MJ ────────────────────────────────────────── */
+.fiche-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
+.fiche-nom{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.5rem;text-shadow:0 0 20px rgba(201,168,76,.3)}
+.fiche-joueur{font-size:.82rem;color:var(--parch-d);font-style:italic;margin-top:.2rem}
+.fiche-meta{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem}
+.fiche-badge{font-family:'Cinzel',serif;font-size:.68rem;padding:.2rem .6rem;border-radius:10px;border:1px solid var(--gold-d);color:var(--parch-d);background:rgba(201,168,76,.06)}
+.fiche-badge.ka{border-color:rgba(201,168,76,.3);color:var(--gold)}
+.fiche-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+
+/* ── PENTACLE ─────────────────────────────────────────── */
+.section-title{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold-d);letter-spacing:.1em;text-transform:uppercase;margin:1.5rem 0 .8rem;padding-bottom:.3rem;border-bottom:1px solid rgba(201,168,76,.12)}
+.pentacle-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-bottom:1.5rem}
+.ka-box{text-align:center;padding:.8rem .5rem;border-radius:8px;border:1px solid;transition:all .2s}
+.ka-box.dom{border-color:var(--gold);background:rgba(201,168,76,.1);box-shadow:0 0 12px rgba(201,168,76,.15)}
+.ka-box.sec{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04)}
+.ka-box.neu{border-color:rgba(201,168,76,.15);background:transparent}
+.ka-box.opp{border-color:rgba(139,26,26,.3);background:rgba(139,26,26,.05)}
+.ka-ico{font-size:1.4rem;display:block;margin-bottom:.2rem}
+.ka-nm{font-family:'Cinzel',serif;font-size:.65rem;color:var(--parch-d);display:block}
+.ka-val{font-family:'Cinzel Decorative',serif;font-size:1.4rem;color:var(--gold);display:block;line-height:1.1}
+.ka-role{font-size:.6rem;color:var(--gold-d);font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:.05em}
+
+/* ── ATTRIBUTS ───────────────────────────────────────── */
+.attrs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem;margin-bottom:1.5rem}
+.attr-card{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:.7rem;text-align:center}
+.attr-label{font-family:'Cinzel',serif;font-size:.6rem;color:var(--parch-d);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:.2rem}
+.attr-val{font-family:'Cinzel Decorative',serif;font-size:1.3rem;color:var(--gold)}
+.attr-fm{font-size:.6rem;color:var(--gold-d);font-style:italic}
+
+/* ── SCIENCES ────────────────────────────────────────── */
+.sciences-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem}
+.sci-card{border:1px solid rgba(192,160,255,.2);border-radius:8px;padding:.9rem;background:rgba(192,160,255,.04)}
+.sci-label{font-family:'Cinzel',serif;font-size:.72rem;color:var(--seph);margin-bottom:.5rem;display:block}
+.sci-bar-wrap{background:rgba(192,160,255,.1);border-radius:3px;height:5px;margin-bottom:.3rem;overflow:hidden}
+.sci-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--seph),rgba(192,160,255,.5));transition:width .5s ease}
+.sci-deg{font-family:'Cinzel',serif;font-size:.78rem;color:var(--parch-d)}
+
+/* ── INCARNATIONS ────────────────────────────────────── */
+.inc-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.5rem}
+.inc-row{display:flex;align-items:center;gap:.6rem;padding:.5rem .8rem;border:1px solid rgba(201,168,76,.15);border-radius:6px;background:rgba(13,11,8,.4)}
+.inc-ico{font-size:1.1rem;flex-shrink:0}
+.inc-info{flex:1;min-width:0}
+.inc-nm{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold)}
+.inc-det{font-size:.7rem;color:var(--parch-d);font-style:italic}
+.inc-badges{display:flex;gap:.3rem;flex-shrink:0;flex-wrap:wrap}
+.inc-badge{font-size:.62rem;padding:.1rem .4rem;border-radius:6px;font-family:'Cinzel',serif;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);color:var(--gold-d)}
+
+/* ── CHUTES ──────────────────────────────────────────── */
+.chutes-row{display:flex;gap:.7rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.chute-card{flex:1;min-width:100px;padding:.7rem;border-radius:8px;text-align:center}
+.chute-card.khaiba{border:1px solid rgba(139,26,26,.4);background:rgba(139,26,26,.08)}
+.chute-card.narcose{border:1px solid rgba(155,143,192,.3);background:rgba(155,143,192,.06)}
+.chute-card.ombre{border:1px solid rgba(50,50,80,.5);background:rgba(20,20,40,.3)}
+.chute-label{font-family:'Cinzel',serif;font-size:.65rem;color:var(--parch-d);display:block;margin-bottom:.3rem}
+.chute-val{font-family:'Cinzel Decorative',serif;font-size:1.4rem}
+.chute-card.khaiba .chute-val{color:var(--blood-l)}
+.chute-card.narcose .chute-val{color:var(--seph)}
+.chute-card.ombre .chute-val{color:#8888bb}
+
+/* ── HISTORIQUE VERSIONS ─────────────────────────────── */
+.versions-list{display:flex;flex-direction:column;gap:.4rem}
+.version-row{display:flex;align-items:center;gap:.8rem;padding:.6rem .9rem;border:1px solid rgba(201,168,76,.12);border-radius:6px;background:rgba(13,11,8,.4);cursor:pointer;transition:all .15s}
+.version-row:hover{border-color:var(--gold-d);background:rgba(201,168,76,.04)}
+.version-label{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);flex:1}
+.version-date{font-size:.72rem;color:var(--parch-d);font-style:italic}
+.version-pi{font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold-d)}
+.version-restore{font-family:'Cinzel',serif;font-size:.68rem;padding:.25rem .7rem;border:1px solid rgba(201,168,76,.25);border-radius:4px;background:transparent;color:var(--parch-d);cursor:pointer;transition:all .15s}
+.version-restore:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── PI BARRE ────────────────────────────────────────── */
+.pi-summary{display:flex;align-items:center;gap:1rem;padding:.8rem 1rem;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.pi-item{text-align:center}
+.pi-item-label{font-size:.65rem;color:var(--parch-d);font-family:'Cinzel',serif;letter-spacing:.06em;text-transform:uppercase;display:block}
+.pi-item-val{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--gold)}
+.pi-bar-wrap{flex:1;min-width:120px}
+.pi-bar-track{background:rgba(201,168,76,.1);border-radius:3px;height:6px;overflow:hidden}
+.pi-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold-l));transition:width .5s ease}
+
+/* ── ARCANE ──────────────────────────────────────────── */
+.arcane-card{padding:.8rem 1rem;border:1px solid rgba(192,160,255,.3);border-radius:8px;background:rgba(192,160,255,.05);margin-bottom:1.5rem;display:flex;align-items:center;gap:.8rem}
+.arcane-num{font-family:'Cinzel Decorative',serif;font-size:1.4rem;color:var(--seph);flex-shrink:0}
+.arcane-info{}
+.arcane-nm{font-family:'Cinzel',serif;font-size:.88rem;color:var(--seph)}
+.arcane-sub{font-size:.72rem;color:var(--parch-d);font-style:italic;margin-top:.1rem}
+
+/* ── REALTIME ────────────────────────────────────────── */
+.realtime-banner{font-family:'Cinzel',serif;font-size:.7rem;padding:.3rem .8rem;background:rgba(107,142,107,.1);border-bottom:1px solid rgba(107,142,107,.2);color:var(--ok);display:flex;align-items:center;gap:.5rem;justify-content:center}
+
+/* ── LOADING ─────────────────────────────────────────── */
+.loading{text-align:center;padding:3rem;color:var(--parch-d)}
+.loading-spin{font-size:2rem;display:inline-block;animation:spin 1.5s linear infinite;margin-bottom:.5rem}
+
+/* ── TOAST ───────────────────────────────────────────── */
+.toast-mj{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(13,11,8,.97);border:1px solid var(--gold);color:var(--gold);padding:.6rem 1.4rem;border-radius:7px;font-family:'Cinzel',serif;font-size:.78rem;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;z-index:200;opacity:0;pointer-events:none}
+.toast-mj.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast-mj.ok{border-color:var(--ok);color:var(--ok)}
+
+/* ── MODAL ───────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#1a150e;border:1px solid var(--gold-d);border-radius:12px;padding:1.8rem;max-width:500px;width:100%;max-height:80vh;overflow-y:auto}
+.modal h2{font-family:'Cinzel',serif;color:var(--gold);font-size:1.05rem;margin-bottom:1.2rem}
+.modal-close{background:transparent;border:1px solid var(--gold-d);color:var(--parch-d);padding:.4rem 1rem;border-radius:5px;cursor:pointer;font-family:'Cinzel',serif;font-size:.75rem;margin-top:1rem}
+.modal-close:hover{border-color:var(--gold);color:var(--parch)}
+</style>
+</head>
+<body>
+
+<!-- ═══ PAGE LOGIN ═══════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-sigil">✡</div>
+    <h1 class="login-title">Interface MJ</h1>
+    <p class="login-sub">Accès réservé au Maître de Jeu</p>
+
+    <input class="login-input" type="password" id="mj-password" placeholder="Mot de passe MJ" autocomplete="current-password"/>
+    <button class="login-btn" id="mj-login-btn">Entrer dans la Forge</button>
+    <div class="login-msg" id="mj-login-msg"></div>
+
+    <div class="login-setup" id="login-setup">
+      <p>Première connexion — configurez Supabase :</p>
+      <input class="login-input" type="text" id="setup-url" placeholder="https://xxxx.supabase.co" style="font-size:.8rem;padding:.4rem .7rem;margin-bottom:.3rem"/>
+      <input class="login-input" type="text" id="setup-key" placeholder="Clé anon public (eyJ…)" style="font-size:.8rem;padding:.4rem .7rem;margin-bottom:.5rem"/>
+      <button class="save-btn" onclick="saveSupabaseConfig()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APPLICATION ═══════════════════════════════════ -->
+<div class="app" id="app">
+
+  <div class="realtime-banner" id="realtime-banner" style="display:none">
+    <div class="mj-live-dot"></div>
+    Connexion temps réel active — les fiches se mettent à jour automatiquement
+  </div>
+
+  <header class="mj-header">
+    <div class="mj-header-left">
+      <span class="mj-logo">✡ Nephilim</span>
+      <span class="mj-badge">Interface MJ</span>
+    </div>
+    <div class="mj-header-right">
+      <span class="mj-user" id="header-info"></span>
+      <button class="mj-btn" onclick="refreshAll()">↻ Actualiser</button>
+      <a href="/" style="text-decoration:none"><button class="mj-btn">← Retour appli</button></a>
+      <button class="mj-btn danger" onclick="logout()">Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="mj-layout">
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Joueurs connectés</div>
+      <div id="players-list"><div class="loading"><div class="loading-spin">⟳</div><br>Chargement…</div></div>
+    </aside>
+
+    <!-- ── PANNEAU PRINCIPAL ── -->
+    <main class="main-panel" id="main-panel">
+      <div class="panel-empty" id="panel-empty">
+        <span class="empty-sigil">✡</span>
+        <p>Sélectionnez un joueur dans la liste<br>pour consulter sa fiche.</p>
+      </div>
+      <div id="fiche-container" style="display:none"></div>
+    </main>
+  </div>
+</div>
+
+<div class="toast-mj" id="toast-mj"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// CONFIG & STATE
+// ════════════════════════════════════════════════════════
+const MJ_PASSWORD_KEY = 'neph_mj_pw';
+const MJ_AUTH_KEY     = 'neph_mj_auth';
+
+let supaClient   = null;
+let allPersonnages = [];
+let currentPersonnageId = null;
+let realtimeChannel = null;
+
+const KA_DATA = {
+  Air:  {ico:'🜁', color:'#7eb8d4'},
+  Feu:  {ico:'🜂', color:'#e05c2a'},
+  Terre:{ico:'🜃', color:'#6b8e4e'},
+  Eau:  {ico:'🜄', color:'#3a6b8a'},
+  Lune: {ico:'☽',  color:'#9b8fc0'},
+};
+const KA_SCORES_FROM_DOM = (dom) => {
+  if(!dom) return {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
+  const map = {Air:{opp:['Terre','Lune'],neu:['Feu','Eau']},Feu:{opp:['Eau','Lune'],neu:['Air','Terre']},Terre:{opp:['Air','Lune'],neu:['Feu','Eau']},Eau:{opp:['Feu','Lune'],neu:['Air','Terre']},Lune:{opp:['Terre','Eau'],neu:['Air','Feu']}};
+  const d = map[dom];
+  const sc = {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
+  sc[dom] = 5;
+  (d.neu||[]).forEach(k=>sc[k]=4);
+  (d.opp||[]).forEach(k=>sc[k]=3);
+  return sc;
+};
+const STEP_NAMES = ['','Ka','Pentacle','Profil','Passé','Occultes','Stase','Simulacre','Attributs','Final'];
+
+// ════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ════════════════════════════════════════════════════════
+function getSupaConfig(){
+  return {
+    url: localStorage.getItem('neph_supa_url')||'',
+    key: localStorage.getItem('neph_supa_key')||'',
+  };
+}
+function saveSupabaseConfig(){
+  const url = document.getElementById('setup-url').value.trim();
+  const key = document.getElementById('setup-key').value.trim();
+  if(!url.startsWith('https://')||key.length<20){toast('URL ou clé invalide','err');return;}
+  localStorage.setItem('neph_supa_url', url);
+  localStorage.setItem('neph_supa_key', key);
+  toast('Configuration enregistrée — rechargez', 'ok');
+  setTimeout(()=>location.reload(), 1200);
+}
+
+function initSupabase(){
+  const {url,key} = getSupaConfig();
+  if(!url||!key) return false;
+  try{
+    supaClient = window.supabase.createClient(url, key);
+    return true;
+  }catch(e){return false;}
+}
+
+// ════════════════════════════════════════════════════════
+// AUTHENTIFICATION MJ (mot de passe local)
+// ════════════════════════════════════════════════════════
+function checkLogin(){
+  const cfg = getSupaConfig();
+
+  // Masquer setup si déjà configuré
+  if(cfg.url && cfg.key){
+    document.getElementById('login-setup').style.display = 'none';
+  }
+
+  // Vérifier session active
+  const session = sessionStorage.getItem(MJ_AUTH_KEY);
+  if(session === 'ok'){
+    showApp();
+    return;
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+document.getElementById('mj-login-btn').onclick = () => {
+  const pw = document.getElementById('mj-password').value;
+  const stored = localStorage.getItem(MJ_PASSWORD_KEY);
+  const msg = document.getElementById('mj-login-msg');
+
+  if(!stored){
+    // Premier lancement — définir le mot de passe
+    if(pw.length < 4){msg.textContent='Minimum 4 caractères';return;}
+    localStorage.setItem(MJ_PASSWORD_KEY, btoa(pw));
+    sessionStorage.setItem(MJ_AUTH_KEY, 'ok');
+    showApp();
+    return;
+  }
+
+  if(btoa(pw) === stored){
+    sessionStorage.setItem(MJ_AUTH_KEY, 'ok');
+    showApp();
+  } else {
+    msg.textContent = 'Mot de passe incorrect';
+    document.getElementById('mj-password').value = '';
+    document.getElementById('mj-password').focus();
+  }
+};
+
+document.getElementById('mj-password').addEventListener('keydown', e=>{
+  if(e.key==='Enter') document.getElementById('mj-login-btn').click();
+});
+
+// Premier lancement : adapter le label
+window.addEventListener('load', ()=>{
+  const stored = localStorage.getItem(MJ_PASSWORD_KEY);
+  if(!stored){
+    document.getElementById('mj-login-btn').textContent = 'Définir le mot de passe';
+    const msg = document.getElementById('mj-login-msg');
+    msg.className = 'login-msg ok';
+    msg.textContent = 'Première connexion — choisissez un mot de passe MJ';
+  }
+  checkLogin();
+});
+
+function logout(){
+  sessionStorage.removeItem(MJ_AUTH_KEY);
+  location.reload();
+}
+
+// ════════════════════════════════════════════════════════
+// INITIALISATION APP
+// ════════════════════════════════════════════════════════
+async function showApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+
+  if(!initSupabase()){
+    document.getElementById('players-list').innerHTML =
+      '<p style="color:var(--blood-l);font-size:.8rem;padding:.5rem">⚠ Supabase non configuré.<br>Reconnectez-vous et renseignez l\'URL + clé.</p>';
+    return;
+  }
+
+  await loadAllPersonnages();
+  setupRealtime();
+}
+
+// ════════════════════════════════════════════════════════
+// CHARGEMENT DES FICHES
+// ════════════════════════════════════════════════════════
+async function loadAllPersonnages(){
+  try{
+    const {data, error} = await supaClient
+      .from('personnages')
+      .select(`
+        id, nom, ka_dom, metamorphe, profil, pi_total, updated_at, campaign_id,
+        user_id, data_json
+      `)
+      .eq('is_active', true)
+      .order('updated_at', {ascending:false});
+
+    if(error) throw error;
+    allPersonnages = data || [];
+    renderSidebar();
+    document.getElementById('header-info').textContent =
+      `${allPersonnages.length} personnage${allPersonnages.length>1?'s':''} actif${allPersonnages.length>1?'s':''}`;
+  }catch(e){
+    document.getElementById('players-list').innerHTML =
+      `<p style="color:var(--blood-l);font-size:.8rem;padding:.5rem">Erreur : ${e.message}</p>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// REALTIME — mise à jour automatique
+// ════════════════════════════════════════════════════════
+function setupRealtime(){
+  if(!supaClient) return;
+  realtimeChannel = supaClient
+    .channel('personnages-changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'personnages'}, async (payload)=>{
+      await loadAllPersonnages();
+      // Si la fiche affichée est modifiée, la rafraîchir
+      if(currentPersonnageId){
+        const updated = allPersonnages.find(p=>p.id===currentPersonnageId);
+        if(updated) renderFiche(updated, false);
+      }
+      toast('Fiche mise à jour en temps réel', 'ok');
+    })
+    .subscribe();
+
+  document.getElementById('realtime-banner').style.display = 'flex';
+}
+
+async function refreshAll(){
+  await loadAllPersonnages();
+  if(currentPersonnageId){
+    const p = allPersonnages.find(x=>x.id===currentPersonnageId);
+    if(p) renderFiche(p, false);
+  }
+  toast('Actualisé', 'ok');
+}
+
+// ════════════════════════════════════════════════════════
+// SIDEBAR — liste des joueurs
+// ════════════════════════════════════════════════════════
+function renderSidebar(){
+  const list = document.getElementById('players-list');
+  if(allPersonnages.length === 0){
+    list.innerHTML = '<p style="color:var(--parch-d);font-size:.8rem;font-style:italic;padding:.5rem">Aucun personnage trouvé.</p>';
+    return;
+  }
+  list.innerHTML = '';
+  allPersonnages.forEach(p => {
+    const S = p.data_json || {};
+    const ka = p.ka_dom;
+    const kaInfo = KA_DATA[ka];
+    const step = S.step||1;
+    const div = document.createElement('div');
+    div.className = 'player-item' + (p.id===currentPersonnageId?' active':'');
+    div.onclick = () => {
+      currentPersonnageId = p.id;
+      renderFiche(p, true);
+      document.querySelectorAll('.player-item').forEach(el=>el.classList.remove('active'));
+      div.classList.add('active');
+    };
+    div.innerHTML = `
+      <div class="player-avatar" style="background:${kaInfo?kaInfo.color+'22':'rgba(201,168,76,.1)'};border-color:${kaInfo?kaInfo.color+'55':'var(--gold-d)'}">
+        ${kaInfo?kaInfo.ico:'✡'}
+      </div>
+      <div class="player-info">
+        <div class="player-nom">${p.nom||'Sans nom'}</div>
+        <div class="player-sub">${p.ka_dom||'?'} · ${p.metamorphe||'?'} · ${p.profil||'?'}</div>
+      </div>
+      <span class="player-step" title="Étape de création">${step<9?'Ét.'+step:'✓'}</span>`;
+    list.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// FICHE PERSONNAGE — rendu principal
+// ════════════════════════════════════════════════════════
+async function renderFiche(p, loadVersions = true){
+  document.getElementById('panel-empty').style.display = 'none';
+  const container = document.getElementById('fiche-container');
+  container.style.display = 'block';
+
+  const S = p.data_json || {};
+  const ka = p.ka_dom;
+  const kaInfo = KA_DATA[ka];
+  const sc = kaScoresFrom(S);
+  const attrs = calcAttrsFrom(sc);
+  const piSpent = calcPiSpent(S);
+  const piLeft = (S.pi_total||0) - piSpent;
+  const chuteTotal = Object.values(S.chutes||{}).reduce((a,b)=>a+(b||0),0);
+  const arcane = getArcaneAdopteFrom(S);
+
+  // Récupérer les versions
+  let versions = [];
+  if(loadVersions){
+    versions = await loadVersions(p.id);
+  }
+
+  container.innerHTML = `
+    <!-- HEADER FICHE -->
+    <div class="fiche-header">
+      <div>
+        <div class="fiche-nom">${p.nom||'Sans nom'}</div>
+        <div class="fiche-joueur">Dernière mise à jour : ${new Date(p.updated_at).toLocaleString('fr-FR')}</div>
+        <div class="fiche-meta">
+          ${ka?`<span class="fiche-badge ka">${kaInfo?kaInfo.ico:''} Ka ${ka}</span>`:''}
+          ${p.metamorphe?`<span class="fiche-badge">${p.metamorphe}</span>`:''}
+          ${p.profil?`<span class="fiche-badge">${p.profil}</span>`:''}
+          ${S.metier?`<span class="fiche-badge">${S.metier}</span>`:''}
+          ${S.stase?`<span class="fiche-badge">Stase : ${S.stase}</span>`:''}
+          <span class="fiche-badge" style="color:var(--gold)">Étape ${S.step||1}/9${(S.step||1)>=9?' — ✓ Complet':''}</span>
+        </div>
+      </div>
+      <div class="fiche-actions">
+        <button class="mj-btn" onclick="exportFicheTXT(${JSON.stringify(p.id).replace(/"/g,"'")})">📄 Export TXT</button>
+        <button class="mj-btn" onclick="showRawJSON(${JSON.stringify(p.id).replace(/"/g,"'")})">{ } JSON</button>
+      </div>
+    </div>
+
+    <!-- PI BARRE -->
+    <div class="pi-summary">
+      <div class="pi-item"><span class="pi-item-label">Budget</span><span class="pi-item-val">${p.pi_total||0}</span></div>
+      <div class="pi-item"><span class="pi-item-label">Dépensés</span><span class="pi-item-val">${piSpent}</span></div>
+      <div class="pi-item"><span class="pi-item-label">Restants</span><span class="pi-item-val" style="color:${piLeft<0?'var(--blood-l)':'var(--gold)'}">${piLeft}</span></div>
+      <div class="pi-bar-wrap">
+        <div class="pi-bar-track"><div class="pi-bar-fill" style="width:${Math.min(100,Math.round(piSpent/Math.max(1,p.pi_total)*100))}%"></div></div>
+        <div style="font-size:.65rem;color:var(--gold-d);margin-top:.2rem;font-family:'Cinzel',serif">${Math.round(piSpent/Math.max(1,p.pi_total)*100)}% utilisé</div>
+      </div>
+      <div class="pi-item"><span class="pi-item-label">Sapience</span><span class="pi-item-val">${(S.ps_initial||0) + Math.floor(Math.max(0,piLeft)/2)} PS</span></div>
+    </div>
+
+    <!-- PENTACLE -->
+    <div class="section-title">⚡ Pentacle des Ka</div>
+    <div class="pentacle-grid" id="pentacle-${p.id}"></div>
+
+    <!-- ATTRIBUTS -->
+    <div class="section-title">🧠 Attributs</div>
+    <div class="attrs-grid">
+      <div class="attr-card"><span class="attr-label">Perspicacité</span><span class="attr-val">${attrs.perspicacite}</span><span class="attr-fm">11 − Ka Air</span></div>
+      <div class="attr-card"><span class="attr-label">Récupération</span><span class="attr-val">${attrs.recuperation}</span><span class="attr-fm">11 − Ka Terre</span></div>
+      <div class="attr-card"><span class="attr-label">Initiative</span><span class="attr-val">${attrs.initiative}</span><span class="attr-fm">Ka Eau × 2</span></div>
+      <div class="attr-card"><span class="attr-label">Voile</span><span class="attr-val">${attrs.voile}</span><span class="attr-fm">Initial</span></div>
+      <div class="attr-card"><span class="attr-label">Bonus Dom.</span><span class="attr-val">+${attrs.bonus_dom}</span><span class="attr-fm">Table Ka-Feu</span></div>
+      <div class="attr-card"><span class="attr-label">Ka-Soleil</span><span class="attr-val">${(S.ka_soleil_base||3)}</span><span class="attr-fm">Base</span></div>
+    </div>
+
+    <!-- SCIENCES -->
+    <div class="section-title">🔮 Sciences Occultes</div>
+    <div class="sciences-grid">
+      ${sciCard('🔮 Magie', (S.magie?.bas||0)+(S.magie?.haut||0)+(S.magie?.grand||0), 30,
+        `Basse ${S.magie?.bas||0} · Haute ${S.magie?.haut||0} · Grand ${S.magie?.grand||0}${S.magie?.voie?' · '+S.magie.voie:''}`)}
+      ${sciCard('🌳 Kabbale', Object.values(S.sephiroth||{}).reduce((a,b)=>a+b,0), 90,
+        Object.entries(S.sephiroth||{}).filter(([,v])=>v>0).map(([k,v])=>k+'('+v+')').join(' · ')||'—')}
+      ${sciCard('⚗️ Alchimie', (S.alchimie?.noir||0)+(S.alchimie?.blanc||0)+(S.alchimie?.rouge||0), 30,
+        `Noir ${S.alchimie?.noir||0} · Blanc ${S.alchimie?.blanc||0} · Rouge ${S.alchimie?.rouge||0}${S.alchimie?.voie?' · '+S.alchimie.voie:''}`)}
+    </div>
+
+    <!-- ARCANE -->
+    ${arcane?`
+    <div class="section-title">🂠 Arcane</div>
+    <div class="arcane-card">
+      <span class="arcane-num">${arcane.num}</span>
+      <div class="arcane-info">
+        <div class="arcane-nm">${arcane.nm}</div>
+        <div class="arcane-sub">Ka thématique : ${arcane.ka||'—'} · ${arcane.deg}° acquis</div>
+      </div>
+    </div>`:''}
+
+    <!-- CHUTES -->
+    <div class="section-title">🌑 Chutes (${chuteTotal}/${S.chutes_max||2})</div>
+    <div class="chutes-row">
+      <div class="chute-card khaiba"><span class="chute-label">💀 Khaïba</span><span class="chute-val">${S.chutes?.khaiba||0}</span></div>
+      <div class="chute-card narcose"><span class="chute-label">🌀 Narcose</span><span class="chute-val">${S.chutes?.narcose||0}</span></div>
+      <div class="chute-card ombre"><span class="chute-label">🌑 Ombre</span><span class="chute-val">${S.chutes?.ombre||0}</span></div>
+    </div>
+
+    <!-- INCARNATIONS -->
+    <div class="section-title">📚 Incarnations (${Object.keys(S.incarnations||{}).length})</div>
+    <div class="inc-list" id="inc-list-${p.id}"></div>
+
+    <!-- VERSIONS -->
+    <div class="section-title">🕰 Historique des versions</div>
+    <div class="versions-list" id="versions-${p.id}">
+      <div class="loading"><div class="loading-spin">⟳</div></div>
+    </div>
+  `;
+
+  // Pentacle
+  renderPentacle(p.id, sc, ka);
+
+  // Incarnations
+  renderIncarnations(p.id, S);
+
+  // Versions
+  if(loadVersions){
+    renderVersions(p.id, versions, S);
+  } else {
+    loadAndRenderVersions(p.id, S);
+  }
+}
+
+function sciCard(label, val, max, detail){
+  const pct = Math.min(100, Math.round(val/Math.max(1,max)*100));
+  return `<div class="sci-card">
+    <span class="sci-label">${label}</span>
+    <div class="sci-bar-wrap"><div class="sci-bar" style="width:${pct}%"></div></div>
+    <span class="sci-deg">${val}° · ${detail}</span>
+  </div>`;
+}
+
+function renderPentacle(pid, sc, dom){
+  const wrap = document.getElementById(`pentacle-${pid}`);
+  if(!wrap) return;
+  const domObj = {Air:{opp:['Terre','Lune'],neu:['Feu','Eau']},Feu:{opp:['Eau','Lune'],neu:['Air','Terre']},Terre:{opp:['Air','Lune'],neu:['Feu','Eau']},Eau:{opp:['Feu','Lune'],neu:['Air','Terre']},Lune:{opp:['Terre','Eau'],neu:['Air','Feu']}};
+  const roles = {};
+  if(dom){
+    roles[dom]='dom';
+    const d = domObj[dom]||{};
+    (d.neu||[]).forEach(k=>roles[k]='sec');
+    (d.opp||[]).forEach(k=>roles[k]='opp');
+  }
+  Object.entries(KA_DATA).forEach(([ka,info])=>{
+    const role = roles[ka]||'neu';
+    const val = sc[ka]||0;
+    const box = document.createElement('div');
+    box.className = `ka-box ${role}`;
+    box.style.borderColor = role==='dom'?info.color:role==='opp'?'rgba(139,26,26,.4)':'rgba(201,168,76,.2)';
+    if(role==='dom') box.style.boxShadow = `0 0 10px ${info.color}44`;
+    box.innerHTML = `<span class="ka-ico">${info.ico}</span><span class="ka-nm">${ka}</span><span class="ka-val">${val}</span><span class="ka-role">${role==='dom'?'Dom.':role==='sec'?'Sec.':role==='opp'?'Opp.':'Neu.'}</span>`;
+    wrap.appendChild(box);
+  });
+}
+
+function renderIncarnations(pid, S){
+  const wrap = document.getElementById(`inc-list-${pid}`);
+  if(!wrap) return;
+  const EPOQUES_LIGHT = {
+    'atlantide':{nm:"Chute de l'Atlantide",ico:'🌊'},'akhenaton':{nm:"Rêve d'Akhenaton",ico:'☀️'},
+    'troie':{nm:"Chute de Troie",ico:'⚔️'},'perse':{nm:"Empire Perse",ico:'🏛️'},
+    'babylone':{nm:"Babylone",ico:'🌙'},'alexandre':{nm:"Alexandre",ico:'🗡️'},
+    'carthage':{nm:"Carthage et Rome",ico:'🐘'},'incident_jesus':{nm:"Incident Jésus",ico:'✝️'},
+    'arthuriades':{nm:"Arthuriades",ico:'🏰'},'croisades':{nm:"Croisades",ico:'⚔️'},
+    'bûchers':{nm:"Bûchers Cathares",ico:'🔥'},'chute_temple':{nm:"Chute du Temple",ico:'🔯'},
+    'renaissance':{nm:"Renaissance",ico:'🎨'},'sublime_porte':{nm:"Sublime Porte",ico:'🌙'},
+    'roi_soleil':{nm:"Roi-Soleil",ico:'👑'},'revolution':{nm:"Révolution",ico:'🗽'},
+    'victorien':{nm:"Vapeurs Victoriennes",ico:'🚂'},'viennoise':{nm:"Sécession Viennoise",ico:'🎭'},
+    'annees_folles':{nm:"Années Folles",ico:'🎷'},'annees_noires':{nm:"Années Noires",ico:'🕯️'},
+    'grand_eveil':{nm:"Grand Éveil",ico:'🌆'},'apocalypse':{nm:"Apocalypse",ico:'🌑'},
+  };
+  const incs = Object.entries(S.incarnations||{});
+  if(incs.length === 0){
+    wrap.innerHTML = '<p style="color:var(--parch-d);font-size:.8rem;font-style:italic">Aucune incarnation choisie.</p>';
+    return;
+  }
+  incs.forEach(([id, inc])=>{
+    const ep = EPOQUES_LIGHT[id]||{nm:id,ico:'📜'};
+    const row = document.createElement('div');
+    row.className = 'inc-row';
+    const savoirs = (inc.savoirs||[]).slice(0,3);
+    row.innerHTML = `
+      <span class="inc-ico">${ep.ico}</span>
+      <div class="inc-info">
+        <div class="inc-nm">${ep.nm}</div>
+        <div class="inc-det">${inc.vecu?'Vécu : '+inc.vecu:'Vécu non choisi'}${inc.quete?' · Quête : '+inc.quete:''}</div>
+      </div>
+      <div class="inc-badges">
+        ${savoirs.map(s=>`<span class="inc-badge">${s}</span>`).join('')}
+        ${inc.arcane_id?`<span class="inc-badge" style="color:var(--seph);border-color:rgba(192,160,255,.3)">🂠 Arcane</span>`:''}
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// VERSIONS
+// ════════════════════════════════════════════════════════
+async function loadVersions(personnageId){
+  try{
+    const {data} = await supaClient
+      .from('personnage_versions')
+      .select('id, label, saved_at, nom_snapshot, ka_snapshot, pi_snapshot')
+      .eq('personnage_id', personnageId)
+      .order('saved_at', {ascending:false})
+      .limit(15);
+    return data||[];
+  }catch(e){ return []; }
+}
+
+async function loadAndRenderVersions(pid, S){
+  const versions = await loadVersions(pid);
+  renderVersions(pid, versions, S);
+}
+
+function renderVersions(pid, versions, S){
+  const wrap = document.getElementById(`versions-${pid}`);
+  if(!wrap) return;
+  if(!versions||versions.length===0){
+    wrap.innerHTML = '<p style="color:var(--parch-d);font-size:.8rem;font-style:italic">Aucune version sauvegardée.</p>';
+    return;
+  }
+  wrap.innerHTML = '';
+  versions.forEach((v,i)=>{
+    const row = document.createElement('div');
+    row.className = 'version-row';
+    const date = new Date(v.saved_at).toLocaleString('fr-FR');
+    row.innerHTML = `
+      <div style="display:flex;flex-direction:column;flex:1;min-width:0">
+        <span class="version-label">${v.label||'Sauvegarde'}</span>
+        <span class="version-date">${date}${v.nom_snapshot?' · '+v.nom_snapshot:''}</span>
+      </div>
+      ${v.pi_snapshot!=null?`<span class="version-pi">${v.pi_snapshot} PI</span>`:''}
+      <button class="version-restore" onclick="previewVersion('${pid}','${v.id}')">👁 Voir</button>`;
+    wrap.appendChild(row);
+  });
+}
+
+async function previewVersion(pid, vid){
+  try{
+    const {data} = await supaClient
+      .from('personnage_versions')
+      .select('*')
+      .eq('id', vid)
+      .single();
+    if(!data) return;
+    showJSONModal(data.data_json, `Version du ${new Date(data.saved_at).toLocaleString('fr-FR')}`);
+  }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+
+// ════════════════════════════════════════════════════════
+// CALCULS (miroir de l'application principale)
+// ════════════════════════════════════════════════════════
+function kaScoresFrom(S){
+  const dom = S.ka_dom;
+  if(!dom) return {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
+  const domMap = {
+    Air:{neu:['Feu','Eau'],opp:['Terre','Lune']},
+    Feu:{neu:['Air','Terre'],opp:['Eau','Lune']},
+    Terre:{neu:['Feu','Eau'],opp:['Air','Lune']},
+    Eau:{neu:['Air','Terre'],opp:['Feu','Lune']},
+    Lune:{neu:['Air','Feu'],opp:['Terre','Eau']},
+  };
+  const sc = {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
+  // Lire les valeurs depuis les incarnations si disponibles
+  const incs = Object.values(S.incarnations||{});
+  // Calculer à partir du Ka dominant (valeur par défaut simplifiée)
+  // Valeur exacte dépend des incarnations — on utilise les valeurs stockées si dispo
+  if(S.ka_scores) return S.ka_scores;
+  // Sinon calcul simplifié
+  const domVal = Math.max(5, Math.min(10, 5 + Object.keys(S.incarnations||{}).length));
+  sc[dom] = domVal;
+  const d = domMap[dom];
+  (d.neu||[]).forEach(k=> sc[k] = Math.max(3, domVal-2));
+  (d.opp||[]).forEach(k=> sc[k] = Math.max(1, domVal-4));
+  return sc;
+}
+
+function calcAttrsFrom(sc){
+  const feu = sc.Feu||0;
+  let bonus_dom = 0;
+  if(feu>=10) bonus_dom=2; else if(feu>=5) bonus_dom=1;
+  return {
+    perspicacite: 11-(sc.Air||0),
+    recuperation: 11-(sc.Terre||0),
+    initiative:   (sc.Eau||0)*2,
+    voile:        0,
+    bonus_dom,
+  };
+}
+
+function calcPiSpent(S){
+  let t = 0;
+  for(const [id, inc] of Object.entries(S.incarnations||{})){
+    // Coût époque : approximatif (pas accès à EPOQUES ici)
+    if(id==='atlantide') t+=0; else if(['grand_eveil','apocalypse'].includes(id)) t+=2; else t+=1;
+    if(inc.vecus_deg) t+=Object.values(inc.vecus_deg).reduce((a,b)=>a+b,0);
+    if(inc.savoirs_extra) t+=Object.values(inc.savoirs_extra).reduce((a,b)=>a+b,0);
+    if(inc.sciences_extra) t+=Object.values(inc.sciences_extra).reduce((a,b)=>a+b,0);
+  }
+  const totalMagie = (S.magie?.bas||0)+(S.magie?.haut||0)+(S.magie?.grand||0);
+  t += Math.max(0, totalMagie-(S.pool_magie_used||0));
+  const totalSeph = Object.values(S.sephiroth||{}).reduce((a,b)=>a+b,0);
+  t += Math.ceil(Math.max(0, totalSeph-(S.pool_kabbale_used||0))/3);
+  const totalAlch = (S.alchimie?.noir||0)+(S.alchimie?.blanc||0)+(S.alchimie?.rouge||0);
+  t += Math.max(0, totalAlch-(S.pool_alchimie_used||0));
+  t += Object.values(S.constructs||{}).reduce((a,b)=>a+b,0);
+  return t;
+}
+
+const ARCANES_MJ = [
+  {id:'mat',num:'0',nm:'Le Mat',ka:null},
+  {id:'bateleur',num:'I',nm:'Le Bateleur',ka:'Feu'},
+  {id:'papesse',num:'II',nm:'La Papesse',ka:'Eau'},
+  {id:'imperatrice',num:'III',nm:"L'Impératrice",ka:'Terre'},
+  {id:'empereur',num:'IV',nm:"L'Empereur",ka:'Feu'},
+  {id:'pape',num:'V',nm:'Le Pape',ka:'Air'},
+  {id:'amoureux',num:'VI',nm:'Les Amoureux',ka:'Eau'},
+  {id:'chariot',num:'VII',nm:'Le Chariot',ka:'Feu'},
+  {id:'justice',num:'VIII',nm:'La Justice',ka:'Air'},
+  {id:'ermite',num:'IX',nm:"L'Ermite",ka:'Lune'},
+  {id:'roue',num:'X',nm:'La Roue de Fortune',ka:'Lune'},
+  {id:'force',num:'XI',nm:'La Force',ka:'Terre'},
+  {id:'pendu',num:'XII',nm:'Le Pendu',ka:null},
+  {id:'mort',num:'XIII',nm:"L'Arcane sans Nom",ka:'Lune'},
+  {id:'temperance',num:'XIV',nm:'La Tempérance',ka:'Eau'},
+  {id:'diable',num:'XV',nm:'Le Diable',ka:'Feu'},
+  {id:'maison_dieu',num:'XVI',nm:'La Maison-Dieu',ka:'Terre'},
+  {id:'etoile',num:'XVII',nm:"L'Étoile",ka:'Eau'},
+  {id:'lune_arc',num:'XVIII',nm:'La Lune',ka:'Lune'},
+  {id:'soleil',num:'XIX',nm:'Le Soleil',ka:'Feu'},
+  {id:'jugement',num:'XX',nm:'Le Jugement',ka:'Air'},
+];
+
+function getArcaneAdopteFrom(S){
+  for(const inc of Object.values(S.incarnations||{})){
+    if(inc&&inc.arcane_id){
+      const a = ARCANES_MJ.find(x=>x.id===inc.arcane_id);
+      if(a) return {...a, deg:inc.arcane_deg||0};
+    }
+  }
+  return null;
+}
+
+// ════════════════════════════════════════════════════════
+// EXPORT & MODAL JSON
+// ════════════════════════════════════════════════════════
+function exportFicheTXT(pid){
+  const p = allPersonnages.find(x=>x.id===pid);
+  if(!p) return;
+  const S = p.data_json||{};
+  const sc = kaScoresFrom(S);
+  const attrs = calcAttrsFrom(sc);
+  const lines = [
+    '═'.repeat(44),
+    '  NEPHILIM — FICHE DE PERSONNAGE (Export MJ)',
+    '═'.repeat(44),'',
+    `Nom          : ${p.nom||'—'}`,
+    `Ka Dominant  : ${p.ka_dom||'—'}`,
+    `Métamorphe   : ${p.metamorphe||'—'}`,
+    `Profil       : ${p.profil||'—'}`,
+    `Objet-Stase  : ${S.stase||'—'}`,'',
+    '── PENTACLE ───────────────────────────────',
+    ...Object.entries(sc).map(([ka,v])=>`  Ka ${ka.padEnd(7)}: ${v}`),'',
+    '── ATTRIBUTS ──────────────────────────────',
+    `  Perspicacité : ${attrs.perspicacite}`,
+    `  Récupération : ${attrs.recuperation}`,
+    `  Initiative   : ${attrs.initiative}`,
+    `  Bonus Dom.   : +${attrs.bonus_dom}`,'',
+    '── SCIENCES OCCULTES ──────────────────────',
+    `  Magie    : Basse ${S.magie?.bas||0} / Haute ${S.magie?.haut||0} / Grand ${S.magie?.grand||0}`,
+    `  Kabbale  : ${Object.values(S.sephiroth||{}).reduce((a,b)=>a+b,0)}°`,
+    `  Alchimie : Noir ${S.alchimie?.noir||0} / Blanc ${S.alchimie?.blanc||0} / Rouge ${S.alchimie?.rouge||0}`,'',
+    '── CHUTES ─────────────────────────────────',
+    `  Khaïba : ${S.chutes?.khaiba||0}°  Narcose : ${S.chutes?.narcose||0}°  Ombre : ${S.chutes?.ombre||0}°`,'',
+    '── PI ─────────────────────────────────────',
+    `  Budget : ${p.pi_total||0}  Dépensés : ${calcPiSpent(S)}  Restants : ${(p.pi_total||0)-calcPiSpent(S)}`,
+    '═'.repeat(44),
+  ];
+  const blob = new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${p.nom||'nephilim'}_mj.txt`;
+  a.click();
+}
+
+function showRawJSON(pid){
+  const p = allPersonnages.find(x=>x.id===pid);
+  if(!p) return;
+  showJSONModal(p.data_json, `JSON — ${p.nom}`);
+}
+
+function showJSONModal(data, title){
+  const old = document.querySelector('.modal-bg');if(old) old.remove();
+  const bg = document.createElement('div');bg.className='modal-bg';
+  bg.onclick = e=>{if(e.target===bg) bg.remove();};
+  const modal = document.createElement('div');modal.className='modal';
+  modal.innerHTML = `<h2>${title}</h2>
+    <pre style="background:rgba(0,0,0,.4);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.7rem;color:var(--parch-d);max-height:400px;overflow-y:auto">${JSON.stringify(data,null,2)}</pre>
+    <button class="modal-close" onclick="this.closest('.modal-bg').remove()">Fermer</button>`;
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+
+// ════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════
+let _toastTimer = null;
+function toast(msg, type=''){
+  const t = document.getElementById('toast-mj');
+  t.className = 'toast-mj' + (type==='ok'?' ok':'');
+  t.textContent = msg;
+  void t.offsetWidth;
+  t.classList.add('show');
+  if(_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
