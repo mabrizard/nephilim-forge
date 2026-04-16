@@ -1,0 +1,2862 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nephilim — Forge des Âmes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<!-- SUPABASE SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#c9a84c;--gold-l:#e8c97a;--gold-d:#7a6030;--ink:#0d0b08;--parch:#f0e6c8;--parch-d:#d4c49a;--blood:#8b1a1a;--blood-l:#c0504a;--air:#7eb8d4;--fire:#e05c2a;--earth:#6b8e4e;--water:#3a6b8a;--moon:#9b8fc0;--seph:#c0a0ff;--ok:#6b8e6b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0b08;color:var(--parch);font-family:'EB Garamond',serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 15%,rgba(201,168,76,.07) 0%,transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(139,26,26,.09) 0%,transparent 55%),radial-gradient(ellipse at 50% 50%,rgba(155,143,192,.05) 0%,transparent 65%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Ccircle cx='350' cy='350' r='280' fill='none' stroke='rgba(201,168,76,0.035)' stroke-width='1'/%3E%3Ccircle cx='350' cy='350' r='200' fill='none' stroke='rgba(201,168,76,0.025)' stroke-width='1'/%3E%3Cpolygon points='350,70 630,490 105,210 595,210 70,490' fill='none' stroke='rgba(201,168,76,0.03)' stroke-width='1'/%3E%3C/svg%3E");background-size:700px;background-position:center;pointer-events:none;z-index:0;opacity:.6}
+.wrap{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:1.5rem 1.2rem 8rem}
+.hdr{text-align:center;padding:2.5rem 0 2rem;border-bottom:1px solid var(--gold-d);margin-bottom:2rem}
+.hdr-sigil{font-size:2.2rem;display:inline-block;animation:spin 25s linear infinite;opacity:.75}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hdr h1{font-family:'Cinzel Decorative',serif;font-size:clamp(1.5rem,3.5vw,2.6rem);color:var(--gold);letter-spacing:.1em;text-shadow:0 0 40px rgba(201,168,76,.4);line-height:1.2;margin-top:.4rem}
+.hdr-sub{font-style:italic;color:var(--parch-d);margin-top:.5rem;font-size:1.05rem}
+
+/* SYNC STATUS BAR */
+.sync-bar{display:flex;justify-content:center;align-items:center;gap:.7rem;padding:.5rem 1.2rem;
+  border-radius:6px;margin-bottom:1.5rem;font-family:'Cinzel',serif;font-size:.75rem;
+  letter-spacing:.05em;border:1px solid;transition:all .3s}
+.sync-bar.idle{border-color:var(--gold-d);background:rgba(201,168,76,.04);color:var(--gold-d)}
+.sync-bar.saving{border-color:var(--gold);background:rgba(201,168,76,.1);color:var(--gold)}
+.sync-bar.saved{border-color:var(--ok);background:rgba(107,142,107,.1);color:var(--ok)}
+.sync-bar.error{border-color:var(--blood-l);background:rgba(192,80,74,.08);color:var(--blood-l)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.sync-dot.pulse{animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+.prog-wrap{margin-bottom:2rem}
+.prog-steps{display:flex;gap:4px;align-items:center}
+.prog-dot{flex:1;height:3px;background:var(--gold-d);border-radius:2px;transition:background .35s}
+.prog-dot.done{background:var(--gold-l)}.prog-dot.active{background:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.5)}
+.prog-lbl{text-align:center;font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold-d);margin-top:.5rem;letter-spacing:.1em}
+.prog-lbl span{color:var(--gold)}
+.pi-bar{display:flex;justify-content:center;align-items:center;gap:1.2rem;background:rgba(201,168,76,.07);border:1px solid var(--gold-d);border-radius:8px;padding:.7rem 1.5rem;margin-bottom:1.8rem;font-family:'Cinzel',serif;flex-wrap:wrap}
+.pi-gem{font-size:1.4rem}.pi-lbl{color:var(--parch-d);font-size:.82rem}
+.pi-val{font-size:1.7rem;color:var(--gold);font-weight:700;text-shadow:0 0 12px rgba(201,168,76,.5)}
+.pi-tot{color:var(--gold-d);font-size:.95rem}.pi-warn{color:var(--blood-l);font-size:.82rem;font-style:italic}
+.step{animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.step-ttl{font-family:'Cinzel',serif;font-size:1.35rem;color:var(--gold);margin-bottom:.35rem;display:flex;align-items:center;gap:.7rem}
+.step-ttl::before{content:attr(data-n);font-family:'Cinzel Decorative',serif;font-size:.75rem;background:var(--gold-d);color:var(--ink);width:1.9rem;height:1.9rem;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-sub{font-style:italic;color:var(--parch-d);margin-bottom:1.6rem;padding-left:2.6rem;font-size:.97rem}
+.box{border:1px solid var(--gold-d);border-radius:10px;padding:1.4rem;margin-bottom:1.3rem;background:rgba(13,11,8,.5)}
+.box h3{font-family:'Cinzel',serif;color:var(--gold);font-size:.95rem;margin-bottom:.9rem;padding-bottom:.45rem;border-bottom:1px solid rgba(201,168,76,.2);letter-spacing:.05em}
+.ka-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.9rem;margin-bottom:1.3rem}
+.ka-card{border:1px solid var(--gold-d);border-radius:12px;padding:1.4rem .9rem;text-align:center;cursor:pointer;transition:all .25s;background:rgba(13,11,8,.65);position:relative;overflow:hidden}
+.ka-card::before{content:'';position:absolute;inset:0;opacity:.07;transition:opacity .25s;border-radius:inherit}
+.ka-card.air-ka::before{background:var(--air)}.ka-card.feu-ka::before{background:var(--fire)}.ka-card.terre-ka::before{background:var(--earth)}.ka-card.eau-ka::before{background:var(--water)}.ka-card.lune-ka::before{background:var(--moon)}
+.ka-card:hover{border-color:var(--gold);transform:translateY(-3px)}.ka-card:hover::before,.ka-card.sel::before{opacity:.2}
+.ka-card.sel{border-color:var(--gold-l);transform:translateY(-4px);box-shadow:0 8px 28px rgba(201,168,76,.22)}
+.ka-ico{font-size:2.3rem;display:block;margin-bottom:.4rem}.ka-nm{font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold);display:block;margin-bottom:.25rem}.ka-dc{font-size:.75rem;color:var(--parch-d);font-style:italic}
+.penta{display:flex;flex-wrap:wrap;gap:.8rem;justify-content:center;margin-bottom:1.5rem}
+.kb{display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:.9rem 1.2rem;border-radius:10px;border:1px solid;min-width:100px;text-align:center}
+.kb .ki{font-size:1.6rem}.kb .kr{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.1em;opacity:.65;text-transform:uppercase}.kb .kn{font-family:'Cinzel',serif;font-size:.85rem}.kb .ks{font-size:1.2rem;font-weight:700}
+.kb.dom{border-color:var(--gold);background:rgba(201,168,76,.1)}.kb.sec{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.05)}.kb.neu{border-color:rgba(201,168,76,.18);background:rgba(201,168,76,.03)}.kb.opp{border-color:rgba(139,26,26,.5);background:rgba(139,26,26,.07)}
+.prf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.1rem;margin-bottom:1.3rem}
+.prf-card{border:1px solid var(--gold-d);border-radius:12px;padding:1.7rem 1.3rem;cursor:pointer;transition:all .25s;background:rgba(13,11,8,.7);text-align:center}
+.prf-card:hover,.prf-card.sel{border-color:var(--gold);box-shadow:0 6px 22px rgba(201,168,76,.18);background:rgba(201,168,76,.06)}
+.prf-pi{font-family:'Cinzel Decorative',serif;font-size:2.3rem;color:var(--gold);display:block;text-shadow:0 0 18px rgba(201,168,76,.45)}.prf-nm{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--parch);margin:.35rem 0;display:block}.prf-dc{font-size:.83rem;color:var(--parch-d);font-style:italic}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.75rem;margin-top:.8rem}
+.meta-card{padding:.9rem .7rem;text-align:center;border:1px solid var(--gold-d);border-radius:10px;cursor:pointer;transition:all .25s;background:rgba(13,11,8,.65)}
+.meta-card:hover,.meta-card.sel{border-color:var(--gold);background:rgba(201,168,76,.08);box-shadow:0 4px 14px rgba(201,168,76,.15)}
+.meta-ico{font-size:1.7rem;display:block;margin-bottom:.3rem}.meta-nm{font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold)}.meta-dc{font-size:.7rem;color:var(--parch-d);font-style:italic;margin-top:.2rem}
+.il{display:flex;flex-direction:column;gap:.55rem}
+.ir{display:flex;align-items:center;gap:.7rem;padding:.65rem .9rem;border:1px solid var(--gold-d);border-radius:8px;background:rgba(13,11,8,.6);transition:all .2s}
+.ir:hover{background:rgba(201,168,76,.04)}.ir.sel{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.ir-nm{flex:1;font-size:.9rem}.ir-nm small{color:var(--parch-d);font-style:italic;font-size:.78rem;display:block}
+.ir-cost{font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold-d);white-space:nowrap}.ir-cost b{color:var(--gold)}
+.qb{background:rgba(201,168,76,.1);border:1px solid var(--gold-d);color:var(--gold);width:26px;height:26px;border-radius:4px;cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.qb:hover{background:rgba(201,168,76,.2);border-color:var(--gold)}.qb:disabled{opacity:.28;cursor:not-allowed}
+.qdp{font-family:'Cinzel',serif;font-size:.95rem;min-width:22px;text-align:center;color:var(--gold)}
+.era-tabs{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1rem}
+.era-tab{padding:.38rem .8rem;border:1px solid var(--gold-d);border-radius:18px;font-family:'Cinzel',serif;font-size:.72rem;cursor:pointer;transition:all .2s;background:transparent;color:var(--parch-d)}
+.era-tab:hover{border-color:var(--gold);color:var(--parch)}.era-tab.on{background:rgba(201,168,76,.14);border-color:var(--gold);color:var(--gold)}
+.seph-tree{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;max-width:360px;margin:1rem auto}
+.seph-node{padding:.7rem .5rem;border:1px solid;border-radius:8px;text-align:center;cursor:pointer;transition:all .2s}
+.seph-node.locked{opacity:.3;cursor:not-allowed;border-color:rgba(255,255,255,.1)}.seph-node.open{border-color:rgba(192,160,255,.3);background:rgba(192,160,255,.05)}.seph-node.act{border-color:var(--seph);background:rgba(192,160,255,.15);box-shadow:0 0 10px rgba(192,160,255,.25)}
+.seph-nm{font-family:'Cinzel',serif;font-size:.68rem;color:var(--seph)}.seph-val{font-family:'Cinzel',serif;font-size:1rem;color:var(--seph);font-weight:700}.seph-cost{font-size:.62rem;color:var(--parch-d);margin-top:.15rem}
+.sl-row{display:flex;align-items:center;gap:.9rem;margin-bottom:.7rem}
+.sl-lbl{min-width:140px;font-size:.88rem}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--gold-d);border-radius:2px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 6px rgba(201,168,76,.5)}
+.sl-val{min-width:1.8rem;text-align:right;font-family:'Cinzel',serif;color:var(--gold);font-size:.95rem}
+.chute-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.9rem}
+.chute-box{padding:1rem;border:1px solid rgba(139,26,26,.3);border-radius:8px;background:rgba(139,26,26,.05)}
+.chute-hd{font-family:'Cinzel',serif;font-size:.82rem;color:var(--blood-l);margin-bottom:.7rem;display:flex;justify-content:space-between}
+.met-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:.75rem}
+.met-card{padding:1rem;border:1px solid var(--gold-d);border-radius:8px;cursor:pointer;transition:all .2s;background:rgba(13,11,8,.65)}
+.met-card:hover,.met-card.sel{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.met-ttl{font-family:'Cinzel',serif;font-size:.88rem;color:var(--gold);margin-bottom:.25rem}.met-dc{font-size:.76rem;color:var(--parch-d)}
+.badge{display:inline-block;margin:.3rem .2rem 0 0;font-size:.68rem;padding:.12rem .45rem;border-radius:9px;background:rgba(201,168,76,.09);border:1px solid var(--gold-d);color:var(--gold-d);font-family:'Cinzel',serif}
+.attr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.9rem;margin-bottom:1.3rem}
+.attr-box{background:rgba(201,168,76,.05);border:1px solid var(--gold-d);border-radius:10px;padding:1.1rem;text-align:center}
+.attr-nm{font-family:'Cinzel',serif;font-size:.7rem;color:var(--parch-d);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.35rem}
+.attr-val{font-family:'Cinzel Decorative',serif;font-size:1.9rem;color:var(--gold);text-shadow:0 0 14px rgba(201,168,76,.4);display:block}
+.attr-fm{font-size:.68rem;color:var(--gold-d);font-style:italic;margin-top:.15rem}
+.rc-sec{margin-bottom:1.2rem}
+.rc-sec h3{font-family:'Cinzel',serif;color:var(--gold-d);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;padding-bottom:.25rem;border-bottom:1px solid rgba(201,168,76,.12)}
+.rc-row{display:flex;justify-content:space-between;padding:.35rem 0;font-size:.88rem;border-bottom:1px dotted rgba(201,168,76,.09)}
+.rc-row:last-child{border-bottom:none}.rc-k{color:var(--parch-d)}.rc-v{color:var(--parch)}
+.sap-box{text-align:center;padding:1.8rem;border:1px solid var(--gold);border-radius:12px;background:rgba(201,168,76,.06);margin:1.3rem 0}
+.sap-big{font-family:'Cinzel Decorative',serif;font-size:3.2rem;color:var(--gold);text-shadow:0 0 28px rgba(201,168,76,.5);display:block}
+.sap-unit{font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold-d);letter-spacing:.08em}
+.btn-row{display:flex;justify-content:space-between;align-items:center;margin-top:2.2rem;gap:.8rem;flex-wrap:wrap}
+.btn{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.07em;padding:.7rem 1.8rem;border-radius:6px;cursor:pointer;transition:all .22s;border:1px solid}
+.btn-p{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--ink);border-color:var(--gold);font-weight:700}
+.btn-p:hover{box-shadow:0 4px 18px rgba(201,168,76,.38);transform:translateY(-1px)}
+.btn-s{background:transparent;color:var(--parch-d);border-color:var(--gold-d)}.btn-s:hover{color:var(--parch)}
+.btn-e{background:rgba(139,26,26,.14);color:var(--parch);border-color:var(--blood)}.btn-e:hover{background:rgba(139,26,26,.28)}
+.btn-cloud{background:rgba(107,142,107,.12);color:#a0c8a0;border-color:var(--ok)}.btn-cloud:hover{background:rgba(107,142,107,.25)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+select,input[type=text],textarea{background:rgba(13,11,8,.85);border:1px solid var(--gold-d);color:var(--parch);padding:.55rem .85rem;border-radius:6px;font-family:'EB Garamond',serif;font-size:.92rem;width:100%;cursor:pointer;transition:border-color .2s}
+select:focus,input[type=text]:focus,textarea:focus{outline:none;border-color:var(--gold)}
+select option{background:#1a1510}
+.lbl{font-size:.83rem;color:var(--parch-d);margin-bottom:.35rem;font-style:italic}
+.warn{color:var(--blood-l);font-size:.78rem;font-style:italic}
+.info-box{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:1rem;margin-top:1rem;font-size:.84rem;font-style:italic;color:var(--parch-d);line-height:1.6}
+.info-box strong{color:var(--gold);font-style:normal}
+.cstr-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.8rem}
+.cstr-row{display:flex;align-items:center;gap:.7rem;padding:.55rem .9rem;border:1px solid rgba(224,92,42,.3);border-radius:7px;background:rgba(224,92,42,.05)}
+.cstr-del{background:rgba(139,26,26,.2);border:1px solid rgba(139,26,26,.4);color:var(--blood-l);width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.cstr-del:hover{background:rgba(139,26,26,.4)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#1a150e;border:1px solid var(--gold-d);border-radius:12px;padding:2rem;max-width:520px;width:100%;max-height:80vh;overflow-y:auto}
+.modal h2{font-family:'Cinzel',serif;color:var(--gold);font-size:1.1rem;margin-bottom:1.2rem}
+.perso-item{display:flex;align-items:center;gap:.8rem;padding:.7rem 1rem;border:1px solid var(--gold-d);border-radius:8px;margin-bottom:.5rem;cursor:pointer;transition:all .2s;background:rgba(13,11,8,.6)}
+.perso-item:hover{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.perso-info{flex:1}
+.perso-nom{font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold)}
+.perso-det{font-size:.75rem;color:var(--parch-d);font-style:italic}
+.modal-close{background:transparent;border:1px solid var(--gold-d);color:var(--parch-d);padding:.5rem 1.2rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:.8rem;margin-top:1rem}
+.modal-close:hover{border-color:var(--gold);color:var(--parch)}
+
+/* SETUP BOX */
+.setup-box{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:1.5rem;margin-bottom:2rem}
+.setup-box h2{font-family:'Cinzel',serif;color:var(--gold);font-size:1rem;margin-bottom:.8rem}
+.setup-step{display:flex;gap:.8rem;margin-bottom:.7rem;align-items:flex-start;font-size:.88rem}
+.setup-num{font-family:'Cinzel Decorative',serif;font-size:.75rem;background:var(--gold-d);color:var(--ink);width:1.6rem;height:1.6rem;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+.setup-txt{color:var(--parch-d);line-height:1.5}
+.setup-txt strong{color:var(--gold);font-style:normal}
+.url-input-row{display:flex;gap:.6rem;margin-top:1rem}
+.url-input-row input{flex:1}
+.url-input-row button{white-space:nowrap;font-family:'Cinzel',serif;font-size:.78rem;padding:.5rem 1rem;border:1px solid var(--gold);background:rgba(201,168,76,.1);color:var(--gold);border-radius:6px;cursor:pointer;transition:all .2s}
+.url-input-row button:hover{background:rgba(201,168,76,.22)}
+
+.toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(13,11,8,.97);border:1px solid var(--gold);color:var(--gold);
+  padding:.7rem 1.6rem;border-radius:8px;font-family:'Cinzel',serif;font-size:.82rem;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;z-index:200;
+  display:flex;align-items:center;gap:.6rem;box-shadow:0 4px 20px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto}
+.toast.success{border-color:var(--ok);color:var(--ok);background:rgba(13,11,8,.98);box-shadow:0 4px 20px rgba(107,142,107,.3)}
+.toast.error{border-color:var(--blood-l);color:var(--blood-l)}
+
+/* BARRE D'ACTIONS PERSISTANTE */
+.action-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(13,11,8,.97);border-top:1px solid var(--gold-d);
+  padding:.6rem 1rem;display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap}
+.action-bar .btn{padding:.5rem 1.1rem;font-size:.75rem}
+.autosave-dot{width:6px;height:6px;border-radius:50%;background:var(--gold-d);flex-shrink:0;transition:background .3s}
+.autosave-dot.active{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.action-bar-lbl{font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold-d);letter-spacing:.05em}
+
+/* ONGLETS SCIENCES OCCULTES */
+.sci-tabs{display:flex;gap:0;margin-bottom:1.3rem;border:1px solid var(--gold-d);border-radius:8px;overflow:hidden}
+.sci-tab{flex:1;padding:.65rem .5rem;font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.05em;
+  cursor:pointer;border:none;background:transparent;color:var(--parch-d);transition:all .2s;text-align:center}
+.sci-tab:not(:last-child){border-right:1px solid var(--gold-d)}
+.sci-tab:hover{background:rgba(201,168,76,.08);color:var(--parch)}
+.sci-tab.on{background:rgba(201,168,76,.15);color:var(--gold);font-weight:600}
+
+/* NIVEAUX MAGIE */
+.magie-level{border:1px solid var(--gold-d);border-radius:8px;padding:1rem;margin-bottom:.8rem;transition:all .2s}
+.magie-level.locked{opacity:.35;pointer-events:none;border-style:dashed}
+.magie-level.active{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.magie-level-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.magie-level-nm{font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold)}
+.magie-level-lock{font-size:.85rem;color:var(--blood-l)}
+.deg-ctrl{display:flex;align-items:center;gap:.5rem}
+
+/* JAUGES MP ALCHIMIE */
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin-top:.8rem}
+.mp-box{padding:.8rem;border:1px solid var(--gold-d);border-radius:8px;text-align:center;background:rgba(13,11,8,.5)}
+.mp-nm{font-family:'Cinzel',serif;font-size:.72rem;color:var(--parch-d);display:block;margin-bottom:.3rem}
+.mp-val{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:var(--gold)}
+.mp-fm{font-size:.65rem;color:var(--gold-d);font-style:italic}
+
+/* OEUVRES ALCHIMIE */
+.oeuvre{border:1px solid;border-radius:8px;padding:1rem;margin-bottom:.8rem}
+.oeuvre.noir{border-color:rgba(80,80,80,.5);background:rgba(30,30,30,.4)}
+.oeuvre.blanc{border-color:rgba(220,220,255,.2);background:rgba(200,200,255,.04)}
+.oeuvre.rouge{border-color:rgba(139,26,26,.4);background:rgba(139,26,26,.06)}
+.oeuvre.locked{opacity:.3;pointer-events:none;border-style:dashed}
+.oeuvre-hd{font-family:'Cinzel',serif;font-size:.88rem;margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:center}
+
+/* CONSTRUCTS TYPES */
+.cstr-types{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;margin-top:.7rem}
+.cstr-type{padding:.7rem;border:1px solid var(--gold-d);border-radius:7px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(13,11,8,.6)}
+.cstr-type:hover{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.cstr-type.sel{border-color:rgba(224,92,42,.6);background:rgba(224,92,42,.1)}
+.cstr-type-nm{font-family:'Cinzel',serif;font-size:.78rem;color:#e8a080;display:block}
+.cstr-type-dc{font-size:.68rem;color:var(--parch-d)}
+.cstr-count{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);margin-top:.3rem;display:block}
+
+/* AUTH PANEL */
+.auth-panel{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.auth-box{background:#1a150e;border:1px solid var(--gold);border-radius:14px;padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center}
+.auth-box h2{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.3rem;margin-bottom:.5rem}
+.auth-box p{color:var(--parch-d);font-style:italic;font-size:.9rem;margin-bottom:1.8rem}
+.auth-box input{margin-bottom:.8rem;text-align:center}
+.auth-msg{font-size:.85rem;color:var(--ok);margin-top:.8rem;font-style:italic;min-height:1.2em}
+.auth-msg.err{color:var(--blood-l)}
+.auth-tabs{display:flex;gap:0;margin-bottom:1.5rem;border:1px solid var(--gold-d);border-radius:7px;overflow:hidden}
+.auth-tab{flex:1;padding:.5rem;font-family:'Cinzel',serif;font-size:.78rem;cursor:pointer;border:none;background:transparent;color:var(--parch-d);transition:all .2s}
+.auth-tab.on{background:rgba(201,168,76,.15);color:var(--gold)}
+/* VERSIONS MODAL */
+.ver-item{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border:1px solid var(--gold-d);border-radius:8px;margin-bottom:.5rem;background:rgba(13,11,8,.6)}
+.ver-lbl{font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold)}
+.ver-date{font-size:.72rem;color:var(--parch-d);font-style:italic}
+.ver-btn{font-family:'Cinzel',serif;font-size:.72rem;padding:.3rem .8rem;border:1px solid var(--gold-d);border-radius:5px;background:transparent;color:var(--parch-d);cursor:pointer;transition:all .2s}
+.ver-btn:hover{border-color:var(--gold);color:var(--gold)}
+@media(max-width:580px){.ka-grid{grid-template-columns:repeat(2,1fr)}.prf-grid{grid-template-columns:1fr}.attr-grid{grid-template-columns:repeat(2,1fr)}.sci-tabs{flex-direction:column}}
+@media print{body{background:#fff;color:#000}body::before,body::after{display:none}.btn-row,.prog-wrap,.hdr-sigil,.pi-bar,.sync-bar,.setup-box{display:none!important}.hdr h1{color:#7a5010;text-shadow:none}.box{border-color:#ccc;background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"></div>
+<script>
+
+
+
+// ════════════════════════════════════════════════════════
+// CONFIG SUPABASE — Remplacez par vos valeurs du projet
+// ════════════════════════════════════════════════════════
+const SUPA_URL = localStorage.getItem('neph_supa_url') || '';
+const SUPA_KEY = localStorage.getItem('neph_supa_key') || '';
+
+let supaClient = null;
+let supaCurrentUser = null;
+let supaPersonnageId = null; // UUID de la fiche en cours
+
+function initSupabase(){
+  if(!SUPA_URL || !SUPA_KEY) return false;
+  try {
+    supaClient = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+    return true;
+  } catch(e) { return false; }
+}
+
+// ── AUTH ──────────────────────────────────────────────────
+async function supaGetSession(){
+  if(!supaClient) return null;
+  const { data } = await supaClient.auth.getSession();
+  supaCurrentUser = data?.session?.user || null;
+  return supaCurrentUser;
+}
+
+async function supaSignIn(email){
+  if(!supaClient) return {error:'Supabase non configuré'};
+  const { error } = await supaClient.auth.signInWithOtp({
+    email, options:{ emailRedirectTo: window.location.href }
+  });
+  return { error: error?.message };
+}
+
+async function supaSignOut(){
+  if(!supaClient) return;
+  await supaClient.auth.signOut();
+  supaCurrentUser = null;
+  supaPersonnageId = null;
+  render();
+}
+
+// ── SAUVEGARDE ────────────────────────────────────────────
+async function saveToSupabase(label){
+  if(!supaClient || !supaCurrentUser){
+    toastError('Connexion requise pour sauvegarder');
+    return false;
+  }
+  setSyncStatus('saving','Sauvegarde en cours…');
+  try {
+    const payload = {
+      user_id: supaCurrentUser.id,
+      nom: S.nom || 'Sans nom',
+      ka_dom: S.ka_dom || null,
+      metamorphe: S.metamorphe || null,
+      profil: S.profil || null,
+      pi_total: S.pi_total || 0,
+      data_json: S,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    let result;
+    if(supaPersonnageId){
+      // Update existant
+      const { data, error } = await supaClient
+        .from('personnages')
+        .update(payload)
+        .eq('id', supaPersonnageId)
+        .select()
+        .single();
+      if(error) throw error;
+      result = data;
+    } else {
+      // Nouveau personnage
+      const { data, error } = await supaClient
+        .from('personnages')
+        .insert(payload)
+        .select()
+        .single();
+      if(error) throw error;
+      result = data;
+      supaPersonnageId = result.id;
+    }
+
+    // Créer une version historique
+    await supaClient.from('personnage_versions').insert({
+      personnage_id: supaPersonnageId,
+      label: label || 'Sauvegarde automatique',
+      data_json: S,
+      nom_snapshot: S.nom,
+      ka_snapshot: S.ka_dom,
+      pi_snapshot: S.pi_total,
+    });
+
+    setSyncStatus('saved','✓ Sauvegardé dans la base');
+    doLocalSave();
+    return true;
+  } catch(err){
+    setSyncStatus('error','Erreur : '+err.message);
+    return false;
+  }
+}
+
+// ── CHARGEMENT liste personnages ──────────────────────────
+async function loadListFromSupabase(){
+  if(!supaClient || !supaCurrentUser){
+    toastError('Connexion requise');
+    return;
+  }
+  setSyncStatus('saving','Chargement…');
+  try {
+    const { data, error } = await supaClient
+      .from('personnages')
+      .select('id,nom,ka_dom,metamorphe,profil,pi_total,updated_at')
+      .eq('user_id', supaCurrentUser.id)
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false });
+    if(error) throw error;
+    setSyncStatus('idle','');
+    if(data && data.length > 0){
+      showLoadModal(data.map(p => ({
+        id: p.id,
+        nom: p.nom,
+        ka_dom: p.ka_dom,
+        metamorphe: p.metamorphe,
+        profil: p.profil,
+        date_maj: p.updated_at ? new Date(p.updated_at).toLocaleDateString('fr-FR') : '',
+      })));
+    } else {
+      toast('Aucun personnage trouvé');
+    }
+  } catch(err){
+    setSyncStatus('error','Erreur : '+err.message);
+  }
+}
+
+async function loadPersonnageById(id){
+  setSyncStatus('saving','Chargement…');
+  try {
+    const { data, error } = await supaClient
+      .from('personnages')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if(error) throw error;
+    Object.assign(S, data.data_json);
+    supaPersonnageId = data.id;
+    setSyncStatus('saved','✓ '+data.nom+' chargé');
+    closeModal();
+    render();
+  } catch(err){
+    setSyncStatus('error','Erreur chargement');
+  }
+}
+
+// Compatibilité avec l'ancienne fonction par nom (pour la modal)
+async function loadPersonnageByNom(nom, id){
+  if(id) { loadPersonnageById(id); return; }
+  // fallback si pas d'id
+  if(!supaClient || !supaCurrentUser) return;
+  const { data } = await supaClient
+    .from('personnages')
+    .select('*')
+    .eq('user_id', supaCurrentUser.id)
+    .eq('nom', nom)
+    .single();
+  if(data){ Object.assign(S, data.data_json); supaPersonnageId = data.id; closeModal(); render(); }
+}
+
+// ── VERSIONS / HISTORIQUE ─────────────────────────────────
+async function showVersionsModal(){
+  if(!supaClient || !supaCurrentUser || !supaPersonnageId){
+    toast('Sauvegardez d\'abord le personnage');
+    return;
+  }
+  const { data } = await supaClient
+    .from('personnage_versions')
+    .select('*')
+    .eq('personnage_id', supaPersonnageId)
+    .order('saved_at', { ascending: false })
+    .limit(20);
+
+  const bg = document.querySelector('.modal-bg') || (() => { const b=h('div',{cls:'modal-bg',onClick:e=>{if(e.target===b)closeModal();}}); return b; })();
+  bg.innerHTML = '';
+  const modal = h('div',{cls:'modal'});
+  modal.appendChild(h('h2',{},'🕰 Historique des versions'));
+
+  if(!data || data.length === 0){
+    modal.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',padding:'1rem 0'}},'Aucune version sauvegardée.'));
+  } else {
+    for(const v of data){
+      const row = h('div',{cls:'ver-item'});
+      const info = h('div');
+      info.appendChild(h('div',{cls:'ver-lbl'}, v.label || 'Version'));
+      info.appendChild(h('div',{cls:'ver-date'}, new Date(v.saved_at).toLocaleString('fr-FR') + (v.nom_snapshot ? ' · '+v.nom_snapshot : '')));
+      const btnRestore = h('button',{cls:'ver-btn', onClick:async()=>{
+        if(confirm('Restaurer cette version ? Les modifications non sauvegardées seront perdues.')){
+          Object.assign(S, v.data_json);
+          closeModal();
+          render();
+          toastSuccess('Version restaurée !');
+        }
+      }}, '↩ Restaurer');
+      row.appendChild(info);
+      row.appendChild(btnRestore);
+      modal.appendChild(row);
+    }
+  }
+  modal.appendChild(h('button',{cls:'modal-close',onClick:closeModal},'Fermer'));
+  bg.appendChild(modal);
+  if(!document.querySelector('.modal-bg')) document.body.appendChild(bg);
+}
+
+// ════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════
+const KA={
+  Air:  {ico:'🜁',dc:'Intellect & éloquence',   neu:['Feu','Eau'],   opp:['Terre','Lune']},
+  Feu:  {ico:'🜂',dc:'Passion & volonté',        neu:['Air','Terre'], opp:['Eau','Lune']},
+  Terre:{ico:'🜃',dc:'Corps & endurance',         neu:['Feu','Eau'],   opp:['Air','Lune']},
+  Eau:  {ico:'🜄',dc:'Intuition & mémoire',       neu:['Air','Terre'], opp:['Feu','Lune']},
+  Lune: {ico:'☽', dc:'Magie & transformation',    neu:['Air','Feu'],   opp:['Terre','Eau']},
+};
+// ═══════════════════════════════════════════════════════
+// MÉTAMORPHES OFFICIELS par Ka-élément (source Nephilim Légende)
+// Note : "vampire" et "lycanthrope" sont des termes profanes —
+// dans Nephilim, ce sont des Onirim (Ophidien) ou Selenim.
+// ═══════════════════════════════════════════════════════
+const METAS={
+  Feu:[  // Ka-Feu (Pyrim) — action, destruction purificatrice
+    {nm:'Djinn',      ico:'🌪️', dc:'Teint hâlé, griffes rouges, voix crépitante et visage enflammé.'},
+    {nm:'Phénix',     ico:'🔥', dc:'Yeux rouges, veines de lave et corps parcouru de flammèches.'},
+    {nm:'Salamandre', ico:'🦎', dc:'Yeux noirs, odeur âcre, parfois mains à quatre doigts.'},
+    {nm:'Cyclope',    ico:'👁',  dc:'Corps musculeux, odeur de braise, voix caverneuse et œil unique.'},
+    {nm:'Surturin',   ico:'💫', dc:'Peau incandescente et chevelure qui s\'enflamme.'},
+    {nm:'Diablesse',  ico:'😈', dc:'Présence de cornes rouges et de griffes acérées.'},
+    {nm:'Manticore',  ico:'🦁', dc:'Visage félin, crocs acérés et queue barbelée.'},
+    {nm:'Hloranide',  ico:'⚡', dc:'Lié à la foudre et à la vendetta.'},
+    {nm:'Basilic',    ico:'🐍', dc:'Regard pétrifiant, écailles de braise.'},
+    {nm:'Hippogriffe',ico:'🦅', dc:'Ailes de rapace et membres antérieurs d\'aigle.'},
+  ],
+  Air:[  // Ka-Air (Éolim) — légèreté, pureté, tempête
+    {nm:'Sylphe',  ico:'🌬️', dc:'Odeur d\'ozone, peau translucide et tendance à la lévitation.'},
+    {nm:'Ange',    ico:'👼', dc:'Peau de marbre, pilosité emplumée et pousses d\'ailes vestigiales.'},
+    {nm:'Pégase',  ico:'🐎', dc:'Pelage blanc immaculé et grandes ailes.'},
+    {nm:'Zéphir',  ico:'💨', dc:'Peau bleue nacrée et voix mélodieuse envoûtante.'},
+    {nm:'Simurgh', ico:'🦚', dc:'Bec, serres et peau dorée irisant la lumière.'},
+    {nm:'Efreet',  ico:'✨', dc:'Gestes vifs, odeur d\'encens et regard perçant.'},
+    {nm:'Hurl',    ico:'⛈️', dc:'Peau sombre, silhouette imposante et voix tonnante.'},
+  ],
+  Eau:[  // Ka-Eau (Hydrim) — fluidité, profondeurs marines
+    {nm:'Ondine',  ico:'🌊', dc:'Cheveux bleus, ongles nacrés et aura de séduction aquatique.'},
+    {nm:'Triton',  ico:'🔱', dc:'Peau verdâtre ou écailleuse, mains palmées et regard vitreux.'},
+    {nm:'Sirène',  ico:'🧜', dc:'Voix ensorcelante, chevelure marine et beauté fatale.'},
+    {nm:'Naïade',  ico:'💧', dc:'Liée aux eaux douces, peau transparente et reflets de source.'},
+    {nm:'Limnade', ico:'🏞️', dc:'Métamorphe des étangs et de la contemplation profonde.'},
+  ],
+  Terre:[  // Ka-Terre (Faërim) — cycles de la nature, solidité
+    {nm:'Elfe',      ico:'🌿', dc:'Traits fins, peau d\'écorce rugueuse et chevelure de feuilles.'},
+    {nm:'Satyre',    ico:'🐐', dc:'Cornes, sabots fendus, instincts fougueux et appétit des plaisirs.'},
+    {nm:'Nymphe',    ico:'🌸', dc:'Corps filiforme, yeux dorés et exuvie saisonnière.'},
+    {nm:'Gargouille',ico:'🗿', dc:'Peau de pierre moussue, corps difforme et queue barbelée.'},
+    {nm:'Mandragore',ico:'🌱', dc:'Membres noueux, mains racineuses et aura de putréfaction douce.'},
+    {nm:'Cobale',    ico:'⛏️', dc:'Peau anthracite, membres épais et visage de pierre taillée.'},
+    {nm:'Dactyle',   ico:'🔨', dc:'Corps trapu, mains à six doigts et petites cornes métalliques.'},
+    {nm:'Sphinx',    ico:'🏺', dc:'Apogée diurne de la Terre, corps mi-humain mi-fauve.'},
+  ],
+  Lune:[  // Ka-Lune (Onirim) — rêves, illusions, étrangeté
+    {nm:'Ophidien', ico:'🐍', dc:'Visage asymétrique, crâne allongé et griffes noires. (Souvent perçu comme "vampire" par les humains.)'},
+    {nm:'Serpent',  ico:'🐉', dc:'Voix sifflante, yeux reptiliens, langue bifide et peau écailleuse.'},
+    {nm:'Chimère',  ico:'🌀', dc:'Forme complexe et mouvante issue des rêves éveillés.'},
+    {nm:'Méduse',   ico:'💜', dc:'Forme redoutée liée aux perversions et distorsions lunaires.'},
+    {nm:'Chat',     ico:'🐱', dc:'Étrangeté lunaire incarnée : souplesse et regard impénétrable.'},
+    // Selenim (cas particulier — Lune Noire)
+    {nm:'Selenim — Ver',      ico:'🪱', dc:'Corps vermiforme. Selenim : Lune Noire. Imago anatomique.'},
+    {nm:'Selenim — Insecte',  ico:'🕷️', dc:'Araignée ou scarabée. Selenim : Lune Noire. Imago anatomique.'},
+    {nm:'Selenim — Oiseau',   ico:'🦴', dc:'Squelette creux. Selenim : Lune Noire. Imago anatomique.'},
+    {nm:'Selenim — Reptile',  ico:'🐊', dc:'Crocodile ou cobra. Selenim : Lune Noire. Imago anatomique.'},
+    {nm:'Selenim — Prédateur',ico:'🐺', dc:'Loup ou ours. Selenim : Lune Noire. (Souvent perçu comme "loup-garou".)'},
+  ],
+};
+
+// ═══════════════════════════════════════════════════════
+// GRIMOIRE — SORTS (Étape 5, onglet Magie)
+// Nombre de sorts mémorisés (tatoués) = Ka dominant max
+// Les sorts au-delà sont "sur focus"
+// ═══════════════════════════════════════════════════════
+const SORTS=[
+  // ── 1er Cercle : Basse Magie ──────────────────────
+  {id:'sentier_guerre',    nm:'Sentier de la guerre',          cercle:'Basse Magie',ka:'Variable',deg:1, portee:'Personnelle',duree:'Combat', dc:'Améliore toutes les capacités de combat du Nephilim.'},
+  {id:'savoir_infus',      nm:'Savoir infus',                  cercle:'Basse Magie',ka:'Variable',deg:1, portee:'Personnelle',duree:'Instant',dc:'Accès momentané à une connaissance cachée ou oubliée.'},
+  {id:'son_lunaire',       nm:'Son lunaire',                   cercle:'Basse Magie',ka:'Lune',   deg:3, portee:'50 m',       duree:'1 min',  dc:'Crée des bruits variés jusqu\'au volume maximal d\'une sonnerie.'},
+  {id:'congelation',       nm:'Congélation aqueuse',           cercle:'Basse Magie',ka:'Eau',    deg:4, portee:'10 m',       duree:'Définitif',dc:'Transforme 50 m² d\'eau en glace de 20 cm d\'épaisseur.'},
+  {id:'illusion_elem',     nm:'Illusion élémentaire',          cercle:'Basse Magie',ka:'Choix',  deg:5, portee:'10 m',       duree:'10 min', dc:'Crée une illusion visuelle parfaite de 5 m³.'},
+  {id:'manipulation_elem', nm:'Manipulation élémentaire',      cercle:'Basse Magie',ka:'Choix',  deg:5, portee:'10 m',       duree:'1 min',  dc:'Déplace un volume d\'élément : 1 m³ de liquide ou de feu.'},
+  {id:'sublimation_elem',  nm:'Sublimation élémentaire',       cercle:'Basse Magie',ka:'Choix',  deg:5, portee:'Personnelle',duree:'1 min',  dc:'Confère un bonus de +2 degrés au Ka utilisé.'},
+  {id:'transformation_elem',nm:'Transformation élémentaire',   cercle:'Basse Magie',ka:'Choix',  deg:5, portee:'Contact',    duree:'1 min',  dc:'Change un objet (10 cm³) en matière élémentaire pure.'},
+  {id:'purification_elem', nm:'Purification élémentaire',      cercle:'Basse Magie',ka:'Choix',  deg:5, portee:'10 m',       duree:'1 h+',   dc:'Crée un Plexus temporaire durant une tempête élémentaire.'},
+  // ── 2e Cercle : Haute Magie ───────────────────────
+  {id:'membre_embrase',    nm:'Membre embrasé',                cercle:'Haute Magie', ka:'Feu',   deg:7, portee:'Personnelle',duree:'1 min',  dc:'Transforme un membre en torche infligeant 3 dégâts de feu.'},
+  {id:'obsession',         nm:'Obsession',                     cercle:'Haute Magie', ka:'Eau',   deg:7, portee:'10 m',       duree:'1 h',    dc:'Imprime un mot ou désir impérieux dans l\'esprit de la cible.'},
+  {id:'esprit_dragon',     nm:'Esprit du Dragon',              cercle:'Haute Magie', ka:'Eau',   deg:8, portee:'10 m',       duree:'Combat', dc:'Les cibles ciblées partagent leurs Vécus, Ka et Sciences.'},
+  {id:'martyr_dragon',     nm:'Martyr du Dragon',              cercle:'Haute Magie', ka:'Terre', deg:8, portee:'10 m',       duree:'Combat', dc:'Les cibles partagent tous leurs dommages physiques reçus.'},
+  {id:'extension_elem',    nm:'Extension élémentaire',         cercle:'Haute Magie', ka:'Choix', deg:9, portee:'20 m',       duree:'1 h',    dc:'Étend la zone d\'influence d\'un élément contrôlé à grande échelle.'},
+  {id:'communion_dragon',  nm:'Communion symbiotique de l\'Effet-Dragon',cercle:'Haute Magie',ka:'Variable',deg:9,portee:'10 m',duree:'Scène',dc:'Fusion totale des âmes participantes : partage de tout (Ka, dégâts, sorts).'},
+];
+
+// ═══════════════════════════════════════════════════════
+// FORMULES ALCHIMIQUES (Étape 5, onglet Alchimie)
+// ═══════════════════════════════════════════════════════
+const FORMULES=[
+  {id:'coagulation',    nm:'Coagulation éolienne',      oeuvre:'Noir',  ka:'Air/Lune',       deg:5, construct:'Athanor', dc:'Rend une surface de 5 m² immatérielle pendant une durée limitée.'},
+  {id:'proj_pas',       nm:'Projections des pas effacés',oeuvre:'Noir',  ka:'Lune',           deg:5, construct:'Athanor', dc:'Révèle les traces de pas récentes d\'une cible, même effacées.'},
+  {id:'affranchissement',nm:'Affranchissement de l\'âme',oeuvre:'Blanc', ka:'Eau/Terre',      deg:6, construct:'Creuset', dc:'Purifie un objet de 6 m³ de toute influence néfaste.'},
+  {id:'sympathie',      nm:'Sympathie métallique',      oeuvre:'Blanc', ka:'Feu/Terre',      deg:7, construct:'Creuset', dc:'Permet de déplacer jusqu\'à 500 kg de métal par la pensée.'},
+  {id:'calcination',    nm:'Calcination des souvenirs', oeuvre:'Blanc', ka:'Air',             deg:8, construct:'Aludel',  dc:'Guérit les amnésies ou les phobies profondes par l\'alchimie.'},
+  {id:'collet',         nm:'Collet tellurique',         oeuvre:'Blanc', ka:'Eau',             deg:8, construct:'Alambic', dc:'Immobilise une créature éthérée pendant 1 mois dans un récipient.'},
+  {id:'epreuve',        nm:'L\'épreuve alchimique',     oeuvre:'Blanc', ka:'Eau/Terre/Air',   deg:8, construct:'Alambic', dc:'Formule de sublimation complexe à usages multiples.'},
+  {id:'exhalaison',     nm:'Exhalaison de persuasion',  oeuvre:'Blanc', ka:'Variable',        deg:9, construct:'Aludel',  dc:'Modifie l\'attitude de toute personne dans un rayon de 5 m pendant 1 h.'},
+];
+
+// ═══════════════════════════════════════════════════════
+// INVOCATIONS KABBALIQUES (Étape 5, onglet Kabbale)
+// ═══════════════════════════════════════════════════════
+const INVOCATIONS=[
+  {id:'adonai',    nm:'Adonaï Melek',                        sephira:'malkuth',   ka:'Choix', deg:1, dc:'Maître de Malkuth. Manipule les matières premières du monde physique.'},
+  {id:'meute',     nm:'L\'éminente meute duveteuse',          sephira:'tipheret',  ka:'Lune',  deg:6, dc:'30 chatons venimeux qui liquéfient les proies (créatures de rêve).'},
+  {id:'akkabish',  nm:'Akkabish',                             sephira:'tipheret',  ka:'Lune',  deg:6, dc:'La tisseuse du labyrinthe. Piège les esprits dans ses toiles éthérées.'},
+  {id:'ariel',     nm:'Ariel',                                sephira:'tipheret',  ka:'Choix', deg:6, dc:'Prince de lumière pour la contemplation et la révélation spirituelle.'},
+  {id:'gabriel',   nm:'Gabriel',                              sephira:'tipheret',  ka:'Choix', deg:7, dc:'Maître de l\'illusion. Voile la réalité aux yeux des profanes.'},
+  {id:'elohim',    nm:'Elohim Gibor',                         sephira:'geburah',   ka:'Choix', deg:7, dc:'Fureur incarnée. Permet de créer des Golems guerriers implacables.'},
+  {id:'golem_feu', nm:'Golem de Geburah (Feu — Assassin)',    sephira:'geburah',   ka:'Feu',   deg:7, dc:'Golem assassin de feu — puissant en combat rapproché.'},
+  {id:'golem_air', nm:'Golem de Geburah (Air — Stratège)',    sephira:'geburah',   ka:'Air',   deg:7, dc:'Golem stratège — analyse et anticipe les tactiques ennemies.'},
+  {id:'golem_eau', nm:'Golem de Geburah (Eau — Agile)',       sephira:'geburah',   ka:'Eau',   deg:7, dc:'Golem agile — rapide et insaisissable sur le champ de bataille.'},
+  {id:'azim',      nm:'Azim Galizur',                         sephira:'chokmah',   ka:'Choix', deg:7, dc:'Anges de domination. Protègent les traditions et secrets kabbaliques.'},
+  {id:'ieve',      nm:'IEVE',                                  sephira:'binah',     ka:'Lune',  deg:0, dc:'Gratuit pour les initiés de Binah. L\'essence indicible du nom divin.'},
+];
+
+// ═══════════════════════════════════════════════════════
+// VOIES DE HAUTE MAGIE (officielles)
+// ═══════════════════════════════════════════════════════
+const VOIES_MAGIE=[
+  {id:'sentier_sinueux',   nm:'Sentier sinueux',         dc:'Empathie avec l\'environnement et la nature. Symbiose et émerveillement face aux forces élémentaires.'},
+  {id:'labyrinthe',        nm:'Labyrinthe schématique',  dc:'Recherche absolue de la connaissance cachée. Percer les mystères des mécaniques qui régissent l\'univers.'},
+  {id:'spirale',           nm:'Spirale d\'élévation',    dc:'Dépassement de soi. Modifier ses propres capacités et purifier les champs magiques corrompus.'},
+  {id:'principes_egarants',nm:'Principes égarants',      dc:'Science de la révélation et de la subversion. Briser les certitudes par des vérités troublantes.'},
+];
+
+// ═══════════════════════════════════════════════════════
+// MONDES DE KABBALE (obligatoire au 2e palier)
+// ═══════════════════════════════════════════════════════
+const MONDES=[
+  {id:'sohar',   nm:'Sohar',           dc:'Monde de lumière et de splendeur. Associé à Yesod. Entités lumineuses et révélatrices.'},
+  {id:'assiah',  nm:'Assiah',          dc:'Le monde physique. Entités proches de la matière. Premier pas du kabbaliste.'},
+  {id:'yetzirah',nm:'Yetzirah',        dc:'Monde de la formation. Entités angéliques et archétypales.'},
+  {id:'beriah',  nm:'Beriah',          dc:'Monde de la création. Entités de puissance créatrice pure.'},
+  {id:'atziluth',nm:'Atziluth',        dc:'Monde de l\'émanation divine. Entités d\'une puissance absolue.'},
+];
+
+// ═══════════════════════════════════════════════════════
+// VOIES ALCHIMIQUES (officielles)
+// ═══════════════════════════════════════════════════════
+const VOIES_ALCH=[
+  {id:'soufre',      nm:'Voie du Soufre',      ka:'Feu',   dc:'Transmutation active et purificatrice. Destruction pour mieux recréer.'},
+  {id:'mercure',     nm:'Voie du Mercure',     ka:'Air',   dc:'Fluidité et communication entre les substances. Maîtrise des transitions.'},
+  {id:'sel',         nm:'Voie du Sel',         ka:'Terre', dc:'Fixation et cristallisation. Permanence et résistance.'},
+  {id:'eau_forte',   nm:'Voie de l\'Eau-Forte',ka:'Eau',   dc:'Dissolution et séparation. Révèle l\'essence cachée des choses.'},
+  {id:'quintessence',nm:'Voie de la Quintessence',ka:'Lune',dc:'Synthèse des quatre éléments. Accès à la matière éthérée.'},
+];
+
+// ═══════════════════════════════════════════════════════
+// SIMULACRES ENRICHIS (Étape 7)
+// ks = Ka-Soleil du corps hôte, rs = Ressources (1-5)
+// ═══════════════════════════════════════════════════════
+// ÉPOQUES — Vécus avec descriptions immersives officielles
+// vecus_data : [{nm, ka, dc}] — descriptions par rôle historique
+// quetes : liste — une seule choisie gratuitement (règle officielle)
+// ═══════════════════════════════════════════════════════
+const EPOQUES=[
+  // ── ÈRE 1 : ATLANTIDE ──────────────────────────────
+  {id:'atlantide', ere:1, nm:'La Chute de l\'Atlantide', per:'Jadis',ico:'🌊',cout:0,
+   dc:'La blessure primordiale. Naissance de la race déchue des Nephilim, contraints de s\'incarner dans des Simulacres humains pour survivre.',
+   vecus_data:[
+     {nm:'Héros',    ka:'Feu',  dc:'Fondateur parmi les humains, enseignant l\'honneur et la guerre aux premières lignées.'},
+     {nm:'Sage',     ka:'Air',  dc:'Observateur des astres et du Ka-Soleil des hommes, gardien des savoirs primordiaux.'},
+     {nm:'Messagère',ka:'Eau',  dc:'Voyageuse assurant le lien entre les premières cités nephilim à travers les mers.'},
+     {nm:'Décepteur',ka:'Lune', dc:'Maître du faux-semblant et de l\'infiltration au service de l\'Agartha perdue.'},
+     {nm:'Soigneur', ka:'Terre',dc:'Dévoué à la survie des lignées humaines primitives, guérisseur de la première heure.'},
+   ],
+   sciences:[{nm:'Magie',deg:2}], sorts:2,
+   quetes:['Le Sentier d\'or 1'],
+   savoirs:['Kaïm 2','Champs magiques 2','Nephilim 2'],
+  },
+  // ── ÈRE 2 : GUERRES ÉLÉMENTAIRES ───────────────────
+  {id:'deluge', ere:2, nm:'Le Déluge', per:'−10000',ico:'🌊',cout:2,
+   dc:'Temps des catastrophes mondiales. Les Nephilim comprennent leur exil et cherchent l\'Agartha pour fuir leurs prisons de chair.',
+   vecus_data:[
+     {nm:'Oracle',      ka:'Air',  dc:'Orateur hors-pair donnant des visions d\'un futur sombre aux survivants des eaux.'},
+     {nm:'Matriarche',  ka:'Eau',  dc:'Figure d\'autorité guidant les premières grandes familles à travers les flots dévastateurs.'},
+     {nm:'Navigateur',  ka:'Eau',  dc:'Pilote de vaisseaux-arches cherchant l\'Agartha à travers les flots déchaînés.'},
+     {nm:'Meurtrier',   ka:'Feu',  dc:'Guerrier né des conflits élémentaires brutaux, survivant sans pitié ni clémence.'},
+     {nm:'Charpentier', ka:'Terre',dc:'Bâtisseur expert des premiers refuges et arches antédiluviens pour les rescapés.'},
+   ],
+   sciences:[{nm:'Magie',deg:3}], sorts:3,
+   quetes:['Sentier d\'or 2','Hyperborée 1'],
+   savoirs:['Kaïm 1','Champs magiques 1','Nephilim 2','Orichalque 2','Mystères 2','Histoire invisible 1'],
+  },
+  {id:'premiers_dieux', ere:2, nm:'Les Premiers Dieux', per:'−9000',ico:'⚡',cout:1,
+   dc:'Naissance des panthéons divins. Les Nephilim deviennent les dieux des premiers peuples.',
+   vecus_data:[
+     {nm:'Conteur',             ka:'Feu',  dc:'Gardien des mythes fondateurs, forgeant l\'identité des peuples naissants par le feu des récits.'},
+     {nm:'Gardien du feu sacré',ka:'Air',  dc:'Prêtre veillant sur la flamme divine, lien vivant entre le Ka céleste et le monde terrestre.'},
+     {nm:'Chamane',             ka:'Eau',  dc:'Passeur entre les mondes, interprète des signes et des rêves des premiers hommes.'},
+     {nm:'Archer',              ka:'Lune', dc:'Chasseur d\'élite et guerrier de l\'ombre, lié aux cycles lunaires et aux chasses nocturnes.'},
+     {nm:'Bâtisseur',           ka:'Terre',dc:'Constructeur des premiers monuments et lieux de culte sacrés au nom des dieux.'},
+   ],
+   sciences:[{nm:'Magie',deg:1}], sorts:1,
+   quetes:[],
+   savoirs:['Nephilim 1','Mystères 1','Histoire invisible 1','Champs magiques 1'],
+  },
+  {id:'premier_peuple', ere:2, nm:'Le Premier Peuple', per:'−8000',ico:'🏕️',cout:1,
+   dc:'Premières civilisations sédentaires. Fondation des traditions et des savoirs ésotériques fondateurs.',
+   vecus_data:[
+     {nm:'Conteur',   ka:'Feu',  dc:'Transmetteur oral des légendes de l\'Atlantide perdue, gardien de la mémoire brûlante.'},
+     {nm:'Prêtre',    ka:'Air',  dc:'Intercesseur entre les dieux et les hommes des premières cités sédentarisées.'},
+     {nm:'Guerrier',  ka:'Eau',  dc:'Défenseur fluide des villages contre les menaces élémentaires et les tribus rivales.'},
+     {nm:'Artisan',   ka:'Lune', dc:'Façonneur de l\'outil et du symbole sacré, gardien des techniques secrètes.'},
+     {nm:'Guérisseur',ka:'Terre',dc:'Herboriste et guérisseur lié aux cycles de la terre et aux plantes médicinales.'},
+   ],
+   sciences:[{nm:'Magie',deg:1}], sorts:1,
+   quetes:[],
+   savoirs:['Nephilim 1','Mystères 2','Champs magiques 1','Histoire invisible 1'],
+  },
+  {id:'premiere_cite', ere:2, nm:'La Première Cité', per:'−7000',ico:'🏛️',cout:1,
+   dc:'Premières cités-états. Naissance de l\'écriture, de la politique et des premières guerres organisées.',
+   vecus_data:[
+     {nm:'Prêtre-roi', ka:'Feu',  dc:'Souverain divin, incarnation du Ka céleste sur terre, entre guerre et prière.'},
+     {nm:'Scribe',     ka:'Air',  dc:'Maître de l\'écriture cunéiforme et gardien des archives secrètes de la cité.'},
+     {nm:'Soldat',     ka:'Eau',  dc:'Gardien des murailles et des routes commerciales, adapté à tous les terrains.'},
+     {nm:'Marchande',  ka:'Lune', dc:'Négociante parcourant les routes occultes entre les cités-états naissantes.'},
+     {nm:'Artisan',    ka:'Terre',dc:'Bâtisseur des ziggourats et monuments du pouvoir, pilier de la civilisation.'},
+   ],
+   sciences:[{nm:'Magie',deg:1}], sorts:1,
+   quetes:[],
+   savoirs:['Nephilim 1','Histoire invisible 1','Mystères 1','Champs magiques 1'],
+  },
+  // ── ÈRE 3 : COMPACTS SECRETS ───────────────────────
+  {id:'mahabharata', ere:3, nm:'Le Mahabharata', per:'−3000',ico:'⚔️',cout:1,
+   dc:'Plongez dans la noble guerre épique de l\'Inde ancienne. Vécus de combattants d\'élite, prêtres et mystiques.',
+   vecus_data:[
+     {nm:'Kashtriya',                ka:'Feu',  dc:'Combattant noble et diplomate, expert des armes blanches et des vertus guerrières des Kshatriya.'},
+     {nm:'Brahmane',                 ka:'Air',  dc:'Prêtre considéré comme un avatar divin par les humains, gardien oral des Védas sacrés.'},
+     {nm:'Cocher',                   ka:'Eau',  dc:'Maître du mouvement et de la conduite des chars de guerre — comme Arjuna guidé par Krishna.'},
+     {nm:'Sadhu',                    ka:'Lune', dc:'Mystique errant cherchant l\'ivresse des épiphanies et la dissolution de l\'ego dans l\'infini.'},
+     {nm:'Avatar de la Grande Déesse',ka:'Terre',dc:'Figure de protection liée aux cycles de la terre et à la fertilité divine de Shakti.'},
+   ],
+   sciences:[{nm:'Magie',deg:1}], sorts:0,
+   quetes:['Sentier d\'or 1','Cité des Vertiges 2'],
+   savoirs:['Nephilim 1','Orichalque 1','Mystères 1','Histoire invisible 1','Drakaon 2','Effets-Dragons 1'],
+  },
+  {id:'akhenaton', ere:3, nm:'Le Rêve d\'Akhenaton', per:'−1350',ico:'𓂀',cout:2,
+   dc:'La révolution monothéiste. Akhenaton, peut-être un Nephilim éveillé, bouleverse l\'Égypte avec son culte solaire.',
+   vecus_data:[
+     {nm:'Dracomache',           ka:'Feu',  dc:'Chasseur de Dragons et de créatures occultes au service du culte solaire d\'Aton.'},
+     {nm:'Émissaire d\'Akhenaton',ka:'Air', dc:'Messager diplomatique de la révolution spirituelle du pharaon-Nephilim.'},
+     {nm:'Prêtre grec',          ka:'Eau',  dc:'Hellène fasciné par la magie égyptienne et ses mystères aquatiques du Nil.'},
+     {nm:'Adopté du Pape',       ka:'Lune', dc:'Initié aux secrets du clergé d\'Amon, gardien des textes cachés de Karnak.'},
+     {nm:'Scribe',               ka:'Terre',dc:'Copiste des textes sacrés, conservateur des archives secrètes du pharaon.'},
+   ],
+   sciences:[{nm:'Magie',deg:1},{nm:'Kabbale',deg:2}], sorts:0,
+   quetes:[],
+   savoirs:['Champs magiques 2','Mystères 1','Histoire invisible 1','Akasha 1','Effets-Dragons 1'],
+  },
+  {id:'troie', ere:3, nm:'La Chute de Troie', per:'−1200',ico:'🏹',cout:1,
+   dc:'Guerre de Troie. Dix ans d\'intrigues divines et humaines mêlées derrière les murailles imprenables.',
+   vecus_data:[
+     {nm:'Guerrier achéen',ka:'Feu',  dc:'Héros de bronze à la carrière brutale et glorieuse devant les portes de Troie.'},
+     {nm:'Aède',           ka:'Air',  dc:'Poète-conteur transmettant les hauts faits pour l\'éternité en vers immortels.'},
+     {nm:'Pilote',         ka:'Eau',  dc:'Navigateur des mers Égéennes expert des routes maritimes et des caprices de Poséidon.'},
+     {nm:'Pâtre',          ka:'Lune', dc:'Berger mystérieux connaissant les secrets des dieux de l\'Olympe et leurs rivalités.'},
+     {nm:'Amazone',        ka:'Terre',dc:'Guerrière alliée à Troie, maîtresse du cheval et de l\'arc, combattante de la steppe.'},
+   ],
+   sciences:[], sorts:0,
+   quetes:[],
+   savoirs:['Nephilim 1','Histoire invisible 1','Akasha 1','Effets-Dragons 2','Selenim 1'],
+  },
+  // ── ÈRE 4 : HERMÉTISME ─────────────────────────────
+  {id:'babylone', ere:4, nm:'L\'Empire de Babylone', per:'−580',ico:'🔯',cout:1,
+   dc:'Captivité babylonienne. Naissance de la Kabbale juive dans l\'exil. Les Nephilim tissent leurs réseaux en Orient.',
+   vecus_data:[
+     {nm:'Soldat chaldéen',  ka:'Feu',  dc:'Guerrier de l\'empire néo-babylonien, gardien des remparts de Nabuchodonosor.'},
+     {nm:'Devin (Barû)',     ka:'Air',  dc:'Spécialiste de la divination par les entrailles, oracle attitré du roi de Babylone.'},
+     {nm:'Archer royal',    ka:'Eau',  dc:'Garde d\'élite du palais, maître de la précision et de la discrétion au service du trône.'},
+     {nm:'Guide judéen',    ka:'Lune', dc:'Conducteur de la communauté en exil, gardien des textes sacrés et de la mémoire d\'Israël.'},
+     {nm:'Lamentateur (Kalû)',ka:'Terre',dc:'Prêtre-musicien apaisant les dieux par les chants funèbres et les lamentations rituelles.'},
+   ],
+   sciences:[{nm:'Kabbale',deg:2}], sorts:0,
+   quetes:[],
+   savoirs:['Drakaon 2','Effets-Dragons 1','Champs magiques 2','Mystères 1'],
+  },
+  {id:'alexandre', ere:4, nm:'L\'Empire d\'Alexandre', per:'−330',ico:'⚡',cout:1,
+   dc:'Hellénisation du monde connu. Syncrétisme religieux et magique à grande échelle — les Nephilim voyagent avec les légions.',
+   vecus_data:[
+     {nm:'Hétaïroï', ka:'Feu',  dc:'Compagnon d\'Alexandre, cavalier d\'élite de la garde royale macédonienne aux quatre coins du monde.'},
+     {nm:'Stratège', ka:'Air',  dc:'Général maîtrisant la géopolitique et la philosophie des cités conquises.'},
+     {nm:'Amant',    ka:'Eau',  dc:'Courtisan naviguant les intrigues de palais et les arts de séduction des cours orientales.'},
+     {nm:'Mercenaire',ka:'Lune',dc:'Soldat de fortune vendant son épée à qui paie, observateur sans attache ni patrie.'},
+     {nm:'Suffète',  ka:'Terre',dc:'Magistrat carthaginois, pilier de l\'ordre commercial méditerranéen face à Rome naissante.'},
+   ],
+   sciences:[{nm:'Magie',deg:1},{nm:'Kabbale',deg:2}], sorts:0,
+   quetes:[],
+   savoirs:['Histoire invisible 1','Akasha 1','Effets-Dragons 1','Nephilim 2','Mystères 2'],
+  },
+  // ── ÈRE 5 : GUERRES SECRÈTES ───────────────────────
+  {id:'jesus', ere:5, nm:'L\'Incident Jésus', per:'30',ico:'✝️',cout:2,
+   dc:'Le basculement des croyances. Un message qui remodèle la Guerre Occulte pour des siècles à venir. Ère du message et de la révolte.',
+   vecus_data:[
+     {nm:'Sicaire zélote',      ka:'Feu',  dc:'Révolté politique luttant violemment contre l\'occupant romain par le feu et le couteau.'},
+     {nm:'Prêcheur',            ka:'Air',  dc:'Porteur de message et grand orateur lors du bouleversement religieux de Judée.'},
+     {nm:'Diplomate polyglotte',ka:'Eau',  dc:'Lien culturel fluide entre les mondes juif, grec et romain de la Méditerranée.'},
+     {nm:'Moine essénien',      ka:'Lune', dc:'Gardien de textes secrets vivant en retrait dans le désert de Judée à Qumrân.'},
+     {nm:'Proconsul',           ka:'Terre',dc:'Administrateur de l\'ordre impérial romain, pilier solide du pouvoir de César.'},
+   ],
+   sciences:[{nm:'Magie',deg:1},{nm:'Kabbale',deg:6}], sorts:0,
+   quetes:['Rex Mundi 2','Jérusalem céleste 2','Graal 2'],
+   savoirs:['Sciences occultes 2','Arcanes Majeurs 2','Templiers 1','Bohémiens 1'],
+  },
+  {id:'temple', ere:5, nm:'La Chute du Temple', per:'1314',ico:'⚔️',cout:2,
+   dc:'La fin d\'un âge d\'or occulte. La dissolution de l\'Ordre du Temple brise un réseau nephilim mondial tissé depuis des décennies.',
+   vecus_data:[
+     {nm:'Routier',              ka:'Feu',  dc:'Mercenaire aguerri aux armes, vivant sans clémence sur les routes de France après la chute.'},
+     {nm:'Moniale',              ka:'Air',  dc:'Femme de foi gérant les secrets des abbayes et leurs trésors cachés loin des inquisiteurs.'},
+     {nm:'Alleutier du Temple',  ka:'Eau',  dc:'Gestionnaire des biens et des flottes secrètes de l\'Ordre, passeur de fonds occultes.'},
+     {nm:'Chevalier mercenaire', ka:'Lune', dc:'Soldat de fortune vendant son épée après la chute de l\'Ordre, ombre parmi les ombres.'},
+     {nm:'Bourgeois de Paris',   ka:'Terre',dc:'Pilier économique influent dans la cité, lié aux guildes marchandes et aux réseaux templiers.'},
+   ],
+   sciences:[{nm:'Kabbale',deg:2}], sorts:0,
+   quetes:['Graal 1','Rose+Croix 1'],
+   savoirs:['Templiers 2','Mystères 1','Histoire invisible 2','Bohémiens 1'],
+  },
+  // ── ÈRE 6 : NOUVEAUX MONDES ────────────────────────
+  {id:'renaissance_occ', ere:6, nm:'Les Arcanes de la Renaissance', per:'XVe',ico:'🎨',cout:2,
+   dc:'Participation aux découvertes scientifiques, à l\'alchimie florentine et à la compilation des savoirs occultes antiques.',
+   vecus_data:[
+     {nm:'Apothicaire',            ka:'Feu',  dc:'Maître des substances et des poisons, alchimiste praticien des transmutations.'},
+     {nm:'Évêque défroqué',        ka:'Air',  dc:'Prélat renégat porteur des secrets de l\'Église et de ses archives interdites.'},
+     {nm:'Maestro',                ka:'Eau',  dc:'Artiste au service des Médicis, porteur de l\'esthétique nouvelle et des idées hermétistes.'},
+     {nm:'Intellectuel florentin', ka:'Lune', dc:'Philosophe hermétiste compilant les savoirs antiques redécouverts par l\'Académie platonicienne.'},
+     {nm:'Explorateur',            ka:'Terre',dc:'Aventurier des Grandes Découvertes, cartographe de l\'inconnu aux quatre coins du globe.'},
+   ],
+   sciences:[{nm:'Kabbale',deg:2},{nm:'Alchimie',deg:2}], sorts:0,
+   quetes:['Arcadia 1'],
+   savoirs:['Mystères 1','Histoire invisible 1','Rose+Croix 2'],
+  },
+  {id:'revolution', ere:6, nm:'Conspirations de la Révolution', per:'1789',ico:'⚙️',cout:1,
+   dc:'Le temps des discours enflammés. Les loges maçonniques et sociétés secrètes s\'affrontent pour l\'âme de l\'Europe.',
+   vecus_data:[
+     {nm:'Député',         ka:'Feu',  dc:'Maître de la joute orale capable de convaincre et de réfuter l\'Assemblée constituante.'},
+     {nm:'Mathématicienne',ka:'Air',  dc:'Esprit logique appliquant les sciences nouvelles aux mystères anciens des loges.'},
+     {nm:'Voltigeur',      ka:'Eau',  dc:'Soldat agile et rapide sur les champs de bataille révolutionnaires, maître du mouvement.'},
+     {nm:'Conjuré',        ka:'Lune', dc:'Membre de sociétés secrètes agissant dans l\'ombre pour un idéal occulte et politique.'},
+     {nm:'Fermier',        ka:'Terre',dc:'Travailleur du sol attaché aux réalités concrètes et à la terre ancestrale de France.'},
+   ],
+   sciences:[{nm:'Magie',deg:1},{nm:'Alchimie',deg:1}], sorts:0,
+   quetes:['Exode sidéral 1','Table d\'émeraude 1'],
+   savoirs:['Bohémiens 1','Lune Noire 1','Rose+Croix 1','Synarchie 2'],
+  },
+  {id:'victorien', ere:6, nm:'Vapeurs Victoriennes', per:'1837',ico:'🚂',cout:1,
+   dc:'L\'aventure et l\'industrie. L\'Empire britannique ouvre le monde — et ses mystères — aux Nephilim éveillés.',
+   vecus_data:[
+     {nm:'Explorateur',           ka:'Feu',  dc:'Tête brûlée parcourant le globe en quête de cités perdues et de reliques nephilim.'},
+     {nm:'Aliéniste',             ka:'Air',  dc:'Médecin de l\'âme étudiant les tréfonds de la psyché humaine — précurseur de Freud.'},
+     {nm:'Inventeur',             ka:'Eau',  dc:'Créateur de machines à vapeur et de tekhnès modernes ouvrant l\'ère industrielle.'},
+     {nm:'Écrivain maudit',       ka:'Lune', dc:'Poète visionnaire captant l\'air du temps et les vérités cachées par la société.'},
+     {nm:'Ouvrier syndicaliste',  ka:'Terre',dc:'Militant de la cause sociale dans les usines, ancré dans le réel et la lutte.'},
+   ],
+   sciences:[{nm:'Alchimie',deg:1}], sorts:0,
+   quetes:['Rose+Croix 1','Synarchie 1'],
+   savoirs:['Mystères 1','Histoire invisible 1','Rose+Croix 1','Bohémiens 1'],
+  },
+  // ── ÈRE 7 : GRAND ÉVEIL ────────────────────────────
+  {id:'arcadia', ere:7, nm:'Le Grand Éveil (Arcadia)', per:'XXe siècle',ico:'🌆',cout:2,
+   dc:'La Guerre Occulte contemporaine. Les Nephilim se réveillent dans un monde saturé d\'information et de bruit.',
+   vecus_data:[
+     {nm:'Publicitaire',         ka:'Feu',  dc:'Expert en merchandising sensoriel et réseaux sociaux, maître de la persuasion de masse.'},
+     {nm:'Professeur',           ka:'Air',  dc:'Transmetteur de savoir académique, passeur entre générations et gardien du sens critique.'},
+     {nm:'Sportif professionnel',ka:'Eau',  dc:'Maître de la fluidité et de la performance physique sur la scène mondiale médiatisée.'},
+     {nm:'DJ',                   ka:'Lune', dc:'Créateur de transes nocturnes et d\'illusions sonores dans les clubs obscurs.'},
+     {nm:'Médecin urgentiste',   ka:'Terre',dc:'Pilier de la sauvegarde des vies en terrain de crise — ancré dans la réalité brutale.'},
+   ],
+   sciences:[], sorts:0,
+   quetes:[],
+   savoirs:['Histoire invisible 1','Selenim 1','Synarchie 2','Révélation 2','Ar-Kaïm 2'],
+  },
+];
+
+
+// VECUS globaux (utilisés aussi dans le simulacre)
+const VECUS=[
+  {id:'guerrier',  nm:'Guerrier',    co:1,dc:'Combat et guerre',      ka:'Feu'},
+  {id:'sage',      nm:'Sage',        co:1,dc:'Sagesse et conseil',     ka:'Air'},
+  {id:'navigateur',nm:'Navigateur',  co:1,dc:'Exploration et voyages', ka:'Eau'},
+  {id:'mage',      nm:'Mage/Sorcier',co:1,dc:'Pratique occulte',       ka:'Lune'},
+  {id:'artisan',   nm:'Artisan',     co:1,dc:'Fabrication et métiers', ka:'Terre'},
+  {id:'pretre',    nm:'Prêtre',      co:1,dc:'Rituels et foi',          ka:'Lune'},
+  {id:'erudit',    nm:'Érudit',      co:1,dc:'Savoirs et langues',      ka:'Air'},
+  {id:'guerisseur',nm:'Guérisseur',  co:1,dc:'Médecine et soins',       ka:'Terre'},
+  {id:'espion',    nm:'Espion',      co:1,dc:'Infiltration',            ka:'Air'},
+  {id:'noble',     nm:'Noble',       co:1,dc:'Rang social',             ka:'Feu'},
+  {id:'marchand',  nm:'Marchand',    co:1,dc:'Commerce',               ka:'Eau'},
+  {id:'artiste',   nm:'Artiste',     co:1,dc:'Expression et prestige',  ka:'Air'},
+];
+// Sciences : 1 PI par degré (sauf Kabbale gérée séparément : 1 PI = 3 degrés Sephiroth)
+const SCIENCES=[
+  {id:'air',      nm:'Cercle de l\'Air',   ka:'Air',  ty:'Cercle',co:[1,1,1],dc:'Tempêtes et illusions'},
+  {id:'feu',      nm:'Cercle du Feu',      ka:'Feu',  ty:'Cercle',co:[1,1,1],dc:'Flammes et transmutation'},
+  {id:'terre',    nm:'Cercle de la Terre', ka:'Terre',ty:'Cercle',co:[1,1,1],dc:'Minéraux et résistance'},
+  {id:'eau',      nm:'Cercle de l\'Eau',   ka:'Eau',  ty:'Cercle',co:[1,1,1],dc:'Prophéties et mémoire'},
+  {id:'lune',     nm:'Cercle de la Lune',  ka:'Lune', ty:'Cercle',co:[1,1,1],dc:'Métamorphose et magie'},
+  {id:'alchimie', nm:'Alchimie',           ka:'Feu',  ty:'Art',   co:[1,1,1],dc:'Transmutation et Constructs'},
+  {id:'divination',nm:'Divination',        ka:'Air',  ty:'Art',   co:[1,1,1],dc:'Augures et voyance'},
+  {id:'goetie',   nm:'Goétie',             ka:'Lune', ty:'Art',   co:[1,1,1],dc:'Invocation de démons'},
+  {id:'hermetisme',nm:'Hermétisme',        ka:null,   ty:'Art',   co:[1,1,1],dc:'Magie universelle'},
+];
+const SEPH=[
+  {id:'malkuth', nm:'Malkuth', col:1,row:5,req:null,      dc:'Le Royaume'},
+  {id:'yesod',   nm:'Yesod',   col:1,row:4,req:'malkuth', dc:'La Fondation'},
+  {id:'hod',     nm:'Hod',     col:0,row:3,req:'yesod',   dc:'La Splendeur'},
+  {id:'netzah',  nm:'Netzah',  col:2,row:3,req:'yesod',   dc:'La Victoire'},
+  {id:'tipheret',nm:'Tiphareth',col:1,row:2,req:'hod',    dc:'La Beauté'},
+  {id:'geburah', nm:'Geburah', col:0,row:1,req:'tipheret',dc:'La Force'},
+  {id:'chesed',  nm:'Chesed',  col:2,row:1,req:'tipheret',dc:'La Grâce'},
+  {id:'binah',   nm:'Binah',   col:0,row:0,req:'geburah', dc:'L\'Intelligence'},
+  {id:'chokmah', nm:'Chokmah', col:2,row:0,req:'chesed',  dc:'La Sagesse'},
+  {id:'kether',  nm:'Kether',  col:1,row:0,req:'binah',   dc:'La Couronne'},
+];
+const METIERS=[
+  // Simulacres classiques
+  {id:'detective',   nm:'Détective',          ks:1, vcu:'Espion',      rs:2, dc:'Enquêtes criminelles, filatures, contacts dans le milieu policier.',
+   ressources:'Contacts secrets, matériel de surveillance.'},
+  {id:'antiquaire',  nm:'Antiquaire',         ks:0, vcu:'Érudit',      rs:3, dc:'Spécialiste des objets anciens. Accès aux réseaux de collectionneurs.',
+   ressources:'Archives privées, bibliothèques ésotériques.'},
+  {id:'medecin',     nm:'Médecin',            ks:1, vcu:'Guérisseur',  rs:4, dc:'Hôpitaux, médecine légale, accès aux substances.',
+   ressources:'Hôpital, pharmacopée, réseau médical.'},
+  {id:'journaliste', nm:'Journaliste',        ks:1, vcu:'Érudit',      rs:2, dc:'Information, contacts variés, accès aux événements.',
+   ressources:'Presse accrédités, contacts officiels.'},
+  {id:'erudit',      nm:'Érudit',             ks:4, vcu:'Érudit',      rs:3, dc:'Chercheur ou professeur. Accès aux archives et bibliothèques.',
+   ressources:'Accès aux archives, bibliothèques universitaires.'},
+  {id:'artiste',     nm:'Artiste Mélancolique',ks:3, vcu:'Artiste',    rs:2, dc:'Milieu culturel et bohème. Atelier et renommée locale.',
+   ressources:'Atelier d\'artiste, réseau culturel.'},
+  {id:'activiste',   nm:'Activiste',          ks:5, vcu:'Noble',       rs:2, dc:'Engagement social et politique. Réseaux et logistique de terrain.',
+   ressources:'Réseaux sociaux militants, logistique terrain.'},
+  {id:'agent_ombre', nm:'Agent de l\'Ombre',  ks:2, vcu:'Espion',      rs:2, dc:'Opérateur discret. Contacts secrets et matériel de surveillance.',
+   ressources:'Contacts souterrains, équipement espionnage.'},
+  {id:'militaire',   nm:'Militaire',          ks:2, vcu:'Guerrier',    rs:2, dc:'Armée, armes, discipline et réseau militaire.',
+   ressources:'Arsenal réglementaire, réseau militaire.'},
+  {id:'clerge',      nm:'Clergé',             ks:0, vcu:'Prêtre',      rs:2, dc:'Institution religieuse et réseaux.',
+   ressources:'Édifices religieux, archives de la foi.'},
+  {id:'businessman', nm:'Homme d\'Affaires',  ks:0, vcu:'Marchand',    rs:5, dc:'Capital et influence économique.',
+   ressources:'Capital financier, réseau d\'affaires international.'},
+  {id:'scientifique',nm:'Scientifique',       ks:0, vcu:'Artisan',     rs:3, dc:'Recherche et technologie de pointe.',
+   ressources:'Laboratoires, accès aux bases de données scientifiques.'},
+  {id:'criminel',    nm:'Criminel',           ks:1, vcu:'Espion',      rs:2, dc:'Milieu souterrain. Contacts douteux et ressources illicites.',
+   ressources:'Réseau criminel, matériel de contrebande.'},
+];
+// Chutes officielles Nephilim Légende (3 uniquement)
+const CHUTES=[
+  {id:'khaiba',  nm:'Khaïba',  dc:'Corruption du Ka altérant le métamorphe. La bête prend le dessus sur l\'âme.',      ico:'💀'},
+  {id:'narcose', nm:'Narcose', dc:'Mélancolie et attachement mystique à un lieu. L\'âme s\'ancre et ne peut partir.',    ico:'🌀'},
+  {id:'ombre',   nm:'Ombre',   dc:'Perte de contrôle au profit du Simulacre. Le corps humain efface le Nephilim.',       ico:'🌑'},
+];
+// Bonus : chaque degré de Chute = +5 PI au budget total
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,
+  ps_initial:0, chutes_max:2,
+  // Incarnations : {epoque_id: {vecu, savoirs:[3 max], quete}}
+  incarnations:{},  // {id: {vecu, savoirs, quete, vecus_deg:{}, savoirs_extra:{}, sciences_extra:{}}}
+  // Sciences Occultes
+  // Pool de degrés GRATUITS issus des incarnations (étape 4→5)
+  // Séparés des PI achetés. pool_used = degrés du pool déjà affectés.
+  pool_magie:0, pool_magie_used:0,
+  pool_kabbale:0, pool_kabbale_used:0,
+  pool_alchimie:0, pool_alchimie_used:0,
+  magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},
+  sephiroth:{}, monde:null,
+  alchimie:{noir:0,blanc:0,rouge:0,voie:null},
+  constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},
+  // Autres
+  vecus:{}, sciences:{},
+  // Chutes officielles (3 seules valides) + bonus PI calculé automatiquement
+  stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,
+  sci_tab:'magie', inc_tab:null,
+};
+
+let syncStatus='idle'; // idle | saving | saved | error
+let syncMsg='Non connecté à Google Sheets';
+
+// ════════════════════════════════════════════════════════
+// CALCULS
+// ════════════════════════════════════════════════════════
+// Pentacle officiel 5e éd. :
+// Ka dominant = valeur la plus haute (dépend du profil, on utilise une base de 5)
+// Ka neutres = dominant - 1
+// Ka opposés = selon profil : Éveillé(3,2) / Révélé(2,1) / Immortel(1,0)
+// Oppositions : Feu↔Eau, Air↔Terre, Lune neutre vis-à-vis de tous
+function kaScores(){
+  if(!S.ka_dom)return{Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
+  const d=KA[S.ka_dom];
+  const domVal=5;
+  const neuVal=domVal-1; // neutres = dominant - 1
+
+  // Valeurs des opposés selon profil
+  let opp1=3,opp2=2;
+  if(S.profil==='Révélé'){opp1=2;opp2=1;}
+  else if(S.profil==='Immortel'){opp1=1;opp2=0;}
+
+  const sc={Air:neuVal,Feu:neuVal,Terre:neuVal,Eau:neuVal,Lune:neuVal};
+  sc[S.ka_dom]=domVal;
+  sc[d.opp[0]]=opp1;
+  sc[d.opp[1]]=opp2;
+  return sc;
+}
+// ═══════════════════════════════════════════════════════
+// CUMUL DES DEGRÉS — additionne tout ce qui est acquis
+// via époques (gratuitement) + achats PI
+// ═══════════════════════════════════════════════════════
+// Retourne uniquement les degrés GRATUITS des époques (pas les achats PI ni les cercles)
+function calcPoolGratuits(){
+  const pool={magie:0, kabbale:0, alchimie:0, sorts:0};
+  for(const[id,inc] of Object.entries(S.incarnations)){
+    const ep=EPOQUES.find(e=>e.id===id);
+    if(!ep) continue;
+    // Sciences offertes gratuitement par l'époque
+    for(const sci of (ep.sciences||[])){
+      const k=sci.nm.toLowerCase().replace(/[^a-z]/g,'');
+      if(k.includes('magie')) pool.magie+=sci.deg;
+      else if(k.includes('kabbale')) pool.kabbale+=sci.deg;
+      else if(k.includes('alchimie')) pool.alchimie+=sci.deg;
+    }
+    pool.sorts+=(ep.sorts||0);
+    // Sciences supplémentaires achetées en PI dans l'époque
+    if(inc.sciences_extra){
+      for(const[k,d] of Object.entries(inc.sciences_extra)){
+        if(k==='magie') pool.magie+=d;
+        else if(k==='kabbale') pool.kabbale+=d;
+        else if(k==='alchimie') pool.alchimie+=d;
+      }
+    }
+  }
+  return pool;
+}
+
+function calcTotauxCumules(){
+  const totaux={
+    vecus:{},         // {nom_vecu: degrés cumulés}
+    sciences:{        // UNIQUEMENT les gratuités des époques (pour le pool)
+      magie:0, kabbale:0, alchimie:0,
+    },
+    quetes:{},        // {nom_quete: degrés}
+    savoirs:{},       // {nom_savoir: degrés max}
+    sorts_offerts:0,
+  };
+
+  // Parcours des époques choisies
+  for(const[id, inc] of Object.entries(S.incarnations)){
+    const ep=EPOQUES.find(e=>e.id===id);
+    if(!ep) continue;
+
+    // Sciences et sorts offerts gratuitement
+    for(const sci of (ep.sciences||[])){
+      const key=sci.nm.toLowerCase().replace(/[^a-z]/g,'');
+      if(key.includes('magie')) totaux.sciences.magie+=sci.deg;
+      else if(key.includes('kabbale')) totaux.sciences.kabbale+=sci.deg;
+      else if(key.includes('alchimie')) totaux.sciences.alchimie+=sci.deg;
+    }
+    totaux.sorts_offerts+=(ep.sorts||0);
+
+    // Vécus supplémentaires achetés avec PI dans cette époque
+    if(inc.vecus_deg){
+      for(const[vnm,deg] of Object.entries(inc.vecus_deg)){
+        totaux.vecus[vnm]=(totaux.vecus[vnm]||0)+deg;
+      }
+    }
+    // Savoirs supplémentaires achetés
+    if(inc.savoirs_extra){
+      for(const[snm,deg] of Object.entries(inc.savoirs_extra)){
+        totaux.savoirs[snm]=(totaux.savoirs[snm]||0)+deg;
+      }
+    }
+    // Sciences achetées dans l'époque (en plus des gratuites)
+    if(inc.sciences_extra){
+      for(const[snm,deg] of Object.entries(inc.sciences_extra)){
+        if(snm==='magie') totaux.sciences.magie+=deg;
+        else if(snm==='kabbale') totaux.sciences.kabbale+=deg;
+        else if(snm==='alchimie') totaux.sciences.alchimie+=deg;
+      }
+    }
+
+    // Vécu choisi (1 degré, ou 2 si Ka dominant)
+    if(inc.vecu){
+      const vecusList=ep.vecus_data||(ep.vecus||[]).map((nm,i)=>({nm,ka:(ep.ka_vecus&&ep.ka_vecus[i])||''}));
+      const vDobj=vecusList.find(v=>v.nm===inc.vecu);
+      const degVecu=vDobj&&vDobj.ka===S.ka_dom?2:1;
+      totaux.vecus[inc.vecu]=(totaux.vecus[inc.vecu]||0)+degVecu;
+    }
+
+    // Quête choisie (une seule gratuite par époque)
+    if(inc.quete){
+      const parts=inc.quete.match(/^(.+?)\s+(\d+)$/);
+      if(parts){
+        const qnm=parts[1];const qdeg=parseInt(parts[2]);
+        totaux.quetes[qnm]=(totaux.quetes[qnm]||0)+qdeg;
+      }
+    }
+
+    // Savoirs choisis (max des degrés indiqués)
+    for(const sv of (inc.savoirs||[])){
+      const parts=sv.match(/^(.+?)\s+(\d+)$/);
+      if(parts){
+        const snm=parts[1];const sdeg=parseInt(parts[2]);
+        totaux.savoirs[snm]=Math.max(totaux.savoirs[snm]||0,sdeg);
+      }
+    }
+  }
+  return totaux;
+}
+
+function chutesBonusPI(){
+  // Chaque degré de Chute rapporte +5 PI au budget
+  return Object.values(S.chutes).reduce((a,b)=>a+(b||0),0)*5;
+}
+function piSpent(){
+  let t=0;
+  // Époques : coût PI de base + investissements supplémentaires
+  for(const[id,inc] of Object.entries(S.incarnations)){
+    const ep=EPOQUES.find(e=>e.id===id);
+    if(ep) t+=ep.cout;
+    // Degrés de Vécu supplémentaires achetés dans cette époque
+    if(inc.vecus_deg) t+=Object.values(inc.vecus_deg).reduce((a,b)=>a+b,0);
+    // Savoirs supplémentaires
+    if(inc.savoirs_extra) t+=Object.values(inc.savoirs_extra).reduce((a,b)=>a+b,0);
+    // Sciences supplémentaires achetées dans l'époque
+    if(inc.sciences_extra) t+=Object.values(inc.sciences_extra).reduce((a,b)=>a+b,0);
+  }
+  // Vécus supplémentaires globaux : 1 PI par degré
+  for(const[id,c]of Object.entries(S.vecus)){const v=VECUS.find(x=>x.id===id);if(v)t+=v.co*c;}
+  // Magie : 1 PI par degré — sauf les degrés couverts par le pool gratuit
+  const totalMagieCircles=(S.magie.bas||0)+(S.magie.haut||0)+(S.magie.grand||0);
+  const magieFromPool=Math.min(S.pool_magie_used||0, totalMagieCircles);
+  t+=Math.max(0, totalMagieCircles-magieFromPool);
+  // Kabbale : 1 PI = 3 degrés — sauf degrés couverts par le pool gratuit
+  const totalSeph=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
+  const sephFromPool=Math.min(S.pool_kabbale_used||0, totalSeph);
+  const sephFromPI=Math.max(0, totalSeph-sephFromPool);
+  t+=Math.ceil(sephFromPI/3);
+  // Alchimie : 1 PI par degré — sauf degrés couverts par le pool gratuit
+  const totalAlchCircles=(S.alchimie.noir||0)+(S.alchimie.blanc||0)+(S.alchimie.rouge||0);
+  const alchFromPool=Math.min(S.pool_alchimie_used||0, totalAlchCircles);
+  t+=Math.max(0, totalAlchCircles-alchFromPool);
+  // Constructs : 1 PI chacun
+  t+=Object.values(S.constructs).reduce((a,b)=>a+b,0);
+  return t;
+}
+// Budget disponible = PI total + bonus Chutes (5 PI/degré) − dépenses
+function piLeft(){return S.pi_total + chutesBonusPI() - piSpent();}
+function calcAttrs(){
+  const sc=kaScores();
+  const feu=sc.Feu||0;
+  // Bonus dommages Ka-Feu : table officielle
+  let bonus_dom=0;
+  if(feu>=10)bonus_dom=2;
+  else if(feu>=5)bonus_dom=1;
+  return{
+    perspicacite: 11-sc.Air,       // 11 − Ka Air
+    recuperation: 11-sc.Terre,     // 11 − Ka Terre
+    initiative:   sc.Eau*2,        // Ka Eau × 2
+    voile:        0,               // Voile = 0 initialement
+    bonus_dom,                     // table Ka-Feu
+  };
+}
+function sapience(){return Math.floor(piLeft()/2);}
+function getMetier(){return METIERS.find(m=>m.id===S.metier)||null;}
+function kaSoleil(){const m=getMetier();return S.ka_soleil_base+(m?m.ks:0);}
+function sephOk(sp){if(!sp.req)return true;return(S.sephiroth[sp.req]||0)>=7;}
+
+// ════════════════════════════════════════════════════════
+// COMPATIBILITÉ (anciens appels Google Sheets → Supabase)
+// ════════════════════════════════════════════════════════
+async function saveToSheets(){ return saveToSupabase(); }
+async function loadFromSheets(){ return loadListFromSupabase(); }
+
+function setSyncStatus(status,msg){
+  syncStatus=status;syncMsg=msg;
+  const bar=document.querySelector('.sync-bar');
+  if(!bar)return;
+  bar.className='sync-bar '+status;
+  bar.innerHTML='';
+  const dot=document.createElement('div');
+  dot.className='sync-dot'+(status==='saving'?' pulse':'');
+  bar.appendChild(dot);
+  bar.appendChild(document.createTextNode(msg||syncMsg));
+}
+
+// ════════════════════════════════════════════════════════
+// DOM
+// ════════════════════════════════════════════════════════
+function h(tag,attr={},...ch){
+  const e=document.createElement(tag);
+  for(const[k,v]of Object.entries(attr)){
+    if(v==null)continue;
+    if(k==='cls')e.className=v;
+    else if(k==='style')Object.assign(e.style,v);
+    else if(k.startsWith('on'))e.addEventListener(k.slice(2).toLowerCase(),v);
+    else if(k==='disabled'){e.disabled=!!v;}
+    else if(k==='value'){e.value=v;}
+    else if(k==='checked'){e.checked=!!v;}
+    else e.setAttribute(k,v);
+  }
+  for(const c of ch){
+    if(c==null)continue;
+    if(typeof c==='string'||typeof c==='number')e.appendChild(document.createTextNode(String(c)));
+    else if(c instanceof Node)e.appendChild(c);
+  }
+  return e;
+}
+
+function buildActionBar(){
+  const old=document.querySelector('.action-bar');if(old)old.remove();
+  const bar=document.createElement('div');bar.className='action-bar';
+
+  const dot=document.createElement('div');dot.className='autosave-dot';dot.id='autosave-dot';
+  const lbl=document.createElement('span');lbl.className='action-bar-lbl';
+  lbl.id='autosave-lbl';lbl.textContent='Sauvegarde locale';
+  bar.appendChild(dot);bar.appendChild(lbl);
+
+  const sep=()=>{const s=document.createElement('div');s.style.cssText='width:1px;height:20px;background:var(--gold-d);margin:0 .3rem';return s;};
+  bar.appendChild(sep());
+
+  if(supaCurrentUser){
+    // ── Connecté ──────────────────────────────────────
+    const userLbl=document.createElement('span');
+    userLbl.className='action-bar-lbl';
+    userLbl.style.color='var(--ok)';
+    userLbl.textContent='⚡ '+supaCurrentUser.email;
+    bar.appendChild(userLbl);
+    bar.appendChild(sep());
+
+    // Sauvegarder
+    const btnSave=document.createElement('button');
+    btnSave.className='btn btn-cloud';
+    btnSave.innerHTML='☁ Sauvegarder';
+    btnSave.onclick=async()=>{
+      if(!S.nom||!S.nom.trim()){toastError('Donnez un nom à votre personnage (étape 1)');return;}
+      // Optionnel : demander un label de version
+      const label = prompt('Label de cette version (optionnel) :', 'Sauvegarde — '+new Date().toLocaleDateString('fr-FR')) || 'Sauvegarde automatique';
+      btnSave.disabled=true;btnSave.textContent='⟳ Envoi…';
+      const ok=await saveToSupabase(label);
+      if(ok){
+        btnSave.innerHTML='✓ Sauvegardé !';
+        btnSave.style.cssText='border-color:var(--ok);color:var(--ok);background:rgba(107,142,107,.15)';
+        toastSuccess('Sauvegardé dans Supabase !');
+        setTimeout(()=>{btnSave.disabled=false;btnSave.innerHTML='☁ Sauvegarder';btnSave.style.cssText='';},3000);
+      } else {
+        btnSave.disabled=false;btnSave.innerHTML='☁ Sauvegarder';btnSave.style.cssText='';
+      }
+    };
+    bar.appendChild(btnSave);
+
+    // Charger
+    const btnLoad=document.createElement('button');
+    btnLoad.className='btn btn-s';
+    btnLoad.innerHTML='📂 Charger';
+    btnLoad.onclick=loadListFromSupabase;
+    bar.appendChild(btnLoad);
+
+    // Historique
+    const btnVer=document.createElement('button');
+    btnVer.className='btn btn-s';
+    btnVer.innerHTML='🕰 Versions';
+    btnVer.onclick=showVersionsModal;
+    bar.appendChild(btnVer);
+
+    bar.appendChild(sep());
+
+    // Déconnexion
+    const btnOut=document.createElement('button');
+    btnOut.className='btn btn-s';
+    btnOut.style.color='var(--parch-d)';
+    btnOut.innerHTML='⎋ Déconnexion';
+    btnOut.onclick=()=>{if(confirm('Se déconnecter ?')) supaSignOut();};
+    bar.appendChild(btnOut);
+
+  } else if(SUPA_URL && SUPA_KEY) {
+    // ── Config OK mais non connecté ────────────────────
+    const btnLogin=document.createElement('button');
+    btnLogin.className='btn btn-cloud';
+    btnLogin.innerHTML='⚡ Se connecter';
+    btnLogin.onclick=()=>showAuthPanel();
+    bar.appendChild(btnLogin);
+  } else {
+    // ── Pas configuré ──────────────────────────────────
+    const hint=document.createElement('span');
+    hint.className='action-bar-lbl';
+    hint.style.color='var(--blood-l)';
+    hint.textContent='⚠ Supabase non configuré';
+    bar.appendChild(hint);
+  }
+
+  bar.appendChild(sep());
+
+  // Export JSON
+  const btnEJ=document.createElement('button');btnEJ.className='btn btn-s';btnEJ.innerHTML='⬇ JSON';
+  btnEJ.onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${S.nom||'nephilim'}_${new Date().toISOString().slice(0,10)}.json`;a.click();toastSuccess('Exporté en JSON');};
+  bar.appendChild(btnEJ);
+
+  // Import JSON
+  const btnIJ=document.createElement('button');btnIJ.className='btn btn-s';btnIJ.innerHTML='⬆ JSON';
+  btnIJ.onclick=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=e=>{const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);Object.keys(S).forEach(k=>delete S[k]);Object.assign(S,d);supaPersonnageId=null;doLocalSave();render();toastSuccess('Fiche importée !');}catch{toastError('JSON invalide');}};r.readAsText(e.target.files[0]);};inp.click();};
+  bar.appendChild(btnIJ);
+
+  // Nouveau
+  const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='✦ Nouveau';
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null};supaPersonnageId=null;render();}};
+  bar.appendChild(btnNew);
+
+  document.body.appendChild(bar);
+}
+
+function flashAutosave(){
+  const dot=document.getElementById('autosave-dot');
+  const lbl=document.getElementById('autosave-lbl');
+  if(!dot||!lbl)return;
+  dot.classList.add('active');
+  lbl.textContent='✓ Sauvegardé localement';
+  setTimeout(()=>{dot.classList.remove('active');lbl.textContent='Sauvegarde locale';},1500);
+}
+
+function render(){
+  syncPools();
+  const r=document.getElementById('root');r.innerHTML='';
+  const w=h('div',{cls:'wrap'});
+  w.appendChild(buildHeader());
+  if(!SUPA_URL || !SUPA_KEY) w.appendChild(buildSetupBox());
+  w.appendChild(buildSyncBar());
+  w.appendChild(buildProgress());
+  if(S.step>=4)w.appendChild(buildPIBar());
+  w.appendChild(buildStep());
+  r.appendChild(w);
+  buildActionBar();
+  doLocalSave();
+  flashAutosave();
+}
+
+function buildHeader(){
+  return h('div',{cls:'hdr'},
+    h('div',{cls:'hdr-sigil'},'✡'),
+    h('h1',{},'Nephilim — Forge des Âmes'),
+    h('p',{cls:'hdr-sub'},S.nom||(S.joueur?`Joueur : ${S.joueur}`:'Création de Personnage')),
+  );
+}
+
+function buildSyncBar(){
+  const isConn = !!supaCurrentUser;
+  const isConf = !!(SUPA_URL && SUPA_KEY);
+  const icons={idle:'☁',saving:'⟳',saved:'✓',error:'✕'};
+  let msg;
+  if(!isConf) msg='Supabase non configuré — cliquez sur ⚙ Config';
+  else if(!isConn) msg='Non connecté — cliquez sur ⚡ Se connecter';
+  else msg = syncStatus==='idle' ? ('✓ Connecté en tant que '+supaCurrentUser.email) : (syncMsg||'');
+  const bar=h('div',{cls:`sync-bar ${syncStatus}`},
+    h('div',{cls:`sync-dot${syncStatus==='saving'?' pulse':''}`}),
+    icons[syncStatus]+' '+msg,
+  );
+  return bar;
+}
+
+function buildSetupBox(){
+  // N'affiche la config que si Supabase n'est pas encore configuré
+  if(SUPA_URL && SUPA_KEY) return h('div',{});
+  const box=h('div',{cls:'setup-box'});
+  box.appendChild(h('h2',{},'⚙️ Configuration Supabase (une seule fois)'));
+  const steps=[
+    ['1','Créez un projet sur ',h('strong',{},'supabase.com'),' (gratuit)'],
+    ['2','Dans ',h('strong',{},'Project Settings → API'),', copiez l\'URL et la clé ',h('strong',{},'anon public')],
+    ['3','Dans l\'éditeur SQL de Supabase, exécutez les fichiers ',h('strong',{},'"01_schema_supabase.sql"'),' puis ',h('strong',{},'"02_inserts_magie.sql"'),' fournis'],
+    ['4','Collez l\'URL et la clé ci-dessous, puis cliquez Enregistrer :'],
+  ];
+  for(const[n,...txt]of steps){
+    box.appendChild(h('div',{cls:'setup-step'},h('span',{cls:'setup-num'},n),h('span',{cls:'setup-txt'},...txt)));
+  }
+  const rowUrl=h('div',{cls:'url-input-row'});
+  const inpUrl=h('input',{type:'text',placeholder:'https://xxxx.supabase.co',value:SUPA_URL});
+  rowUrl.appendChild(h('span',{cls:'lbl',style:{minWidth:'80px',marginRight:'.4rem'}},'URL'));
+  rowUrl.appendChild(inpUrl);
+  box.appendChild(rowUrl);
+  const rowKey=h('div',{cls:'url-input-row'});
+  const inpKey=h('input',{type:'text',placeholder:'eyJhbGci… (clé anon public)',value:SUPA_KEY});
+  rowKey.appendChild(h('span',{cls:'lbl',style:{minWidth:'80px',marginRight:'.4rem'}},'Clé anon'));
+  rowKey.appendChild(inpKey);
+  box.appendChild(rowKey);
+  const btnSave=h('button',{onClick:()=>{
+    const url=inpUrl.value.trim();
+    const key=inpKey.value.trim();
+    if(url.startsWith('https://') && key.length>20){
+      localStorage.setItem('neph_supa_url',url);
+      localStorage.setItem('neph_supa_key',key);
+      location.reload();
+    } else { toastError('URL ou clé invalide'); }
+  }},'Enregistrer & Recharger');
+  btnSave.className='btn btn-p';
+  btnSave.style.marginTop='.8rem';
+  box.appendChild(btnSave);
+  return box;
+}
+
+// ── PANNEAU DE CONNEXION (Magic Link) ─────────────────────
+function showAuthPanel(){
+  const old=document.querySelector('.auth-panel');if(old)old.remove();
+  const panel=h('div',{cls:'auth-panel'});
+  const box=h('div',{cls:'auth-box'});
+  box.appendChild(h('div',{style:{fontSize:'2.5rem',marginBottom:'.3rem'}},'✡'));
+  box.appendChild(h('h2',{},'Forge des Âmes'));
+  box.appendChild(h('p',{},'Connectez-vous avec votre adresse email pour sauvegarder et retrouver vos personnages sur tous vos appareils.'));
+
+  const inp=h('input',{type:'email',placeholder:'votre@email.com'});
+  const msg=h('div',{cls:'auth-msg'});
+  const btn=h('button',{cls:'btn btn-p',style:{width:'100%',marginTop:'.5rem'},
+    onClick:async()=>{
+      const email=inp.value.trim();
+      if(!email.includes('@')){msg.className='auth-msg err';msg.textContent='Email invalide';return;}
+      btn.disabled=true;btn.textContent='⟳ Envoi…';
+      const {error}=await supaSignIn(email);
+      if(error){msg.className='auth-msg err';msg.textContent='Erreur : '+error;btn.disabled=false;btn.textContent='Recevoir le lien';}
+      else{msg.className='auth-msg';msg.textContent='✓ Vérifiez votre boîte mail et cliquez le lien magique !';}
+    }
+  },'Recevoir le lien magique');
+
+  box.appendChild(inp);
+  box.appendChild(btn);
+  box.appendChild(msg);
+  box.appendChild(h('button',{cls:'modal-close',style:{marginTop:'1.2rem'},onClick:()=>panel.remove()},'Fermer'));
+  panel.appendChild(box);
+  document.body.appendChild(panel);
+  setTimeout(()=>inp.focus(),100);
+}
+
+function buildProgress(){
+  const lbls=['Ka','Pentacle','Profil','Passé','Occulte','Stase','Simulacre','Attributs','Final'];
+  const d=h('div',{cls:'prog-wrap'});
+  const steps=h('div',{cls:'prog-steps'});
+  lbls.forEach((_,i)=>steps.appendChild(h('div',{cls:`prog-dot ${i+1<S.step?'done':i+1===S.step?'active':''}`})));
+  d.appendChild(steps);
+  d.appendChild(h('div',{cls:'prog-lbl'},'Étape ',h('span',{},String(S.step)),' / 9 — ',lbls[S.step-1]));
+  return d;
+}
+
+function buildPIBar(){
+  const left=piLeft();
+  const bonus=chutesBonusPI();
+  const total=S.pi_total+bonus;
+  const bar=h('div',{cls:'pi-bar'},
+    h('span',{cls:'pi-gem'},'💎'),
+    h('div',{},
+      h('div',{cls:'pi-lbl'},'Points d\'Incarnation restants'),
+      h('div',{},
+        h('span',{cls:'pi-val'},String(left)),
+        h('span',{cls:'pi-tot'},` / ${total}`),
+        bonus>0?h('span',{style:{color:'var(--blood-l)',fontSize:'.78rem',marginLeft:'.4rem',fontStyle:'italic'}},
+          ` (${S.pi_total} + ${bonus} Chutes)`):null,
+      )
+    ),
+    left<=2?h('span',{cls:'pi-warn'},'⚠ Peu de PI'):h('span',{cls:'pi-gem'},'✨'),
+  );
+  return bar;
+}
+
+function buildStep(){
+  switch(S.step){
+    case 1:return s1();case 2:return s2();case 3:return s3();
+    case 4:return s4();case 5:return s5();case 6:return s6();
+    case 7:return s7();case 8:return s8();case 9:return s9();
+    default:return h('div',{},'—');
+  }
+}
+
+function nav(back,nxt){
+  const r=h('div',{cls:'btn-row'});
+  r.appendChild(back?h('button',{cls:'btn btn-s',onClick:()=>{S.step--;render();}},'← Précédent'):h('div',{}));
+  r.appendChild(h('button',{cls:'btn btn-p',disabled:!nxt,style:nxt?{}:{opacity:'.35',cursor:'not-allowed'},
+    onClick:()=>{if(nxt){S.step++;render();}}},S.step===8?'Finaliser ✨':'Suivant →'));
+  return r;
+}
+function rcRow(k,v){return h('div',{cls:'rc-row'},h('span',{cls:'rc-k'},k),h('span',{cls:'rc-v'},String(v)));}
+
+// ════════════════ STEPS ════════════════
+
+function s1(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'I'},'Le Ka Dominant'));
+  d.appendChild(h('p',{cls:'step-sub'},'L\'élément qui constitue l\'essence de votre âme. Ce choix structure tout le Pentacle.'));
+  const nb=h('div',{cls:'box'},h('h3',{},'Identité'));
+  const r1=h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.8rem',marginBottom:'.8rem'}});
+  const iNom=document.createElement('input');
+  iNom.type='text';iNom.placeholder='Nom du Nephilim…';iNom.value=S.nom||'';
+  iNom.addEventListener('input',e=>{
+    S.nom=e.target.value;
+    const s=document.querySelector('.hdr-sub');
+    if(s)s.textContent=S.nom||'Création de Personnage';
+  });
+  const iJoueur=document.createElement('input');
+  iJoueur.type='text';iJoueur.placeholder='Nom du joueur…';iJoueur.value=S.joueur||'';
+  iJoueur.addEventListener('input',e=>{S.joueur=e.target.value;});
+  r1.appendChild(h('div',{},h('div',{cls:'lbl'},'Nom du Nephilim'),iNom));
+  r1.appendChild(h('div',{},h('div',{cls:'lbl'},'Nom du joueur'),iJoueur));
+  nb.appendChild(r1);d.appendChild(nb);
+  const g=h('div',{cls:'ka-grid'});
+  for(const[ka,data]of Object.entries(KA)){
+    g.appendChild(h('div',{cls:`ka-card ${ka.toLowerCase()}-ka ${S.ka_dom===ka?'sel':''}`,
+      onClick:()=>{S.ka_dom=ka;S.metamorphe=null;render();}},
+      h('span',{cls:'ka-ico'},data.ico),h('span',{cls:'ka-nm'},ka),h('span',{cls:'ka-dc'},data.dc)));
+  }
+  d.appendChild(g);
+  d.appendChild(nav(false,!!S.ka_dom));return d;
+}
+
+function s2(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'II'},'Pentacle & Métamorphe'));
+  d.appendChild(h('p',{cls:'step-sub'},'Le Ka dominant structure les autres éléments. Les Ka opposés dépendent de votre profil (à choisir à l\'étape 3).'));
+  const data=KA[S.ka_dom],sc=kaScores();
+
+  // Rôles : dominant, 2 neutres, 2 opposés
+  const roleMap={};
+  roleMap[S.ka_dom]='dom';
+  data.neu.forEach(k=>{roleMap[k]='neu';});
+  data.opp.forEach(k=>{roleMap[k]='opp';});
+  const roleLbl={dom:'Dominant',neu:'Neutre',opp:'Opposé'};
+
+  const penta=h('div',{cls:'penta'});
+  for(const ka of Object.keys(KA)){
+    const role=roleMap[ka]||'neu';
+    const kd=KA[ka];
+    penta.appendChild(h('div',{cls:`kb ${role}`},
+      h('span',{cls:'ki'},kd.ico),
+      h('span',{cls:'kr'},roleLbl[role]),
+      h('span',{cls:'kn'},ka),
+      h('span',{cls:'ks'},String(sc[ka]||0)),
+    ));
+  }
+  d.appendChild(penta);
+
+  // Info-box avec règle selon profil
+  let oppTxt='Opposés : selon profil (choisir à l\'étape 3)';
+  if(S.profil==='Éveillé') oppTxt='Opposés : 3 et 2 (Éveillé)';
+  else if(S.profil==='Révélé') oppTxt='Opposés : 2 et 1 (Révélé)';
+  else if(S.profil==='Immortel') oppTxt='Opposés : 1 et 0 (Immortel)';
+  d.appendChild(h('div',{cls:'info-box'},
+    h('strong',{},'Pentacle 5e éd. :'),' Dominant=5 · Neutres=4 · ',oppTxt,
+    h('br',{}),'Oppositions fixes : Feu↔Eau · Air↔Terre · Lune opposée à Terre & Eau'
+  ));
+
+  const mb=h('div',{cls:'box'},h('h3',{},'Métamorphe'));
+  const mg=h('div',{cls:'meta-grid'});
+  for(const m of(METAS[S.ka_dom]||[])){
+    // Marquer les Selenim distinctement
+    const isSelenim=m.nm.startsWith('Selenim');
+    mg.appendChild(h('div',{
+      cls:`meta-card ${S.metamorphe===m.nm?'sel':''}`,
+      style:isSelenim?{borderColor:'rgba(155,143,192,.3)'}:{},
+      onClick:()=>{S.metamorphe=m.nm;render();}
+    },
+      h('span',{cls:'meta-ico'},m.ico),
+      h('span',{cls:'meta-nm'},m.nm+(isSelenim?' 🌑':'')),
+      h('span',{cls:'meta-dc'},m.dc),
+    ));
+  }
+  mb.appendChild(mg);
+
+  // Aperçu du métamorphe sélectionné
+  if(S.metamorphe){
+    const selMeta=(METAS[S.ka_dom]||[]).find(m=>m.nm===S.metamorphe);
+    if(selMeta){
+      mb.appendChild(h('div',{cls:'info-box',style:{marginTop:'1rem'}},
+        h('strong',{},`${selMeta.ico} ${selMeta.nm} — Manifestations physiques :`),
+        h('br',{}), selMeta.dc,
+        selMeta.nm.startsWith('Selenim')
+          ? h('p',{style:{marginTop:'.4rem',color:'var(--seph)',fontSize:'.8rem',fontStyle:'normal'}},
+              '⚠ Les Selenim (Lune Noire) ne choisissent pas un métamorphe légendaire mais développent un Imago anatomique.')
+          : null,
+      ));
+    }
+  }
+  d.appendChild(mb);
+  d.appendChild(nav(true,!!S.metamorphe));return d;
+}
+
+function s3(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'III'},'Profil de Départ'));
+  d.appendChild(h('p',{cls:'step-sub'},'Le niveau d\'éveil détermine votre budget de PI, votre Sapience initiale et vos degrés de Chute maximum.'));
+  // Données officielles 5e édition
+  const profs=[
+    {id:'Éveillé', pi:25, ps:5,  chmax:2, ico:'🌱', dc:'Nephilim récemment réveillé. Quelques incarnations, grande flexibilité.'},
+    {id:'Révélé',  pi:30, ps:7,  chmax:3, ico:'🔮', dc:'Conscience partielle de sa nature immortelle. Pouvoirs modérés.'},
+    {id:'Immortel',pi:40, ps:10, chmax:4, ico:'⭐', dc:'Nephilim ancien et puissant. Nombreuses vies, sciences avancées.'},
+  ];
+  const g=h('div',{cls:'prf-grid'});
+  for(const p of profs){
+    const card=h('div',{cls:`prf-card ${S.profil===p.id?'sel':''}`,
+      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;render();}},
+      h('span',{cls:'prf-pi'},String(p.pi)+' PI'),
+      h('span',{cls:'prf-nm'},`${p.ico} ${p.id}`),
+      h('p',{cls:'prf-dc'},p.dc),
+      h('div',{style:{marginTop:'.7rem',display:'flex',justifyContent:'center',gap:'.5rem',flexWrap:'wrap'}},
+        h('span',{cls:'badge'},`${p.ps} PS initiaux`),
+        h('span',{cls:'badge'},`Chutes max : ${p.chmax}`),
+      ),
+    );
+    g.appendChild(card);
+  }
+  d.appendChild(g);d.appendChild(nav(true,!!S.profil));return d;
+}
+
+function s4(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'IV'},'Le Passé — Incarnations'));
+  d.appendChild(h('p',{cls:'step-sub'},'Choisissez vos époques. Les avantages gratuits s\'affichent en vue réduite. Investissez des PI supplémentaires dans les vécus, savoirs et sciences.'));
+
+  const eres=[1,2,3,4,5,6,7];
+  const ereNms=['Atlantide','Guerres Élémentaires','Compacts Secrets','Hermétisme','Guerres Secrètes','Nouveaux Mondes','Grand Éveil'];
+  const ereIcos=['🌊','⚡','🔯','📜','✝️','🎨','🌆'];
+
+  for(const ere of eres){
+    const epoques=EPOQUES.filter(e=>e.ere===ere);
+    const ereBox=h('div',{cls:'box'});
+    ereBox.appendChild(h('h3',{},`${ereIcos[ere-1]} Ère ${ere} — ${ereNms[ere-1]}`));
+
+    for(const ep of epoques){
+      const inc=S.incarnations[ep.id]||null;
+      const chosen=!!inc;
+      const left=piLeft();
+      const canAdd=!chosen&&(left>=ep.cout||ep.cout===0);
+
+      const card=h('div',{style:{
+        border:`1px solid ${chosen?'var(--gold)':'var(--gold-d)'}`,
+        borderRadius:'8px',padding:'1rem',marginBottom:'.7rem',
+        background:chosen?'rgba(201,168,76,.07)':'rgba(13,11,8,.5)',
+        transition:'all .2s',
+      }});
+
+      // ── EN-TÊTE avec coût + bouton ──────────────────────────
+      const hd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',
+        marginBottom:'.5rem',flexWrap:'wrap',gap:'.4rem'}});
+
+      hd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.88rem',
+        color:chosen?'var(--gold)':'var(--parch)'}},
+        `${ep.ico} ${ep.nm} `,h('span',{style:{color:'var(--parch-d)',fontSize:'.75rem'}},`(${ep.per})`)));
+
+      const costBadge=h('span',{cls:'badge',style:ep.cout===0?{color:'var(--ok)',borderColor:'var(--ok)'}:{}},
+        ep.cout===0?'Gratuit':`${ep.cout} PI`);
+      const btnTgl=h('button',{
+        cls:chosen?'btn btn-s':'btn btn-p',
+        style:{padding:'.3rem .8rem',fontSize:'.73rem'},
+        disabled:!chosen&&!canAdd,
+        onClick:()=>{
+          if(chosen){delete S.incarnations[ep.id];}
+          else{S.incarnations[ep.id]={vecu:null,savoirs:[],quete:null,vecus_deg:{},savoirs_extra:{},sciences_extra:{}};}
+          render();
+        }
+      },chosen?'✕ Retirer':'+ Choisir');
+
+      hd.appendChild(h('div',{style:{display:'flex',gap:'.5rem',alignItems:'center'}},costBadge,btnTgl));
+      card.appendChild(hd);
+
+      // ── BADGES D\'AVANTAGES (vue réduite ET vue développée) ──
+      const badgeRow=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.3rem',marginBottom:'.5rem'}});
+      ep.sciences.forEach(s=>badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)',background:'rgba(192,160,255,.08)'}},
+          `✦ ${s.nm} +${s.deg}`)));
+      if(ep.sorts>0) badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`📖 ${ep.sorts} sort${ep.sorts>1?'s':''}`));
+      if(ep.savoirs.length>0) badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${ep.savoirs.length} savoirs`));
+      ep.quetes.forEach(q=>badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--gold)',background:'rgba(201,168,76,.08)'}},`⚜ ${q}`)));
+      card.appendChild(badgeRow);
+
+      if(!chosen){
+        // Vue réduite : description + aperçu vécus
+        card.appendChild(h('p',{cls:'lbl',style:{margin:'0',fontStyle:'italic'}},ep.dc));
+        // Aperçu des vécus disponibles
+        const vl=ep.vecus_data||[];
+        if(vl.length>0){
+          const vp=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.3rem',marginTop:'.4rem'}});
+          vl.forEach(vd=>{
+            const isKaDom=vd.ka===S.ka_dom;
+            vp.appendChild(h('span',{
+              cls:'badge',
+              title:vd.dc,
+              style:{color:isKaDom?'var(--gold)':'var(--parch-d)',
+                borderColor:isKaDom?'var(--gold-d)':'var(--gold-d)',
+                cursor:'default'},
+            },`${vd.nm}${isKaDom?' ⭐':''} (${vd.ka})`));
+          });
+          card.appendChild(vp);
+        }
+      } else {
+        // Vue développée : tous les choix
+
+        // ── CHOIX DU VÉCU ─────────────────────────────────────
+        const vbox=h('div',{style:{marginBottom:'.8rem'}});
+        vbox.appendChild(h('p',{cls:'lbl'},'Vécu de cette incarnation (⭐ = Ka dominant → 2 degrés gratuits) :'));
+        const vgrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.4rem',marginBottom:'.4rem'}});
+        const vecusList=ep.vecus_data||(ep.vecus||[]).map((nm,i)=>({nm,ka:(ep.ka_vecus&&ep.ka_vecus[i])||'',dc:''}));
+        vecusList.forEach(vd=>{
+          const isKaDom=vd.ka===S.ka_dom;
+          const vsel=inc.vecu===vd.nm;
+          vgrid.appendChild(h('button',{
+            title:vd.dc,
+            style:{padding:'.35rem .7rem',fontFamily:'Cinzel,serif',fontSize:'.73rem',
+              border:`1px solid ${vsel?'var(--gold)':isKaDom?'rgba(201,168,76,.4)':'var(--gold-d)'}`,
+              borderRadius:'6px',cursor:'pointer',transition:'all .2s',
+              background:vsel?'rgba(201,168,76,.15)':isKaDom?'rgba(201,168,76,.06)':'transparent',
+              color:vsel?'var(--gold)':isKaDom?'var(--gold-l)':'var(--parch-d)'},
+            onClick:()=>{S.incarnations[ep.id].vecu=vd.nm;render();}
+          },vd.nm+(isKaDom?' ⭐':'')+(isKaDom?'':` (${vd.ka})`)));
+        });
+        vbox.appendChild(vgrid);
+
+        // Description immersive + degrés supplémentaires
+        if(inc.vecu){
+          const vDobj=vecusList.find(v=>v.nm===inc.vecu);
+          const isKaDomSel=vDobj&&vDobj.ka===S.ka_dom;
+          const baseDeg=isKaDomSel?2:1;
+          const extraDeg=inc.vecus_deg&&inc.vecus_deg[inc.vecu]||0;
+          const totalDeg=baseDeg+extraDeg;
+
+          if(vDobj&&vDobj.dc){
+            const descBox=h('div',{style:{
+              padding:'.5rem .7rem',background:'rgba(201,168,76,.05)',
+              border:`1px solid rgba(201,168,76,.15)`,borderRadius:'6px',
+              borderLeft:`3px solid ${isKaDomSel?'var(--gold)':'var(--gold-d)'}`,
+              marginBottom:'.5rem',
+            }});
+            descBox.appendChild(h('p',{style:{fontStyle:'italic',color:'var(--parch-d)',fontSize:'.83rem',marginBottom:'.35rem'}},vDobj.dc));
+            // Contrôles degrés supplémentaires
+            const degRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem',flexWrap:'wrap'}});
+            degRow.appendChild(h('span',{style:{color:isKaDomSel?'var(--gold)':'var(--gold-d)',fontSize:'.75rem',fontFamily:'Cinzel,serif'}},
+              isKaDomSel?`⭐ Ka dominant — base: 2°`:' base: 1°'));
+            degRow.appendChild(h('span',{style:{color:'var(--parch-d)',fontSize:'.75rem'}},'PI supp. :'));
+            degRow.appendChild(h('button',{cls:'qb',disabled:extraDeg<=0,
+              onClick:()=>{
+                if(!S.incarnations[ep.id].vecus_deg) S.incarnations[ep.id].vecus_deg={};
+                S.incarnations[ep.id].vecus_deg[inc.vecu]=Math.max(0,extraDeg-1);
+                render();
+              }},'−'));
+            degRow.appendChild(h('span',{cls:'qdp'},String(extraDeg)));
+            degRow.appendChild(h('button',{cls:'qb',disabled:left<1,
+              onClick:()=>{
+                if(!S.incarnations[ep.id].vecus_deg) S.incarnations[ep.id].vecus_deg={};
+                S.incarnations[ep.id].vecus_deg[inc.vecu]=(extraDeg||0)+1;
+                render();
+              }},'✚'));
+            degRow.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.8rem',fontFamily:'Cinzel,serif',fontWeight:'700'}},
+              `= ${totalDeg}° total`));
+            descBox.appendChild(degRow);
+            vbox.appendChild(descBox);
+          }
+        }
+        card.appendChild(vbox);
+
+        // ── SCIENCES SUPPLÉMENTAIRES (achat PI dans l\'époque) ─
+        const sciEp=ep.sciences||[];
+        if(sciEp.length>0){
+          const scibox=h('div',{style:{marginBottom:'.8rem',padding:'.6rem',
+            background:'rgba(192,160,255,.04)',border:'1px solid rgba(192,160,255,.15)',borderRadius:'6px'}});
+          scibox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.5rem',color:'var(--seph)'}},
+            'Sciences offertes (gratuits) + investissements PI supplémentaires :'));
+          sciEp.forEach(sci=>{
+            const sciKey=sci.nm.toLowerCase().replace(/[^a-z]/g,'');
+            const extra=inc.sciences_extra&&inc.sciences_extra[sciKey]||0;
+            const kabbaleNote=sciKey==='kabbale'?' (1PI=3°)':'';
+            const piCost=sciKey==='kabbale'?'1PI→3°':'1PI→1°';
+            const row=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem',flexWrap:'wrap',marginBottom:'.3rem'}});
+            row.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'var(--seph)',minWidth:'90px'}},
+              `${sci.nm}`));
+            row.appendChild(h('span',{cls:'badge',style:{color:'var(--seph)'}},`+${sci.deg} gratuit`));
+            row.appendChild(h('span',{cls:'lbl',style:{margin:0}},'+ PI:'));
+            row.appendChild(h('button',{cls:'qb',disabled:extra<=0,
+              onClick:()=>{
+                if(!S.incarnations[ep.id].sciences_extra) S.incarnations[ep.id].sciences_extra={};
+                const cur=S.incarnations[ep.id].sciences_extra[sciKey]||0;
+                S.incarnations[ep.id].sciences_extra[sciKey]=Math.max(0,cur-1);
+                render();
+              }},'−'));
+            row.appendChild(h('span',{cls:'qdp'},String(extra)));
+            row.appendChild(h('button',{cls:'qb',disabled:left<1,
+              onClick:()=>{
+                if(!S.incarnations[ep.id].sciences_extra) S.incarnations[ep.id].sciences_extra={};
+                const cur=S.incarnations[ep.id].sciences_extra[sciKey]||0;
+                S.incarnations[ep.id].sciences_extra[sciKey]=cur+1;
+                render();
+              }},'✚'));
+            row.appendChild(h('span',{style:{fontSize:'.7rem',color:'var(--gold-d)'}},piCost));
+            row.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.8rem',fontFamily:'Cinzel,serif'}},
+              `= ${sci.deg+extra}° total${kabbaleNote}`));
+            scibox.appendChild(row);
+          });
+          card.appendChild(scibox);
+        }
+
+        // ── CHOIX DES SAVOIRS (3 gratuits + extras PI) ─────────
+        const sabox=h('div',{style:{marginBottom:'.8rem'}});
+        const saLeft=3-(inc.savoirs||[]).length;
+        sabox.appendChild(h('p',{cls:'lbl'},
+          `Savoirs ésotériques — 3 gratuits (${saLeft} restant${saLeft!==1?'s':''}) + extras à 1 PI/degré :`));
+        const sagrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.35rem',marginBottom:'.4rem'}});
+        ep.savoirs.forEach(sv=>{
+          const isSel=(inc.savoirs||[]).includes(sv);
+          const extra=inc.savoirs_extra&&inc.savoirs_extra[sv]||0;
+          const parts=sv.match(/^(.+?)\s+(\d+)$/);
+          const baseDeg=parts?parseInt(parts[2]):1;
+          const totalDeg=baseDeg+extra;
+
+          const wrap=h('div',{style:{display:'flex',flexDirection:'column',gap:'.2rem',
+            padding:'.3rem .5rem',border:`1px solid ${isSel?'var(--seph)':'rgba(192,160,255,.2)'}`,
+            borderRadius:'6px',background:isSel?'rgba(192,160,255,.1)':'transparent',minWidth:'120px'}});
+
+          // Bouton sélection gratuite
+          const selBtn=h('button',{
+            style:{fontFamily:'EB Garamond,serif',fontStyle:'italic',fontSize:'.8rem',
+              background:'transparent',border:'none',cursor:!isSel&&saLeft<=0?'not-allowed':'pointer',
+              color:isSel?'var(--seph)':'var(--parch-d)',padding:'0',textAlign:'left',
+              opacity:!isSel&&saLeft<=0?'0.4':'1'},
+            disabled:!isSel&&saLeft<=0,
+            onClick:()=>{
+              const arr=inc.savoirs||[];
+              if(isSel){S.incarnations[ep.id].savoirs=arr.filter(x=>x!==sv);}
+              else if(arr.length<3){S.incarnations[ep.id].savoirs=[...arr,sv];}
+              render();
+            }
+          },(isSel?'✓ ':'◦ ')+sv);
+          wrap.appendChild(selBtn);
+
+          // Contrôles degrés supplémentaires
+          const extraRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.3rem'}});
+          extraRow.appendChild(h('span',{style:{fontSize:'.68rem',color:'var(--gold-d)'}},'+PI:'));
+          extraRow.appendChild(h('button',{cls:'qb',style:{width:'20px',height:'20px',fontSize:'.7rem'},
+            disabled:extra<=0,
+            onClick:()=>{
+              if(!S.incarnations[ep.id].savoirs_extra) S.incarnations[ep.id].savoirs_extra={};
+              S.incarnations[ep.id].savoirs_extra[sv]=Math.max(0,extra-1);
+              render();
+            }},'−'));
+          extraRow.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.75rem',color:'var(--gold)',minWidth:'14px',textAlign:'center'}},String(extra)));
+          extraRow.appendChild(h('button',{cls:'qb',style:{width:'20px',height:'20px',fontSize:'.7rem'},
+            disabled:left<1,
+            onClick:()=>{
+              if(!S.incarnations[ep.id].savoirs_extra) S.incarnations[ep.id].savoirs_extra={};
+              S.incarnations[ep.id].savoirs_extra[sv]=(extra||0)+1;
+              render();
+            }},'✚'));
+          extraRow.appendChild(h('span',{style:{fontSize:'.68rem',color:'var(--gold)',fontFamily:'Cinzel,serif'}},`=${totalDeg}°`));
+          wrap.appendChild(extraRow);
+          sagrid.appendChild(wrap);
+        });
+        sabox.appendChild(sagrid);
+        card.appendChild(sabox);
+
+        // ── QUÊTE (1 seule gratuite, autres à 2 PI) ─────────────
+        if(ep.quetes.length>0){
+          const qbox=h('div',{style:{marginBottom:'.8rem'}});
+          qbox.appendChild(h('p',{cls:'lbl'},
+            '⚜ Quête ésotérique — 1 gratuite, les autres : 2 PI/degré :'));
+          const qgrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.4rem'}});
+          ep.quetes.forEach(q=>{
+            const isSelQ=inc.quete===q;
+            const isOtherChosen=inc.quete&&inc.quete!==q;
+            qgrid.appendChild(h('button',{
+              style:{padding:'.3rem .7rem',fontFamily:'Cinzel,serif',fontSize:'.73rem',
+                border:`1px solid ${isSelQ?'var(--gold-l)':isOtherChosen?'rgba(201,168,76,.15)':'var(--gold-d)'}`,
+                borderRadius:'6px',cursor:isOtherChosen?'not-allowed':'pointer',
+                background:isSelQ?'rgba(201,168,76,.15)':'transparent',
+                color:isSelQ?'var(--gold-l)':isOtherChosen?'var(--gold-d)':'var(--parch-d)',
+                transition:'all .2s',opacity:isOtherChosen?'0.4':'1'},
+              disabled:isOtherChosen,
+              onClick:()=>{
+                S.incarnations[ep.id].quete=isSelQ?null:q;
+                render();
+              }
+            },(isSelQ?'⚜ ':'◦ ')+q+(isSelQ?' (gratuite)':'')));
+          });
+          qbox.appendChild(qgrid);
+          if(ep.quetes.length>1&&!inc.quete){
+            qbox.appendChild(h('p',{cls:'lbl',style:{color:'var(--gold-d)',fontSize:'.72rem',marginTop:'.3rem'}},
+              '💡 Les quêtes non choisies restent accessibles à 2 PI/degré via l\'étape 5.'));
+          }
+          card.appendChild(qbox);
+        }
+
+        // ── AVANTAGES OFFERTS (récapitulatif) ───────────────────
+        if(ep.sciences.length>0||ep.sorts>0){
+          const scibox=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.4rem',
+            paddingTop:'.5rem',borderTop:'1px solid rgba(201,168,76,.1)'}});
+          scibox.appendChild(h('span',{style:{width:'100%',fontFamily:'Cinzel,serif',
+            fontSize:'.7rem',color:'var(--gold-d)',marginBottom:'.2rem'}},'Avantages offerts :'));
+          ep.sciences.forEach(s=>scibox.appendChild(
+            h('span',{cls:'badge',style:{color:'var(--seph)'}},`${s.nm} +${s.deg}°`)));
+          if(ep.sorts>0) scibox.appendChild(
+            h('span',{cls:'badge'},`${ep.sorts} sort${ep.sorts>1?'s':''}`));
+          ep.quetes.forEach(q=>scibox.appendChild(
+            h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`⚜ ${q}`)));
+          card.appendChild(scibox);
+        }
+      }
+      ereBox.appendChild(card);
+    }
+    d.appendChild(ereBox);
+  }
+
+  // Résumé PI + totaux cumulés
+  const tots=calcTotauxCumules();
+  const totalInvested=Object.values(S.incarnations).reduce((t,inc)=>{
+    let s=0;
+    if(inc.vecus_deg) s+=Object.values(inc.vecus_deg).reduce((a,b)=>a+b,0);
+    if(inc.savoirs_extra) s+=Object.values(inc.savoirs_extra).reduce((a,b)=>a+b,0);
+    if(inc.sciences_extra) s+=Object.values(inc.sciences_extra).reduce((a,b)=>a+b,0);
+    return t+s;
+  },0);
+
+  d.appendChild(h('div',{cls:'info-box'},
+    h('strong',{},'Pool de Sciences cumulées (gratuites + achetées) : '),
+    h('br',{}),
+    `🔮 Magie : ${tots.sciences.magie}°  |  `,
+    `🌳 Kabbale : ${tots.sciences.kabbale}° (soit ${Math.ceil(tots.sciences.kabbale/3)} PI)  |  `,
+    `⚗️ Alchimie : ${tots.sciences.alchimie}°`,
+    h('br',{}),
+    h('span',{style:{color:'var(--gold-d)',fontSize:'.8rem'}},
+      'Ces totaux seront pré-remplis à l\'Étape 5 comme base de départ.'),
+  ));
+
+  d.appendChild(nav(true,true));
+  return d;
+}
+
+function s5(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'V'},'Sciences Occultes'));
+  d.appendChild(h('p',{cls:'step-sub'},'Maîtrisez la Magie, la Kabbale et l\'Alchimie. Chaque science requiert 7 degrés dans le niveau précédent pour progresser.'));
+
+  // ── ONGLETS ──────────────────────────────────────────
+  const tabs=h('div',{cls:'sci-tabs'});
+  const tabDefs=[
+    {id:'magie',  lbl:'🔮 Magie'},
+    {id:'kabbale',lbl:'🌳 Kabbale'},
+    {id:'alchimie',lbl:'⚗️ Alchimie'},
+  ];
+  for(const t2 of tabDefs){
+    tabs.appendChild(h('button',{cls:`sci-tab ${S.sci_tab===t2.id?'on':''}`,
+      onClick:()=>{S.sci_tab=t2.id;render();}},t2.lbl));
+  }
+  d.appendChild(tabs);
+
+  // ── COMPTEUR PI ──────────────────────────────────────
+  const left=piLeft();
+  d.appendChild(h('div',{style:{textAlign:'center',marginBottom:'1rem',fontFamily:'Cinzel,serif',fontSize:'.82rem',color:'var(--gold-d)'}},
+    '💎 PI restants pour les Sciences : ',h('span',{style:{color:'var(--gold)',fontWeight:'700'}},String(left))
+  ));
+
+  if(S.sci_tab==='magie')  d.appendChild(buildMagie());
+  if(S.sci_tab==='kabbale')d.appendChild(buildKabbale());
+  if(S.sci_tab==='alchimie')d.appendChild(buildAlchimie());
+
+  d.appendChild(nav(true,true));
+  return d;
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULE MAGIE
+// ═══════════════════════════════════════════════════════
+// VOIES_MAGIE, MONDES, VOIES_ALCH définis globalement en haut du fichier
+const MAGIE_LEVELS=[
+  {id:'bas',  nm:'Basse Magie',   ico:'🌑',req:null,  color:'oeuvre noir',
+   dc:'Fondements de la magie élémentaire. Sorts simples et rituels de base.'},
+  {id:'haut', nm:'Haute Magie',   ico:'🌓',req:'bas',  color:'oeuvre blanc',
+   dc:'Maîtrise des éléments. Choix d\'une Voie obligatoire. Sorts puissants.'},
+  {id:'grand',nm:'Grand Secret',  ico:'🌕',req:'haut', color:'oeuvre rouge',
+   dc:'Arcanes ultimes. Accès aux mystères des Nephilim.'},
+];
+
+
+// Synchronise les pools gratuits depuis les incarnations (étape 4)
+// Appelée à chaque render pour maintenir les jauges à jour
+function syncPools(){
+  // Utilise calcPoolGratuits pour n'avoir QUE les degrés gratuits des époques
+  const pg=calcPoolGratuits();
+  S.pool_magie=pg.magie;
+  S.pool_kabbale=pg.kabbale;
+  S.pool_alchimie=pg.alchimie;
+  // Sécurité : les degrés utilisés ne peuvent dépasser le pool disponible
+  S.pool_magie_used=Math.min(S.pool_magie_used||0, S.pool_magie);
+  S.pool_kabbale_used=Math.min(S.pool_kabbale_used||0, S.pool_kabbale);
+  S.pool_alchimie_used=Math.min(S.pool_alchimie_used||0, S.pool_alchimie);
+}
+// Helpers pour les jauges
+function poolMagieFree(){ return (S.pool_magie||0)-(S.pool_magie_used||0); }
+function poolKabFree(){ return (S.pool_kabbale||0)-(S.pool_kabbale_used||0); }
+function poolAlchFree(){ return (S.pool_alchimie||0)-(S.pool_alchimie_used||0); }
+function buildMagie(){
+  const sc=kaScores();
+  const domVal=sc[S.ka_dom]||5;
+  const wrap=h('div',{});
+
+  // ── JAUGE POOL GRATUIT ────────────────────────────────
+  const poolTotal=S.pool_magie||0;
+  const poolUsed=S.pool_magie_used||0;
+  const poolFree=poolTotal-poolUsed;
+  const piLeft2=piLeft();
+
+  if(poolTotal>0||piLeft2>0){
+    const gaugeBox=h('div',{style:{
+      background:'rgba(192,160,255,.07)',border:'1px solid rgba(192,160,255,.3)',
+      borderRadius:'10px',padding:'1rem',marginBottom:'1.2rem',
+    }});
+    gaugeBox.appendChild(h('div',{style:{fontFamily:'Cinzel,serif',fontSize:'.85rem',
+      color:'var(--seph)',marginBottom:'.6rem',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      h('span',{},'🔮 Degrés de Magie disponibles'),
+      h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`PI restants : ${piLeft2}`),
+    ));
+
+    // Barre de progression pool gratuit
+    if(poolTotal>0){
+      const pct=Math.round((poolUsed/poolTotal)*100);
+      gaugeBox.appendChild(h('div',{style:{marginBottom:'.5rem'}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',fontSize:'.75rem',marginBottom:'.2rem'}},
+          h('span',{style:{color:'var(--seph)'}},`Pool incarnations : ${poolFree} / ${poolTotal}° restants`),
+          h('span',{style:{color:'var(--gold-d)'}},`${pct}% utilisé`),
+        ),
+        h('div',{style:{height:'6px',background:'rgba(192,160,255,.15)',borderRadius:'3px',overflow:'hidden'}},
+          h('div',{style:{height:'100%',width:`${pct}%`,
+            background:'linear-gradient(90deg,var(--seph),rgba(192,160,255,.6))',borderRadius:'3px',
+            transition:'width .3s'}}),
+        ),
+        poolFree>0
+          ? h('p',{style:{fontSize:'.72rem',color:'rgba(192,160,255,.7)',marginTop:'.2rem',fontStyle:'italic'}},
+              `💡 Utilisez ces ${poolFree}° gratuits en cliquant ✚ — ils ne coûtent pas de PI`)
+          : h('p',{style:{fontSize:'.72rem',color:'var(--gold-d)',marginTop:'.2rem',fontStyle:'italic'}},
+              `Pool épuisé. Les degrés suivants coûtent 1 PI chacun.`),
+      ));
+    }
+    wrap.appendChild(gaugeBox);
+  }
+
+  // ── NIVEAUX DE MAGIE ─────────────────────────────────
+  for(const lv of MAGIE_LEVELS){
+    const cur=S.magie[lv.id]||0;
+    const reqOk=!lv.req||(S.magie[lv.req]||0)>=7;
+    const canAddPool=poolFree>0;
+    const canAddPI=piLeft2>=1;
+    const canAdd=canAddPool||canAddPI;
+
+    const box=h('div',{cls:`magie-level ${!reqOk?'locked':cur>0?'active':''}`});
+    const hd=h('div',{cls:'magie-level-hd'});
+    hd.appendChild(h('span',{cls:'magie-level-nm'},`${lv.ico} ${lv.nm}`));
+    const ctrl=h('div',{cls:'deg-ctrl'});
+
+    if(!reqOk){
+      hd.appendChild(h('span',{cls:'magie-level-lock'},`🔒 Requiert ${lv.req==='bas'?'Basse':'Haute'} Magie ≥ 7`));
+    } else {
+      // Indicateur source du degré (pool vs PI)
+      const srcLabel=h('span',{style:{fontSize:'.7rem',color:'var(--gold-d)',marginRight:'.3rem'}},
+        canAddPool?'(pool)':'(1 PI)');
+
+      ctrl.appendChild(h('button',{cls:'qb',disabled:cur<=0,
+        onClick:()=>{
+          // En retirant, on libère en priorité du pool
+          if(lv.id==='haut'&&S.magie.haut===0) S.magie.voie=null;
+          S.magie[lv.id]=Math.max(0,cur-1);
+          // Libérer 1 degré de pool si applicable
+          if(S.pool_magie_used>0) S.pool_magie_used=Math.max(0,S.pool_magie_used-1);
+          render();
+        }},'−'));
+      ctrl.appendChild(h('span',{cls:'qdp'},String(cur)));
+      ctrl.appendChild(srcLabel);
+      ctrl.appendChild(h('button',{cls:'qb',disabled:!canAdd,
+        onClick:()=>{
+          S.magie[lv.id]=(cur||0)+1;
+          // Consommer pool en priorité, sinon PI
+          if(canAddPool){ S.pool_magie_used=(S.pool_magie_used||0)+1; }
+          render();
+        }},'✚'));
+      ctrl.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.75rem',marginLeft:'.3rem'}},
+        `${cur}°${canAddPool?' 🎁':' 💎'}`));
+    }
+    hd.appendChild(ctrl);
+    box.appendChild(hd);
+    box.appendChild(h('p',{cls:'lbl',style:{margin:'.3rem 0 .5rem'}},lv.dc));
+
+    // Voie obligatoire si Haute Magie > 0
+    if(lv.id==='haut'&&cur>0){
+      const vbox=h('div',{style:{marginTop:'.6rem'}});
+      vbox.appendChild(h('p',{cls:'lbl'},'Voie choisie (obligatoire) :'));
+      const vsel=document.createElement('select');
+      const opt0=document.createElement('option');opt0.value='';opt0.textContent='— Choisir une Voie —';
+      vsel.appendChild(opt0);
+      for(const v of VOIES_MAGIE){
+        const o=document.createElement('option');o.value=v.nm;o.textContent=v.nm;
+        if(S.magie.voie===v.nm)o.selected=true;
+        vsel.appendChild(o);
+      }
+      vsel.addEventListener('change',e=>{S.magie.voie=e.target.value||null;render();});
+      vbox.appendChild(vsel);
+      if(S.magie.voie){
+        const vDc=VOIES_MAGIE.find(v=>v.nm===S.magie.voie);
+        if(vDc) vbox.appendChild(h('p',{cls:'lbl',style:{color:'var(--gold-d)',marginTop:'.3rem',fontStyle:'italic'}},vDc.dc));
+      }
+      box.appendChild(vbox);
+    }
+
+    // Sorts (Basse Magie uniquement)
+    if(lv.id==='bas'&&cur>0){
+      const sbox=h('div',{style:{marginTop:'.6rem'}});
+      const cptRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.8rem',flexWrap:'wrap',marginBottom:'.6rem'}});
+      cptRow.appendChild(h('span',{cls:'lbl',style:{margin:0}},`Sorts mémorisés (max Ka dominant = ${domVal}) :`));
+      cptRow.appendChild(h('button',{cls:'qb',disabled:(S.magie.sorts||0)<=0,
+        onClick:()=>{S.magie.sorts=Math.max(0,(S.magie.sorts||0)-1);render();}},'−'));
+      cptRow.appendChild(h('span',{cls:'qdp'},String(S.magie.sorts||0)));
+      cptRow.appendChild(h('button',{cls:'qb',disabled:(S.magie.sorts||0)>=domVal,
+        onClick:()=>{S.magie.sorts=Math.min(domVal,(S.magie.sorts||0)+1);render();}},'✚'));
+      cptRow.appendChild(h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`/ ${domVal} · au-delà = "sur focus"`));
+      sbox.appendChild(cptRow);
+      const cerclesOk=['Basse Magie'];
+      if((S.magie.haut||0)>0) cerclesOk.push('Haute Magie');
+      const sortsDispos=SORTS.filter(s=>cerclesOk.includes(s.cercle)&&(s.ka==='Variable'||s.ka==='Choix'||s.ka===S.ka_dom));
+      if(sortsDispos.length>0){
+        sbox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},'📖 Grimoire accessible :'));
+        const sortGrid=h('div',{cls:'il'});
+        for(const sort of sortsDispos){
+          const isSel=(S.magie.sorts_choisis||[]).includes(sort.id);
+          const row=h('div',{cls:`ir ${isSel?'sel':''}`,style:{cursor:'pointer'},
+            onClick:()=>{
+              if(!S.magie.sorts_choisis)S.magie.sorts_choisis=[];
+              if(isSel){S.magie.sorts_choisis=S.magie.sorts_choisis.filter(x=>x!==sort.id);}
+              else if(S.magie.sorts_choisis.length<(S.magie.sorts||0)){S.magie.sorts_choisis.push(sort.id);}
+              render();
+            }});
+          row.appendChild(h('div',{cls:'ir-nm'},
+            h('strong',{},sort.nm),
+            h('small',{},` [${sort.cercle}·Ka ${sort.ka}·Deg.${sort.deg}] ${sort.dc}`),
+            h('br',{}),
+            h('small',{style:{color:'var(--gold-d)'}},`Portée:${sort.portee} · Durée:${sort.duree}`),
+          ));
+          row.appendChild(h('span',{style:{color:isSel?'var(--gold)':'var(--gold-d)',fontSize:'.8rem'}},isSel?'✓':'◦'));
+          sortGrid.appendChild(row);
+        }
+        sbox.appendChild(sortGrid);
+      }
+      box.appendChild(sbox);
+    }
+    wrap.appendChild(box);
+  }
+  return wrap;
+}
+
+function buildKabbale(){
+  const totalSeph=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
+  const piKab=Math.ceil(totalSeph/3);
+  const left=piLeft();
+  const poolTotal=S.pool_kabbale||0;
+  const poolUsed=S.pool_kabbale_used||0;
+  const poolFree=poolTotal-poolUsed;
+  // En Kabbale, 1 degré pool = 1 degré Sephirah gratuit
+  // 1 PI acheté = 3 degrés supplémentaires
+
+  const wrap=h('div',{});
+
+  // ── JAUGE POOL KABBALE ────────────────────────────────
+  if(poolTotal>0||left>0){
+    const gaugeBox=h('div',{style:{
+      background:'rgba(192,160,255,.07)',border:'1px solid rgba(192,160,255,.35)',
+      borderRadius:'10px',padding:'1rem',marginBottom:'1.2rem',
+    }});
+    gaugeBox.appendChild(h('div',{style:{fontFamily:'Cinzel,serif',fontSize:'.85rem',
+      color:'var(--seph)',marginBottom:'.6rem',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      h('span',{},'🌳 Degrés de Kabbale disponibles'),
+      h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`PI restants : ${left} (→ +${left*3}°)`),
+    ));
+
+    // Pool incarnations
+    if(poolTotal>0){
+      const pct=Math.round((poolUsed/poolTotal)*100);
+      gaugeBox.appendChild(h('div',{style:{marginBottom:'.6rem'}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',fontSize:'.75rem',marginBottom:'.2rem'}},
+          h('span',{style:{color:'var(--seph)'}},`Pool incarnations : ${poolFree} / ${poolTotal}° restants (gratuits)`),
+          h('span',{style:{color:'var(--gold-d)'}},`${pct}% utilisé`),
+        ),
+        h('div',{style:{height:'6px',background:'rgba(192,160,255,.15)',borderRadius:'3px',overflow:'hidden'}},
+          h('div',{style:{height:'100%',width:`${pct}%`,
+            background:'linear-gradient(90deg,var(--seph),rgba(192,160,255,.5))',borderRadius:'3px',
+            transition:'width .3s'}}),
+        ),
+        poolFree>0
+          ? h('p',{style:{fontSize:'.72rem',color:'rgba(192,160,255,.7)',marginTop:'.2rem',fontStyle:'italic'}},
+              `💡 ${poolFree}° gratuits disponibles — consommés en priorité avant les PI`)
+          : h('p',{style:{fontSize:'.72rem',color:'var(--gold-d)',marginTop:'.2rem'}},
+              `Pool épuisé. Achat : 1 PI = 3 degrés supplémentaires.`),
+      ));
+    }
+
+    // Pool PI acheté
+    const piPool=piKab*3-totalSeph; // degrés PI encore libres
+    gaugeBox.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'.8rem',flexWrap:'wrap'}},
+      h('span',{style:{fontSize:'.8rem',color:'var(--gold-d)',fontFamily:'Cinzel,serif'}},'Achat PI :'),
+      h('span',{style:{fontSize:'.78rem',color:'var(--gold-d)',fontStyle:'italic'}},
+        'Placez les degrés directement dans les Sephiroth (💎 = 1 PI/3°)'),
+      h('span',{style:{fontSize:'.75rem',color:'var(--parch-d)'}},
+        `${totalSeph} degrés placés dans l\'Arbre · ${Math.ceil(totalSeph/3)} PI dépensés`),
+    ));
+    wrap.appendChild(gaugeBox);
+  }
+
+  // Info règle
+  wrap.appendChild(h('div',{cls:'info-box'},
+    h('strong',{},'Règle :'),' 1 PI = 3 degrés à répartir. Pool gratuit = consommé en priorité. Sephiroth : précédente ≥ 7 pour ouvrir la suivante.'
+  ));
+
+  // Pool info bar
+  const poolMax2=piKab*3;
+  const poolFree2=poolMax2-totalSeph;
+  wrap.appendChild(h('div',{style:{textAlign:'center',padding:'.6rem',background:'rgba(192,160,255,.07)',
+    border:'1px solid rgba(192,160,255,.2)',borderRadius:'8px',marginBottom:'1rem',
+    fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'var(--seph)'}},
+    `Degrés libres à placer : ${poolFree2 + poolFree} (${poolFree} pool + ${poolFree2} PI)`
+  ));
+
+  // Arbre des Sephiroth
+  const tree=h('div',{cls:'seph-tree'});
+  for(let r=0;r<=5;r++){
+    for(let c=0;c<3;c++){
+      const sp=SEPH.find(s=>s.row===r&&s.col===c);
+      if(!sp){tree.appendChild(h('div',{}));continue;}
+      const unlk=sephOk(sp);
+      const cur=S.sephiroth[sp.id]||0;
+      const canAddSeph=poolFree>0||poolFree2>0||left>0;
+
+      const node=h('div',{cls:`seph-node ${!unlk?'locked':cur>0?'act':'open'}`});
+      node.appendChild(h('div',{cls:'seph-nm'},sp.nm));
+      node.appendChild(h('div',{cls:'seph-val'},String(cur)));
+      node.appendChild(h('div',{cls:'seph-cost'},sp.dc));
+
+      if(unlk){
+        const srcLabel=poolFree>0?'🎁':'💎';
+        node.appendChild(h('div',{style:{display:'flex',justifyContent:'center',gap:'.4rem',marginTop:'.4rem',flexWrap:'wrap'}},
+          h('button',{cls:'qb',disabled:cur<=0,
+            onClick:()=>{
+              S.sephiroth[sp.id]=Math.max(0,cur-1);
+              // Libérer en priorité du pool
+              if(S.pool_kabbale_used>0) S.pool_kabbale_used=Math.max(0,(S.pool_kabbale_used||0)-1);
+              render();
+            }},'−'),
+          h('span',{style:{fontFamily:'Cinzel,serif',color:'var(--seph)',minWidth:'20px',textAlign:'center'}},
+            String(cur)),
+          h('span',{style:{fontSize:'.7rem',color:'var(--gold-d)'}},srcLabel),
+          h('button',{cls:'qb',disabled:!canAddSeph||cur>=10,
+            onClick:()=>{
+              S.sephiroth[sp.id]=(cur||0)+1;
+              if(poolFree>0){ S.pool_kabbale_used=(S.pool_kabbale_used||0)+1; }
+              render();
+            }},'✚'),
+        ));
+      } else {
+        node.appendChild(h('div',{cls:'seph-cost',style:{color:'var(--blood-l)',marginTop:'.3rem'}},
+          sp.req?`🔒 ${sp.req} ≥ 7`:''));
+      }
+      tree.appendChild(node);
+    }
+  }
+  wrap.appendChild(tree);
+
+  // Invocations accessibles
+  const totalSeph2=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
+  if(totalSeph2>0){
+    const invbox=h('div',{cls:'box',style:{marginTop:'1rem'}});
+    invbox.appendChild(h('h3',{},'✡️ Invocations accessibles'));
+    const invgrid=h('div',{cls:'il'});
+    const invDispos=INVOCATIONS.filter(inv=>{
+      const sephScore=S.sephiroth[inv.sephira.toLowerCase()]||0;
+      return sephScore>0&&(inv.ka==='Choix'||inv.ka==='Variable'||inv.ka===S.ka_dom);
+    });
+    if(invDispos.length===0){
+      invgrid.appendChild(h('p',{cls:'lbl'},'Placez des degrés dans les Sephiroth pour accéder aux invocations.'));
+    } else {
+      for(const inv of invDispos){
+        invgrid.appendChild(h('div',{cls:'ir'},
+          h('div',{cls:'ir-nm'},
+            h('strong',{},inv.nm),
+            h('small',{},` [${inv.sephira} · Ka ${inv.ka} · Deg.${inv.deg}] ${inv.dc}`),
+          ),
+        ));
+      }
+    }
+    invbox.appendChild(invgrid);
+    wrap.appendChild(invbox);
+  }
+
+  // Choix Monde
+  const needMonde=(S.sephiroth['hod']||0)>0||(S.sephiroth['netzah']||0)>0;
+  if(needMonde){
+    const mbox=h('div',{cls:'box',style:{marginTop:'1rem'}});
+    mbox.appendChild(h('h3',{},'🌍 Choix du Monde (2e palier)'));
+    const msel=document.createElement('select');
+    const mopt0=document.createElement('option');mopt0.value='';mopt0.textContent='— Choisir un Monde —';
+    msel.appendChild(mopt0);
+    for(const m of MONDES){
+      const o=document.createElement('option');o.value=m.nm;o.textContent=m.nm;
+      if(S.monde===m.nm)o.selected=true;
+      msel.appendChild(o);
+    }
+    msel.addEventListener('change',e=>{S.monde=e.target.value||null;render();});
+    mbox.appendChild(msel);
+    if(S.monde){
+      const mDc=MONDES.find(m=>m.nm===S.monde);
+      if(mDc) mbox.appendChild(h('p',{cls:'lbl',style:{color:'var(--seph)',marginTop:'.4rem',fontStyle:'italic'}},mDc.dc));
+    }
+    wrap.appendChild(mbox);
+  }
+  return wrap;
+}
+
+function buildAlchimie(){
+  const sc=kaScores();
+  const wrap=h('div',{});
+  const totalAlch=(S.alchimie.noir||0)+(S.alchimie.blanc||0)+(S.alchimie.rouge||0);
+  const poolTotal=S.pool_alchimie||0;
+  const poolUsed=S.pool_alchimie_used||0;
+  const poolFree=poolTotal-poolUsed;
+  const left=piLeft();
+
+  // ── JAUGE POOL ALCHIMIE ───────────────────────────────
+  if(poolTotal>0||left>0){
+    const gaugeBox=h('div',{style:{
+      background:'rgba(224,92,42,.06)',border:'1px solid rgba(224,92,42,.3)',
+      borderRadius:'10px',padding:'1rem',marginBottom:'1.2rem',
+    }});
+    gaugeBox.appendChild(h('div',{style:{fontFamily:'Cinzel,serif',fontSize:'.85rem',
+      color:'#e8a080',marginBottom:'.6rem',display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      h('span',{},'⚗️ Degrés d\'Alchimie disponibles'),
+      h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`PI restants : ${left}`),
+    ));
+
+    if(poolTotal>0){
+      const pct=Math.round((poolUsed/poolTotal)*100);
+      gaugeBox.appendChild(h('div',{style:{marginBottom:'.5rem'}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',fontSize:'.75rem',marginBottom:'.2rem'}},
+          h('span',{style:{color:'#e8a080'}},`Pool incarnations : ${poolFree} / ${poolTotal}° restants`),
+          h('span',{style:{color:'var(--gold-d)'}},`${pct}% utilisé`),
+        ),
+        h('div',{style:{height:'6px',background:'rgba(224,92,42,.12)',borderRadius:'3px',overflow:'hidden'}},
+          h('div',{style:{height:'100%',width:`${pct}%`,
+            background:'linear-gradient(90deg,rgba(224,92,42,.9),rgba(224,92,42,.4))',
+            borderRadius:'3px',transition:'width .3s'}}),
+        ),
+        poolFree>0
+          ? h('p',{style:{fontSize:'.72rem',color:'rgba(224,92,42,.8)',marginTop:'.2rem',fontStyle:'italic'}},
+              `💡 ${poolFree}° gratuits disponibles — consommés en priorité (🎁), puis PI (💎)`)
+          : h('p',{style:{fontSize:'.72rem',color:'var(--gold-d)',marginTop:'.2rem'}},
+              `Pool épuisé. Les degrés suivants coûtent 1 PI chacun.`),
+      ));
+    }
+    wrap.appendChild(gaugeBox);
+  }
+
+  // ── ŒUVRES ALCHIMIQUES ────────────────────────────────
+  for(const ov of OEUVRES){
+    const cur=S.alchimie[ov.id]||0;
+    const reqOk=!ov.req||(S.alchimie[ov.req]||0)>=7;
+    const canAddPool=poolFree>0;
+    const canAddPI=left>=1;
+    const canAdd=canAddPool||canAddPI;
+
+    const box=h('div',{cls:`oeuvre ${ov.col} ${!reqOk?'locked':''}`});
+    const hd=h('div',{cls:'oeuvre-hd'});
+    hd.appendChild(h('span',{},`${ov.ico} ${ov.nm}`));
+
+    if(!reqOk){
+      hd.appendChild(h('span',{style:{color:'var(--blood-l)',fontSize:'.78rem'}},
+        `🔒 Requiert ${ov.req==='noir'?'Œuvre au Noir':'Œuvre au Blanc'} ≥ 7`));
+    } else {
+      const srcLabel=h('span',{style:{fontSize:'.7rem',color:'var(--gold-d)',margin:'0 .2rem'}},
+        canAddPool?'🎁':'💎');
+      const ctrl=h('div',{cls:'deg-ctrl'});
+      ctrl.appendChild(h('button',{cls:'qb',disabled:cur<=0,
+        onClick:()=>{
+          S.alchimie[ov.id]=Math.max(0,cur-1);
+          if(ov.id==='blanc'&&S.alchimie.blanc===0) S.alchimie.voie=null;
+          if(S.pool_alchimie_used>0) S.pool_alchimie_used=Math.max(0,(S.pool_alchimie_used||0)-1);
+          render();
+        }},'−'));
+      ctrl.appendChild(h('span',{cls:'qdp'},String(cur)));
+      ctrl.appendChild(srcLabel);
+      ctrl.appendChild(h('button',{cls:'qb',disabled:!canAdd,
+        onClick:()=>{
+          S.alchimie[ov.id]=(cur||0)+1;
+          if(canAddPool){ S.pool_alchimie_used=(S.pool_alchimie_used||0)+1; }
+          render();
+        }},'✚'));
+      ctrl.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.75rem',marginLeft:'.3rem'}},
+        `${cur}° · ${canAddPool?'gratuit':'1 PI'}`));
+      hd.appendChild(ctrl);
+    }
+    box.appendChild(hd);
+    box.appendChild(h('p',{cls:'lbl',style:{margin:'.3rem 0 .5rem'}},ov.dc));
+
+    // Voie obligatoire Œuvre au Blanc
+    if(ov.id==='blanc'&&cur>0){
+      box.appendChild(h('p',{cls:'lbl'},'Voie alchimique (obligatoire) :'));
+      const vsel=document.createElement('select');
+      const vopt0=document.createElement('option');vopt0.value='';vopt0.textContent='— Choisir une Voie —';
+      vsel.appendChild(vopt0);
+      for(const v of VOIES_ALCH){
+        const o=document.createElement('option');o.value=v.nm;o.textContent=`${v.nm} (Ka ${v.ka})`;
+        if(S.alchimie.voie===v.nm)o.selected=true;
+        vsel.appendChild(o);
+      }
+      vsel.addEventListener('change',e=>{S.alchimie.voie=e.target.value||null;render();});
+      box.appendChild(vsel);
+      if(S.alchimie.voie){
+        const vDc=VOIES_ALCH.find(v=>v.nm===S.alchimie.voie);
+        if(vDc) box.appendChild(h('p',{cls:'lbl',style:{color:'#e8a080',marginTop:'.3rem',fontStyle:'italic'}},vDc.dc));
+      }
+    }
+    wrap.appendChild(box);
+  }
+
+  // ── CONSTRUCTS ────────────────────────────────────────
+  if(totalAlch>0){
+    const cbox=h('div',{cls:'box',style:{marginTop:'1rem'}});
+    cbox.appendChild(h('h3',{},'🏭 Constructs — 1 PI chacun'));
+    cbox.appendChild(h('p',{cls:'lbl'},'Équipements alchimiques permanents du laboratoire.'));
+    const cgrid=h('div',{cls:'cstr-types'});
+    const leftC=piLeft();
+    for(const ct of CONSTRUCT_TYPES){
+      const cnt=S.constructs[ct.id]||0;
+      const card=h('div',{cls:`cstr-type ${cnt>0?'sel':''}`},
+        h('span',{},ct.ico+' '),
+        h('span',{cls:'cstr-type-nm'},ct.nm),
+        h('span',{cls:'cstr-type-dc'},ct.dc),
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:'.4rem',marginTop:'.4rem'}},
+          h('button',{cls:'qb',disabled:cnt<=0,
+            onClick:e=>{e.stopPropagation();S.constructs[ct.id]=Math.max(0,cnt-1);render();}},'−'),
+          h('span',{cls:'cstr-count'},String(cnt)),
+          h('button',{cls:'qb',disabled:leftC<1,
+            onClick:e=>{e.stopPropagation();S.constructs[ct.id]=(cnt||0)+1;render();}},'✚'),
+        ),
+      );
+      cgrid.appendChild(card);
+    }
+    cbox.appendChild(cgrid);
+    const totalCstr=Object.values(S.constructs).reduce((a,b)=>a+b,0);
+    cbox.appendChild(h('p',{cls:'lbl',style:{marginTop:'.7rem',textAlign:'center'}},
+      `Total : ${totalCstr} constructs = ${totalCstr} PI`));
+    wrap.appendChild(cbox);
+
+    // Jauges MP
+    const mpbox=h('div',{cls:'box'});
+    mpbox.appendChild(h('h3',{},'🧪 Jauges de Materiae Primae'));
+    mpbox.appendChild(h('p',{cls:'lbl'},'Degrés Alchimie totaux + Ka de l\'élément associé'));
+    const mpgrid=h('div',{cls:'mp-grid'});
+    const MP_TYPES=[
+      {nm:'Soufre',  ka:'Feu',  ico:'🔥'},
+      {nm:'Mercure', ka:'Air',  ico:'🌬️'},
+      {nm:'Sel',     ka:'Terre',ico:'🌍'},
+      {nm:'Eau-Forte',ka:'Eau', ico:'💧'},
+      {nm:'Quintessence',ka:'Lune',ico:'☽'},
+    ];
+    for(const mp of MP_TYPES){
+      const kaVal=sc[mp.ka]||0;
+      const mpMax=totalAlch+kaVal;
+      mpgrid.appendChild(h('div',{cls:'mp-box'},
+        h('span',{cls:'mp-nm'},`${mp.ico} ${mp.nm}`),
+        h('span',{cls:'mp-val'},String(mpMax)),
+        h('span',{cls:'mp-fm'},`${totalAlch}+${kaVal}`),
+      ));
+    }
+    mpbox.appendChild(mpgrid);
+    wrap.appendChild(mpbox);
+
+    // Formules accessibles
+    const fbox=h('div',{cls:'box'});
+    fbox.appendChild(h('h3',{},'📜 Formules accessibles'));
+    const oeuvresOk=[];
+    if((S.alchimie.noir||0)>0) oeuvresOk.push('Noir');
+    if((S.alchimie.blanc||0)>0) oeuvresOk.push('Blanc');
+    if((S.alchimie.rouge||0)>0) oeuvresOk.push('Rouge');
+    const formDispos=FORMULES.filter(f=>oeuvresOk.includes(f.oeuvre));
+    if(formDispos.length===0){
+      fbox.appendChild(h('p',{cls:'lbl'},'Progressez dans les Œuvres pour débloquer des formules.'));
+    } else {
+      const fgrid=h('div',{cls:'il'});
+      for(const fm of formDispos){
+        const hasC=(S.constructs[fm.construct.toLowerCase()]||0)>0;
+        fgrid.appendChild(h('div',{cls:`ir ${hasC?'sel':''}`,style:{opacity:hasC?'1':'0.55'}},
+          h('div',{cls:'ir-nm'},
+            h('strong',{},fm.nm),
+            h('small',{},` [${fm.oeuvre}·Ka ${fm.ka}·Deg.${fm.deg}] ${fm.dc}`),
+            h('br',{}),
+            h('small',{style:{color:hasC?'var(--ok)':'var(--blood-l)'}},
+              `Construct: ${fm.construct} ${hasC?'✓':'✕ manquant'}`),
+          ),
+        ));
+      }
+      fbox.appendChild(fgrid);
+    }
+    wrap.appendChild(fbox);
+  }
+  return wrap;
+}
+
+function s6(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'VI'},'Stase & Chutes'));
+  d.appendChild(h('p',{cls:'step-sub'},'L\'objet-stase abrite votre âme entre les incarnations. Les Chutes sont vos failles spirituelles — chaque degré vous rapporte +5 PI.'));
+
+  // ── OBJET-STASE ──────────────────────────────────────
+  const sb=h('div',{cls:'box'},h('h3',{},'🔮 Objet-Stase'));
+  sb.appendChild(h('p',{cls:'lbl'},'Décrivez l\'objet sacré qui contient votre âme lors des périodes de sommeil entre deux incarnations :'));
+  const ta=document.createElement('textarea');
+  ta.placeholder='Ex: Un scarabée en lapis-lazuli gravé du cartouche d\'un pharaon Nephilim, transmis de génération en génération…';
+  ta.style.height='90px';ta.style.resize='vertical';
+  ta.value=S.stase||'';
+  ta.addEventListener('input',e=>{S.stase=e.target.value;});
+  sb.appendChild(ta);
+  d.appendChild(sb);
+
+  // ── CHUTES OFFICIELLES ───────────────────────────────
+  const chuteMax=S.chutes_max||2;
+  const chuteUsed=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
+  const bonusActuel=chutesBonusPI();
+
+  const chb=h('div',{cls:'box'});
+  chb.appendChild(h('h3',{},'🌑 Degrés de Chute'));
+
+  // Résumé budget
+  chb.appendChild(h('div',{style:{
+    display:'flex',gap:'1rem',flexWrap:'wrap',alignItems:'center',
+    padding:'.7rem',background:'rgba(139,26,26,.08)',border:'1px solid rgba(139,26,26,.25)',
+    borderRadius:'8px',marginBottom:'1rem',fontFamily:'Cinzel,serif',fontSize:'.82rem',
+  }},
+    h('span',{style:{color:'var(--parch-d)'}},`Profil : ${S.profil||'?'}`),
+    h('span',{style:{color:'var(--blood-l)'}},`Max : ${chuteMax} degré(s)`),
+    h('span',{style:{color:'var(--parch-d)'}},`Utilisés : ${chuteUsed} / ${chuteMax}`),
+    bonusActuel>0
+      ? h('span',{style:{color:'var(--ok)',fontWeight:'700'}},`✓ +${bonusActuel} PI bonus`)
+      : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
+  ));
+
+  // Les 3 Chutes officielles
+  const cg=h('div',{cls:'chute-grid'});
+  for(const chute of CHUTES){
+    const val=S.chutes[chute.id]||0;
+    const bonusChute=val*5;
+
+    const cb=h('div',{cls:'chute-box'});
+    // En-tête
+    const hd=h('div',{cls:'chute-hd'});
+    hd.appendChild(h('span',{},`${chute.ico} ${chute.nm}`));
+    const hdr=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem'}});
+    hdr.appendChild(h('span',{style:{color:'var(--blood-l)',fontFamily:'Cinzel,serif',fontSize:'1rem',fontWeight:'700'}},String(val)));
+    if(bonusChute>0)hdr.appendChild(h('span',{style:{color:'var(--ok)',fontSize:'.72rem'}},`+${bonusChute} PI`));
+    hd.appendChild(hdr);
+    cb.appendChild(hd);
+
+    // Description
+    cb.appendChild(h('p',{style:{fontSize:'.75rem',color:'var(--parch-d)',fontStyle:'italic',margin:'.3rem 0 .6rem'}},chute.dc));
+
+    // Slider avec contrôle du total max
+    const sl=document.createElement('input');
+    sl.type='range';sl.min='0';sl.max='3';sl.value=String(val);
+    sl.addEventListener('input',e=>{
+      const newVal=parseInt(e.target.value);
+      const autresTotal=Object.entries(S.chutes)
+        .filter(([k])=>k!==chute.id)
+        .reduce((a,[,v2])=>a+(v2||0),0);
+      if(autresTotal+newVal>chuteMax){sl.value=String(val);return;}
+      S.chutes[chute.id]=newVal;
+      render();
+    });
+    cb.appendChild(sl);
+
+    // Indicateur degrés + bonus
+    const indic=h('div',{style:{display:'flex',justifyContent:'space-between',marginTop:'.3rem',fontSize:'.72rem'}});
+    indic.appendChild(h('span',{style:{color:'var(--parch-d)'}},`${val} degré(s)`));
+    if(bonusChute>0)indic.appendChild(h('span',{style:{color:'var(--ok)'}},`+${bonusChute} PI`));
+    cb.appendChild(indic);
+
+    cg.appendChild(cb);
+  }
+  chb.appendChild(cg);
+
+  // Info-box règle
+  chb.appendChild(h('div',{cls:'info-box',style:{marginTop:'1rem'}},
+    h('strong',{},'Règle des Chutes :'),' Chaque degré de Chute accepté rapporte ',
+    h('strong',{},'+5 PI'),' immédiatement ajoutés à votre budget. Maximum ',
+    h('strong',{},String(chuteMax)),' degré(s) selon votre profil ',
+    h('strong',{},S.profil||'?'),'. Les Chutes représentent la corruption de votre âme — un pacte faustien avec vos propres failles.'
+  ));
+
+  d.appendChild(chb);
+  d.appendChild(nav(true,true));
+  return d;
+}
+
+function s7(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'VII'},'Le Simulacre'));
+  d.appendChild(h('p',{cls:'step-sub'},'L\'identité contemporaine de votre Nephilim. Le métier influence Ka-Soleil, Vécus et Ressources.'));
+  const ml=h('div',{cls:'met-list'});
+  for(const m of METIERS){
+    ml.appendChild(h('div',{cls:`met-card ${S.metier===m.id?'sel':''}`,onClick:()=>{S.metier=m.id;render();}},
+      h('div',{cls:'met-ttl'},m.nm),
+      h('div',{cls:'met-dc'},m.dc),
+      m.ressources?h('div',{style:{fontSize:'.7rem',color:'var(--gold-d)',fontStyle:'italic',marginTop:'.3rem'}},`📦 ${m.ressources}`):null,
+      h('div',{},h('span',{cls:'badge'},`☀ +${m.ks}`),h('span',{cls:'badge'},`Rs ${m.rs}`),h('span',{cls:'badge'},m.vcu))));
+  }
+  d.appendChild(h('div',{cls:'box'},h('h3',{},'Métier du Simulacre'),ml));
+  if(S.metier){
+    const m=getMetier();
+    d.appendChild(h('div',{cls:'box',style:{background:'rgba(201,168,76,.06)'}},
+      h('h3',{},'⚡ Effets automatiques'),
+      rcRow('Ka-Soleil final',String(kaSoleil())),
+      rcRow('Vécu accordé',m.vcu),
+      rcRow('Ressources','●'.repeat(m.rs)+'○'.repeat(5-m.rs)),
+    ));
+  }
+  const ksb=h('div',{cls:'box'},h('h3',{},'Ka-Soleil de base'));
+  const ksRow=h('div',{cls:'sl-row'});
+  const ksLbl=h('span',{cls:'sl-lbl'},'Ka-Soleil base');
+  const ksSlider=document.createElement('input');
+  ksSlider.type='range';ksSlider.min='1';ksSlider.max='7';ksSlider.value=String(S.ka_soleil_base);
+  ksSlider.addEventListener('input',e=>{S.ka_soleil_base=parseInt(e.target.value);render();});
+  const ksVal=h('span',{cls:'sl-val'},String(S.ka_soleil_base));
+  ksRow.appendChild(ksLbl);ksRow.appendChild(ksSlider);ksRow.appendChild(ksVal);
+  ksb.appendChild(ksRow);
+  d.appendChild(ksb);d.appendChild(nav(true,!!S.metier));return d;
+}
+
+function s8(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'VIII'},'Attributs Secondaires'));
+  d.appendChild(h('p',{cls:'step-sub'},'Calculés automatiquement selon les formules officielles de la 5e édition.'));
+  const at=calcAttrs(),sc=kaScores();
+  const ag=h('div',{cls:'attr-grid'});
+  [
+    {nm:'Perspicacité', val:at.perspicacite, fm:'11 − Ka Air',         ico:'👁'},
+    {nm:'Récupération', val:at.recuperation, fm:'11 − Ka Terre',        ico:'💚'},
+    {nm:'Initiative',   val:at.initiative,   fm:'Ka Eau × 2',           ico:'⚡'},
+    {nm:'Voile',        val:at.voile,         fm:'0 (initial)',           ico:'🌫'},
+    {nm:'Bonus Dom.',   val:'+'+at.bonus_dom, fm:'Feu<5:+0 / 5-9:+1 / ≥10:+2', ico:'⚔️'},
+    {nm:'Ka-Soleil',    val:kaSoleil(),        fm:'Base + bonus métier',  ico:'☀️'},
+    {nm:'Sapience init.',val:S.ps_initial||0,  fm:'Selon profil',         ico:'✨'},
+  ].forEach(a=>ag.appendChild(h('div',{cls:'attr-box'},
+    h('span',{cls:'attr-nm'},`${a.ico} ${a.nm}`),
+    h('span',{cls:'attr-val'},String(a.val)),
+    h('span',{cls:'attr-fm'},a.fm))));
+  d.appendChild(ag);
+  const kb=h('div',{cls:'box'},h('h3',{},'Scores de Ka'));
+  const kp=h('div',{cls:'penta',style:{justifyContent:'flex-start'}});
+  for(const[ka,score]of Object.entries(sc)){
+    kp.appendChild(h('div',{cls:'kb neu',style:{minWidth:'85px',padding:'.7rem'}},
+      h('span',{cls:'ki',style:{fontSize:'1.2rem'}},KA[ka].ico),h('span',{cls:'kn',style:{fontSize:'.78rem'}},ka),h('span',{cls:'ks',style:{fontSize:'1rem'}},String(score))));
+  }
+  kb.appendChild(kp);d.appendChild(kb);
+  d.appendChild(h('div',{cls:'info-box'},
+    h('strong',{},'Formules officielles 5e éd. :'),
+    ' Perspicacité = 11−Ka Air · Récupération = 11−Ka Terre · Initiative = Ka Eau×2 · Voile = 0 (initial) · Bonus Dom. : Ka Feu <5→+0, 5-9→+1, ≥10→+2 · Conversion : 2 PI = 1 PS'
+  ));
+  d.appendChild(nav(true,true));return d;
+}
+
+function s9(){
+  const d=h('div',{cls:'step'});
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'IX'},'Finalisation'));
+  d.appendChild(h('p',{cls:'step-sub'},'Votre Nephilim est prêt. Sauvegardez dans Google Sheets et exportez votre fiche.'));
+  const sap=sapience(),left=piLeft(),psInit=S.ps_initial||0;
+  const psTotal=psInit+sap;
+  d.appendChild(h('div',{cls:'sap-box'},
+    h('span',{cls:'sap-unit'},'Points de Sapience Totaux'),
+    h('span',{cls:'sap-big'},String(psTotal)),
+    h('div',{style:{marginTop:'.5rem',display:'flex',justifyContent:'center',gap:'1rem',flexWrap:'wrap'}},
+      h('span',{cls:'badge',style:{fontSize:'.8rem'}},`${psInit} PS initiaux (profil ${S.profil||'?'})`),
+      h('span',{cls:'badge',style:{fontSize:'.8rem'}},`+ ${sap} PS (${left} PI restants ÷ 2)`),
+    ),
+  ));
+  const at=calcAttrs(),sc=kaScores(),mt=getMetier();
+  const rc=h('div',{cls:'box'});rc.appendChild(h('h3',{},'📜 Fiche Complète'));
+  function addS(ttl,rows){const s=h('div',{cls:'rc-sec'},h('h3',{},ttl));for(const[k,v]of rows)s.appendChild(rcRow(k,v));rc.appendChild(s);}
+  addS('🔮 Identité',[['Nom',S.nom||'—'],['Joueur',S.joueur||'—'],['Ka Dominant',S.ka_dom||'—'],['Métamorphe',S.metamorphe||'—'],['Profil',S.profil||'—'],['Métier',mt?mt.nm:'—'],['Objet-Stase',S.stase||'—']]);
+  const kaRows=Object.entries(sc).map(([ka,s2])=>[`${KA[ka].ico} Ka ${ka}`,String(s2)]);kaRows.push(['☀️ Ka-Soleil',String(kaSoleil())]);
+  addS('⚡ Ka',kaRows);
+  addS('🧠 Attributs',[
+    ['Perspicacité', at.perspicacite],
+    ['Récupération', at.recuperation],
+    ['Initiative',   at.initiative],
+    ['Voile',        at.voile+' (initial)'],
+    ['Bonus Dom.',   '+'+at.bonus_dom],
+    ['Ka-Soleil',    kaSoleil()],
+  ]);
+  addS('✨ Sapience',[
+    ['PS initiaux (profil)', psInit],
+    ['PI restants → PS',     `${left} PI → ${sap} PS`],
+    ['PS TOTAL',             psTotal],
+  ]);
+  const vl=Object.entries(S.vecus).filter(([,c])=>c>0).map(([id,c])=>{const v=VECUS.find(x=>x.id===id);return v?`${v.nm}${c>1?` x${c}`:''}`:''}).filter(Boolean).join(', ')||'—';
+  const incList=Object.entries(S.incarnations).map(([id,inc])=>{
+    const ep=EPOQUES.find(e=>e.id===id);
+    return ep?`${ep.nm}${inc.vecu?' ('+inc.vecu+')':''}`:id;
+  }).join(', ')||'—';
+  const savoirsList=Object.entries(S.incarnations).flatMap(([,inc])=>inc.savoirs||[]).join(', ')||'—';
+  const totalSeph=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
+  const spl=Object.entries(S.sephiroth).filter(([,v])=>v>0).map(([id,v])=>{const sp=SEPH.find(x=>x.id===id);return sp?`${sp.nm}(${v})`:''}).filter(Boolean).join(', ')||'—';
+  const chuteTotal=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
+  const totalAlchRc=(S.alchimie.noir||0)+(S.alchimie.blanc||0)+(S.alchimie.rouge||0);
+  const totalCstrRc=Object.values(S.constructs).reduce((a,b)=>a+b,0);
+  // Totaux cumulés (gratuités époques + achats PI)
+  const tots=calcTotauxCumules();
+
+  addS('📚 Incarnations',[
+    ['Époques choisies', Object.keys(S.incarnations).length],
+    ['Détail', incList],
+    ['Savoirs acquis', savoirsList],
+    ['Quêtes', Object.entries(tots.quetes).map(([q,d])=>`${q} (${d})`).join(', ')||'—'],
+  ]);
+  addS('🔮 Magie — TOTAUX CUMULÉS',[
+    ['Basse Magie (total)',  `${tots.sciences.magie} degrés (${S.magie.bas||0} achetés + ${tots.sciences.magie-(S.magie.bas||0)-(S.magie.haut||0)-(S.magie.grand||0)>0?tots.sciences.magie-(S.magie.bas||0)-(S.magie.haut||0)-(S.magie.grand||0):0} offerts)`],
+    ['Haute Magie',   S.magie.haut||0],
+    ['Grand Secret',  S.magie.grand||0],
+    ['Voie',          S.magie.voie||'—'],
+    ['Sorts mémorisés', `${(S.magie.sorts_choisis||[]).length} / ${S.magie.sorts||0} (max Ka dominant)`],
+    ['Sorts offerts par époques', tots.sorts_offerts],
+  ]);
+  addS('🌳 Kabbale — TOTAUX CUMULÉS',[
+    ['Degrés achetés (PI)', `${totalSeph} (= ${Math.ceil(totalSeph/3)} PI)`],
+    ['Degrés offerts (époques)', tots.sciences.kabbale-totalSeph>0?tots.sciences.kabbale-totalSeph:0],
+    ['Total Kabbale', tots.sciences.kabbale],
+    ['Sephiroth', spl||'—'],
+    ['Monde', S.monde||'—'],
+  ]);
+  addS('⚗️ Alchimie — TOTAUX CUMULÉS',[
+    ['Total Alchimie', `${tots.sciences.alchimie} degrés (${totalAlchRc} achetés + ${tots.sciences.alchimie-totalAlchRc>0?tots.sciences.alchimie-totalAlchRc:0} offerts)`],
+    ['Œuvre au Noir',  S.alchimie.noir||0],
+    ['Œuvre au Blanc', S.alchimie.blanc||0],
+    ['Œuvre au Rouge', S.alchimie.rouge||0],
+    ['Voie',           S.alchimie.voie||'—'],
+    ['Constructs',     `${totalCstrRc} unités (${totalCstrRc} PI)`],
+  ]);
+  // Vécus cumulés à travers les âges
+  const vecusCumuls=Object.entries(tots.vecus).map(([nm,deg])=>`${nm} (${deg}°)`).join(', ')||'—';
+  addS('⚔️ Vécus cumulés à travers les âges',[['Tous vécus et degrés', vecusCumuls]]);
+  addS('🌑 Chutes',[
+    ['Khaïba 💀',  `${S.chutes.khaiba||0} degré(s)`],
+    ['Narcose 🌀', `${S.chutes.narcose||0} degré(s)`],
+    ['Ombre 🌑',   `${S.chutes.ombre||0} degré(s)`],
+    ['Total utilisé', `${chuteTotal} / ${S.chutes_max||2}`],
+    ['Bonus PI', `+${chutesBonusPI()} PI`],
+  ]);
+  addS('💎 PI',[['Total de base',S.pi_total],['Bonus Chutes',`+${chutesBonusPI()} PI`],['Budget total',S.pi_total+chutesBonusPI()],['Dépensés',piSpent()],['Restants',left]]);
+  d.appendChild(rc);
+  const br=h('div',{cls:'btn-row'});
+  br.appendChild(h('button',{cls:'btn btn-s',onClick:()=>{S.step--;render();}},'← Retour'));
+  const eg=h('div',{style:{display:'flex',gap:'.7rem',flexWrap:'wrap'}});
+  eg.appendChild(h('button',{cls:'btn btn-e',onClick:exportTXT},'📄 Export .TXT'));
+  eg.appendChild(h('button',{cls:'btn btn-e',onClick:()=>window.print()},'🖨️ Imprimer'));
+  br.appendChild(eg);d.appendChild(br);return d;
+}
+
+// ════════════════════════════════════════════════════════
+// MODAL CHARGEMENT
+// ════════════════════════════════════════════════════════
+function showLoadModal(list){
+  const bg=h('div',{cls:'modal-bg',onClick:e=>{if(e.target===bg)closeModal();}});
+  const modal=h('div',{cls:'modal'});
+  modal.appendChild(h('h2',{},'☁ Charger un personnage'));
+  for(const p of list){
+    modal.appendChild(h('div',{cls:'perso-item',onClick:()=>loadPersonnageByNom(p.nom, p.id)},
+      h('div',{cls:'perso-info'},
+        h('div',{cls:'perso-nom'},p.nom||(p.joueur?`Joueur: ${p.joueur}`:'—')),
+        h('div',{cls:'perso-det'},`${p.ka_dom||'?'} · ${p.metamorphe||'?'} · ${p.profil||'?'} — ${p.date_maj||''}`),
+      ),
+      h('span',{style:{color:'var(--gold)',fontSize:'1.2rem'}},'→'),
+    ));
+  }
+  modal.appendChild(h('button',{cls:'modal-close',onClick:closeModal},'Fermer'));
+  bg.appendChild(modal);
+  document.body.appendChild(bg);
+}
+function closeModal(){const m=document.querySelector('.modal-bg');if(m)m.remove();}
+
+// ════════════════════════════════════════════════════════
+// EXPORT TXT
+// ════════════════════════════════════════════════════════
+function exportTXT(){
+  const at=calcAttrs(),sc=kaScores(),sap=sapience(),mt=getMetier();
+  const psTotal=(S.ps_initial||0)+sap;
+  const sep='═'.repeat(44),ln='\n';
+  const chuteTotal=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
+  const totalSeph=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
+  const lines=[sep,'  NEPHILIM — FICHE DE PERSONNAGE','  Forge des Âmes v3 (5e édition)',sep,'',
+    `Nom          : ${S.nom||'—'}`,`Joueur       : ${S.joueur||'—'}`,
+    `Ka Dominant  : ${S.ka_dom||'—'} ${KA[S.ka_dom]?.ico||''}`,`Métamorphe   : ${S.metamorphe||'—'}`,
+    `Profil       : ${S.profil||'—'}`,`Métier       : ${mt?mt.nm:'—'}`,`Objet-Stase  : ${S.stase||'—'}`,'',
+    '── PENTACLE ───────────────────────────────',
+    ...Object.entries(sc).map(([ka,s])=>`  Ka ${ka.padEnd(7)}: ${s}`),
+    `  Ka-Soleil  : ${kaSoleil()}`,'',
+    '── ATTRIBUTS (formules officielles 5e éd.) ─',
+    `  Perspicacité   : ${at.perspicacite}  (11 − Ka Air)`,
+    `  Récupération   : ${at.recuperation}  (11 − Ka Terre)`,
+    `  Initiative     : ${at.initiative}  (Ka Eau × 2)`,
+    `  Voile           : ${at.voile}  (initial)`,
+    `  Bonus Dommages : +${at.bonus_dom}  (table Ka-Feu)`,'',
+    '── SAPIENCE ───────────────────────────────',
+    `  PS initiaux (profil)  : ${S.ps_initial||0}`,
+    `  PI restants → PS       : ${piLeft()} PI → ${sap} PS`,
+    `  PS TOTAL               : ${psTotal}`,'',
+    '── INCARNATIONS ───────────────────────────',
+    ...Object.entries(S.incarnations).map(([id,inc])=>{
+      const ep=EPOQUES.find(e=>e.id===id);
+      return `  ${ep?ep.nm:id} (${ep?ep.per:'?'}) — Vécu: ${inc.vecu||'—'} — Savoirs: ${(inc.savoirs||[]).join(', ')||'—'}`;
+    }),
+    '── SCIENCES OCCULTES ──────────────────────',
+    `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
+    `  Sorts       : ${S.magie.sorts||0} connus`,
+    `  Kabbale     : ${Object.entries(S.sephiroth).filter(([,v])=>v>0).map(([id,v])=>{const sp=SEPH.find(x=>x.id===id);return sp?`${sp.nm}(${v})`:''}).filter(Boolean).join(', ')||'—'} (${totalSeph} degrés = ${Math.ceil(totalSeph/3)} PI)${S.monde?' · Monde : '+S.monde:''}`,
+    `  Alchimie    : Noir ${S.alchimie.noir||0} / Blanc ${S.alchimie.blanc||0} / Rouge ${S.alchimie.rouge||0}${S.alchimie.voie?' · Voie '+S.alchimie.voie:''}`,
+    `  Constructs  : ${Object.entries(S.constructs).filter(([,v])=>v>0).map(([id,v])=>`${id}×${v}`).join(', ')||'—'}`,'',
+    '── CHUTES ─────────────────────────────────',
+    `  Khaïba  💀 : ${S.chutes.khaiba||0} degré(s)  — Corruption du Ka`,
+    `  Narcose 🌀 : ${S.chutes.narcose||0} degré(s)  — Mélancolie mystique`,
+    `  Ombre   🌑 : ${S.chutes.ombre||0} degré(s)  — Perte au Simulacre`,
+    `  Total   : ${chuteTotal} / ${S.chutes_max||2} · Bonus PI : +${chutesBonusPI()} PI`,'',
+    sep,
+    `  PI base : ${S.pi_total}  Bonus Chutes : +${chutesBonusPI()}  Budget : ${S.pi_total+chutesBonusPI()}`,
+    `  Dépensés : ${piSpent()}  Restants : ${piLeft()}`,
+    `  Sapience : ${S.ps_initial||0} PS (profil) + ${sap} PS (PI) = ${psTotal} PS`,
+    sep,
+  ];
+  const b=new Blob([lines.join(ln)],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${S.nom||'nephilim'}_fiche.txt`;a.click();
+}
+
+// ════════════════════════════════════════════════════════
+// LOCAL STORAGE (backup)
+// ════════════════════════════════════════════════════════
+function doLocalSave(){localStorage.setItem('neph_v3',JSON.stringify(S));}
+function doLocalLoad(){
+  try{
+    const sv=localStorage.getItem('neph_v3');
+    if(sv){
+      const loaded=JSON.parse(sv);
+      Object.assign(S,loaded);
+      // Ensure new inc fields exist for compatibility
+      for(const inc of Object.values(S.incarnations||{})){
+        if(!inc.vecus_deg) inc.vecus_deg={};
+        if(!inc.savoirs_extra) inc.savoirs_extra={};
+        if(!inc.sciences_extra) inc.sciences_extra={};
+      }
+    }
+  }catch(e){}
+}
+
+// toast(msg, type) — type: 'success' | 'error' | '' (default gold)
+// Durée : 3 secondes, animation élastique
+let _toastTimer=null;
+function toast(msg, type=''){
+  let t=document.querySelector('.toast');
+  if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t);}
+  // Reset classes
+  t.className='toast'+(type?' '+type:'');
+  // Icon prefix
+  const icon=type==='success'?'✓ ':type==='error'?'✕ ':'';
+  t.textContent=icon+msg;
+  // Force reflow pour relancer l'animation si déjà visible
+  void t.offsetWidth;
+  t.classList.add('show');
+  if(_toastTimer)clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{t.classList.remove('show');},3000);
+}
+function toastSuccess(msg){toast(msg,'success');}
+function toastError(msg){toast(msg,'error');}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+doLocalLoad();
+// Initialise Supabase si configuré
+if(SUPA_URL && SUPA_KEY){
+  if(initSupabase()){
+    supaClient.auth.onAuthStateChange((_event, session) => {
+      const wasConnected = !!supaCurrentUser;
+      supaCurrentUser = session?.user || null;
+      // Re-render uniquement si le statut de connexion change
+      if(wasConnected !== !!supaCurrentUser) render();
+      else { const bar=document.querySelector('.sync-bar'); if(bar){ bar.replaceWith(buildSyncBar()); } buildActionBar(); }
+    });
+    supaGetSession().then(()=>render());
+  } else {
+    render();
+  }
+} else {
+  render();
+}
+
+
+
+</script>
+</body>
+</html>
