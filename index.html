@@ -1313,7 +1313,7 @@ function buildActionBar(){
 
   // Nouveau
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='✦ Nouveau';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]}};supaPersonnageId=null;render();}};
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]}};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
   bar.appendChild(btnNew);
 
   // ── Grimoire ─────────────────────────────────────────
@@ -2920,7 +2920,7 @@ function grimGetMagie(){return S.magie||{};}
 function grimGetSephiroth(){return S.sephiroth||{};}
 function grimGetAlchimie(){return S.alchimie||{};}
 function grimGetEffets(){
-  if(!S.effets_magiques)S.effets_magiques={gravés:[],focus:[]};
+  if(!S.effets_magiques||typeof S.effets_magiques!=='object')S.effets_magiques={gravés:[],focus:[]};if(!S.effets_magiques.gravés)S.effets_magiques.gravés=[];if(!S.effets_magiques.focus)S.effets_magiques.focus=[];
   return S.effets_magiques;
 }
 function grimMaxGraves(){
@@ -3019,7 +3019,7 @@ function grimIsFocus(item){
   return (grimGetEffets().focus||[]).some(e=>e.id===item.id&&e.tab===grimTab);
 }
 function grimAddEffet(item){
-  if(!S.effets_magiques)S.effets_magiques={gravés:[],focus:[]};
+  if(!S.effets_magiques||typeof S.effets_magiques!=='object')S.effets_magiques={gravés:[],focus:[]};if(!S.effets_magiques.gravés)S.effets_magiques.gravés=[];if(!S.effets_magiques.focus)S.effets_magiques.focus=[];
   const gravés=S.effets_magiques.gravés||[];
   const focus=S.effets_magiques.focus||[];
   const max=grimMaxGraves();
@@ -3117,7 +3117,7 @@ async function renderGrimBody(bodyDiv,searchInp){
 
   // Cercles et éléments disponibles
   const cercles=[...new Set(raw.map(r=>r.cercle).filter(Boolean))].sort();
-  const elements=[...new Set(raw.map(r=>(r.element||'').split(',').map(x=>x.trim())).flat().filter(e=>e&&!['Au choix','Variable','Choix','Celui du Kabbaliste','Un élément',''].includes(e)))].sort();
+  const elements=[...new Set(raw.map(r=>(r.element||'').split(',').map(x=>x.trim())).flat().filter(e=>e&&e!=='nan'&&!['Au choix','Variable','Choix','Celui du Kabbaliste','Un élément',''].includes(e)))].sort();
 
   // Filtrage
   let items=raw.filter(r=>{
@@ -3171,7 +3171,7 @@ async function renderGrimBody(bodyDiv,searchInp){
     return;
   }
 
-  items.forEach(item=>{
+  items.filter(item=>item&&item.nom).forEach(item=>{
     const access=grimItemAccess(item,grimTab);
     const isGrave=grimIsGrave(item);
     const isFocus=grimIsFocus(item);
