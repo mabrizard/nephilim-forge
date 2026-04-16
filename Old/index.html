@@ -116,39 +116,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .btn-s{background:transparent;color:var(--parch-d);border-color:var(--gold-d)}.btn-s:hover{color:var(--parch)}
 .btn-e{background:rgba(139,26,26,.14);color:var(--parch);border-color:var(--blood)}.btn-e:hover{background:rgba(139,26,26,.28)}
 .btn-cloud{background:rgba(107,142,107,.12);color:#a0c8a0;border-color:var(--ok)}.btn-cloud:hover{background:rgba(107,142,107,.25)}
-.btn-grimoire{background:rgba(155,143,192,.15);color:#c0a0ff;border-color:rgba(155,143,192,.5)}.btn-grimoire:hover{background:rgba(155,143,192,.28)}
-.grim-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:150;display:flex;flex-direction:column}
-.grim-panel{display:flex;flex-direction:column;height:100%;max-width:900px;width:100%;margin:0 auto;padding:1rem}
-.grim-head{display:flex;align-items:center;gap:.8rem;padding:.6rem 0 1rem;border-bottom:1px solid rgba(155,143,192,.3);flex-wrap:wrap}
-.grim-title{font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:#c0a0ff;flex:1}
-.grim-tabs{display:flex;gap:4px;background:rgba(0,0,0,.3);border-radius:8px;padding:3px}
-.grim-tab{padding:.4rem 1rem;border-radius:6px;font-family:'Cinzel',serif;font-size:.75rem;cursor:pointer;border:none;background:transparent;color:var(--parch-d);transition:all .2s}
-.grim-tab.on{background:rgba(155,143,192,.25);color:#c0a0ff}
-.grim-search{background:rgba(13,11,8,.8);border:1px solid rgba(155,143,192,.3);color:var(--parch);padding:.45rem .8rem;border-radius:6px;font-family:'EB Garamond',serif;font-size:.9rem;width:200px}
-.grim-search:focus{outline:none;border-color:#c0a0ff}
-.grim-filters{display:flex;gap:.4rem;flex-wrap:wrap;margin:.6rem 0}
-.grim-pill{padding:.25rem .7rem;border-radius:12px;font-family:'Cinzel',serif;font-size:.68rem;cursor:pointer;border:1px solid rgba(155,143,192,.25);background:transparent;color:var(--parch-d);transition:all .15s}
-.grim-pill.on{background:rgba(155,143,192,.2);border-color:#c0a0ff;color:#c0a0ff}
-.grim-body{flex:1;overflow-y:auto;padding:.5rem 0;margin-top:.4rem}
-.grim-count{font-family:'Cinzel',serif;font-size:.72rem;color:rgba(155,143,192,.6);margin-bottom:.6rem}
-.grim-card{border:1px solid rgba(155,143,192,.18);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:.5rem;background:rgba(13,11,8,.6);cursor:pointer;transition:all .2s}
-.grim-card:hover{border-color:rgba(155,143,192,.5);background:rgba(155,143,192,.06)}
-.grim-card.open{border-color:#c0a0ff;background:rgba(155,143,192,.08)}
-.grim-card-head{display:flex;align-items:center;gap:.6rem}
-.grim-card-nom{font-family:'Cinzel',serif;font-size:.88rem;color:#c0a0ff;flex:1}
-.grim-card-badges{display:flex;gap:.3rem;flex-wrap:wrap}
-.grim-badge{font-size:.62rem;padding:.1rem .45rem;border-radius:8px;font-family:'Cinzel',serif;border:1px solid}
-.grim-badge.cercle{border-color:rgba(201,168,76,.3);color:var(--gold-d);background:rgba(201,168,76,.07)}
-.grim-badge.elem{border-color:rgba(155,143,192,.3);color:#a080d0;background:rgba(155,143,192,.07)}
-.grim-badge.seuil{border-color:rgba(107,142,107,.3);color:#80a880;background:rgba(107,142,107,.07)}
-.grim-detail{margin-top:.7rem;padding-top:.7rem;border-top:1px solid rgba(155,143,192,.12);display:none}
-.grim-card.open .grim-detail{display:block}
-.grim-detail p{font-size:.82rem;color:var(--parch-d);font-style:italic;margin-bottom:.4rem;line-height:1.55}
-.grim-detail .grim-ref{font-size:.72rem;color:rgba(155,143,192,.5);font-family:'Cinzel',serif}
-.grim-close{background:transparent;border:1px solid rgba(155,143,192,.3);color:var(--parch-d);padding:.4rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:.75rem}
-.grim-close:hover{border-color:#c0a0ff;color:#c0a0ff}
-.grim-loading{text-align:center;padding:3rem;color:rgba(155,143,192,.6);font-family:'Cinzel',serif;font-size:.9rem}
-.grim-empty{text-align:center;padding:2rem;color:rgba(155,143,192,.4);font-style:italic;font-size:.88rem}
 .btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
 select,input[type=text],textarea{background:rgba(13,11,8,.85);border:1px solid var(--gold-d);color:var(--parch);padding:.55rem .85rem;border-radius:6px;font-family:'EB Garamond',serif;font-size:.92rem;width:100%;cursor:pointer;transition:border-color .2s}
 select:focus,input[type=text]:focus,textarea:focus{outline:none;border-color:var(--gold)}
@@ -1301,13 +1268,6 @@ function buildActionBar(){
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='✦ Nouveau';
   btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null};supaPersonnageId=null;render();}};
   bar.appendChild(btnNew);
-
-  // ── Grimoire ─────────────────────────────────────────
-  const btnGrim=document.createElement('button');
-  btnGrim.className='btn btn-grimoire';
-  btnGrim.innerHTML='✦ Grimoire';
-  btnGrim.onclick=()=>showGrimoire();
-  bar.appendChild(btnGrim);
 
   document.body.appendChild(bar);
 }
@@ -2872,155 +2832,6 @@ function toast(msg, type=''){
 }
 function toastSuccess(msg){toast(msg,'success');}
 function toastError(msg){toast(msg,'error');}
-
-
-// ════════════════════════════════════════════════════════
-// GRIMOIRE — Sorts, Invocations, Formules depuis Supabase
-// ════════════════════════════════════════════════════════
-let grimCache={sorts:null,invocations:null,formules:null};
-let grimTab='sorts';
-let grimSearch='';
-let grimFilters={cercle:'',element:''};
-let grimOpenId=null;
-
-async function loadGrimTab(tab){
-  if(grimCache[tab]) return grimCache[tab];
-  if(!supaClient) return [];
-  const table=tab==='sorts'?'sorts':tab==='invocations'?'invocations':'formules';
-  const {data,error}=await supaClient.from(table).select('*').order('cercle').order('nom');
-  if(error||!data) return [];
-  grimCache[tab]=data;
-  return data;
-}
-
-function grimElem(tag,cls,html){
-  const e=document.createElement(tag);
-  if(cls)e.className=cls;
-  if(html!==undefined)e.innerHTML=html;
-  return e;
-}
-
-function elemColor(el){
-  const m={'Air':'#7eb8d4','Feu':'#e05c2a','Terre':'#6b8e4e','Eau':'#3a6b8a','Lune':'#9b8fc0'};
-  for(const k of Object.keys(m)) if(el&&el.includes(k)) return m[k];
-  return '#888';
-}
-
-async function showGrimoire(){
-  const old=document.querySelector('.grim-overlay');if(old)old.remove();
-  const overlay=grimElem('div','grim-overlay');
-  const panel=grimElem('div','grim-panel');
-
-  // HEAD
-  const head=grimElem('div','grim-head');
-  const title=grimElem('span','grim-title','✡ Grimoire des Âmes');
-  const tabs=grimElem('div','grim-tabs');
-  ['sorts','invocations','formules'].forEach(t=>{
-    const btn=grimElem('button','grim-tab'+(t===grimTab?' on':''),t==='sorts'?'Magie':t==='invocations'?'Kabbale':'Alchimie');
-    btn.onclick=async()=>{
-      grimTab=t;grimSearch='';grimFilters={cercle:'',element:''};grimOpenId=null;
-      document.querySelectorAll('.grim-tab').forEach(b=>b.classList.remove('on'));
-      btn.classList.add('on');
-      await renderGrimBody(bodyDiv,searchInp);
-    };
-    tabs.appendChild(btn);
-  });
-  const searchInp=grimElem('input','grim-search');
-  searchInp.type='text';searchInp.placeholder='Rechercher…';searchInp.value=grimSearch;
-  searchInp.oninput=async(e)=>{grimSearch=e.target.value;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
-  const closeBtn=grimElem('button','grim-close','✕ Fermer');
-  closeBtn.onclick=()=>overlay.remove();
-  head.appendChild(title);head.appendChild(tabs);head.appendChild(searchInp);head.appendChild(closeBtn);
-
-  const bodyDiv=grimElem('div','grim-body');
-  bodyDiv.innerHTML='<div class="grim-loading">Chargement du grimoire…</div>';
-
-  panel.appendChild(head);
-  panel.appendChild(bodyDiv);
-  overlay.appendChild(panel);
-  document.body.appendChild(overlay);
-
-  await renderGrimBody(bodyDiv,searchInp);
-}
-
-async function renderGrimBody(bodyDiv,searchInp){
-  bodyDiv.innerHTML='<div class="grim-loading">Invocation des arcanes…</div>';
-  const raw=await loadGrimTab(grimTab);
-
-  // Filtres dynamiques
-  const cercles=[...new Set(raw.map(r=>r.cercle).filter(Boolean))].sort();
-  const elements=[...new Set(raw.map(r=>r.element).filter(Boolean).flatMap(e=>e.split(',').map(x=>x.trim())))].sort();
-
-  let items=raw.filter(r=>{
-    const q=grimSearch.toLowerCase();
-    const matchSearch=!q||r.nom?.toLowerCase().includes(q)||r.effet?.toLowerCase().includes(q)||r.element?.toLowerCase().includes(q);
-    const matchCercle=!grimFilters.cercle||r.cercle===grimFilters.cercle;
-    const matchElem=!grimFilters.element||(r.element&&r.element.includes(grimFilters.element));
-    return matchSearch&&matchCercle&&matchElem;
-  });
-
-  bodyDiv.innerHTML='';
-
-  // Filtres pills
-  const filtersDiv=grimElem('div','grim-filters');
-  // Cercle pills
-  cercles.forEach(c=>{
-    const p=grimElem('button','grim-pill'+(grimFilters.cercle===c?' on':''),c.replace('1-','').replace('2-',''));
-    p.onclick=async()=>{grimFilters.cercle=grimFilters.cercle===c?'':c;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
-    filtersDiv.appendChild(p);
-  });
-  // Element pills
-  elements.slice(0,8).forEach(el=>{
-    const p=grimElem('button','grim-pill'+(grimFilters.element===el?' on':''),el);
-    p.style.borderColor=elemColor(el)+'88';
-    if(grimFilters.element===el) p.style.background=elemColor(el)+'22';
-    p.onclick=async()=>{grimFilters.element=grimFilters.element===el?'':el;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
-    filtersDiv.appendChild(p);
-  });
-  bodyDiv.appendChild(filtersDiv);
-
-  const count=grimElem('div','grim-count',`${items.length} effet${items.length>1?'s':''} trouvé${items.length>1?'s':''}`);
-  bodyDiv.appendChild(count);
-
-  if(items.length===0){
-    bodyDiv.appendChild(grimElem('div','grim-empty','Aucun effet trouvé pour cette recherche.'));
-    return;
-  }
-
-  items.forEach(item=>{
-    const card=grimElem('div','grim-card'+(item.id===grimOpenId?' open':''));
-    card.onclick=()=>{
-      grimOpenId=grimOpenId===item.id?null:item.id;
-      document.querySelectorAll('.grim-card').forEach(c=>c.classList.remove('open'));
-      if(grimOpenId===item.id) card.classList.add('open');
-      const det=card.querySelector('.grim-detail');
-      if(det) det.style.display=grimOpenId===item.id?'block':'none';
-    };
-
-    const cardHead=grimElem('div','grim-card-head');
-    const nom=grimElem('span','grim-card-nom',item.nom);
-    const badges=grimElem('div','grim-card-badges');
-
-    if(item.cercle){const b=grimElem('span','grim-badge cercle',item.cercle.replace('1-','').replace('2-',''));badges.appendChild(b);}
-    if(item.element){const b=grimElem('span','grim-badge elem',item.element);b.style.borderColor=elemColor(item.element)+'66';badges.appendChild(b);}
-    if(item.seuil&&item.seuil!==''){const b=grimElem('span','grim-badge seuil','Seuil '+item.seuil);badges.appendChild(b);}
-
-    cardHead.appendChild(nom);cardHead.appendChild(badges);
-    card.appendChild(cardHead);
-
-    const detail=grimElem('div','grim-detail');
-    detail.style.display=item.id===grimOpenId?'block':'none';
-    if(item.effet) detail.appendChild(grimElem('p','',item.effet));
-    if(item.voie) detail.appendChild(grimElem('p','',`Voie : ${item.voie}`));
-    if(item.sephirah) detail.appendChild(grimElem('p','',`Séphirah : ${item.sephirah}${item.monde?' · Monde : '+item.monde:''}`));
-    if(item.substance) detail.appendChild(grimElem('p','',`Substance : ${item.substance}`));
-    if(item.contrat) detail.appendChild(grimElem('p','',`Contrat : ${item.contrat}`));
-    if(item.focus) detail.appendChild(grimElem('p','',`Focus : ${item.focus}`));
-    if(item['references']) detail.appendChild(grimElem('div','grim-ref',item['references']));
-    card.appendChild(detail);
-    bodyDiv.appendChild(card);
-  });
-}
 
 // ════════════════════════════════════════════════════════
 // INIT
