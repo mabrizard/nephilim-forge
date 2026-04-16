@@ -149,6 +149,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .grim-close:hover{border-color:#c0a0ff;color:#c0a0ff}
 .grim-loading{text-align:center;padding:3rem;color:rgba(155,143,192,.6);font-family:'Cinzel',serif;font-size:.9rem}
 .grim-empty{text-align:center;padding:2rem;color:rgba(155,143,192,.4);font-style:italic;font-size:.88rem}
+.grim-card.grim-blocked{opacity:.35;pointer-events:none}
+.grim-card.grim-grise{opacity:.6}
+.grim-card.grim-selected{border-color:rgba(155,143,192,.7);background:rgba(155,143,192,.1)}
+.grim-compteur{display:flex;align-items:center;gap:.7rem;padding:.6rem 1rem;border:1px solid rgba(155,143,192,.3);border-radius:8px;background:rgba(155,143,192,.07);margin-bottom:.7rem}
+.grim-ctr-lbl{font-family:'Cinzel',serif;font-size:.75rem;color:var(--parch-d)}
+.grim-ctr-val{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:#c0a0ff}
+.grim-ctr-focus{font-size:.72rem;color:var(--gold-d);font-family:'Cinzel',serif;margin-left:.5rem}
+.grim-add-btn{font-family:'Cinzel',serif;font-size:.65rem;padding:.18rem .55rem;border-radius:6px;border:1px solid rgba(155,143,192,.5);background:rgba(155,143,192,.12);color:#c0a0ff;cursor:pointer;margin-left:.3rem;transition:all .15s;white-space:nowrap}
+.grim-add-btn:hover{background:rgba(155,143,192,.28)}
+.grim-rem-btn{font-family:'Cinzel',serif;font-size:.65rem;padding:.18rem .55rem;border-radius:6px;border:1px solid rgba(139,26,26,.4);background:rgba(139,26,26,.12);color:var(--blood-l);cursor:pointer;margin-left:.3rem;transition:all .15s;white-space:nowrap}
+.grim-rem-btn:hover{background:rgba(139,26,26,.25)}
+.grim-badge.blocked{border-color:rgba(139,26,26,.3);color:var(--blood-l);background:rgba(139,26,26,.07)}
+.grim-tag-grave{font-size:.6rem;padding:.1rem .35rem;border-radius:6px;background:rgba(155,143,192,.2);border:1px solid rgba(155,143,192,.4);color:#c0a0ff;font-family:'Cinzel',serif;margin-left:.3rem}
+.grim-tag-focus{font-size:.6rem;padding:.1rem .35rem;border-radius:6px;background:rgba(201,168,76,.12);border:1px solid var(--gold-d);color:var(--gold-d);font-family:'Cinzel',serif;margin-left:.3rem}
 .btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
 select,input[type=text],textarea{background:rgba(13,11,8,.85);border:1px solid var(--gold-d);color:var(--parch);padding:.55rem .85rem;border-radius:6px;font-family:'EB Garamond',serif;font-size:.92rem;width:100%;cursor:pointer;transition:border-color .2s}
 select:focus,input[type=text]:focus,textarea:focus{outline:none;border-color:var(--gold)}
@@ -1299,7 +1313,7 @@ function buildActionBar(){
 
   // Nouveau
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='✦ Nouveau';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null};supaPersonnageId=null;render();}};
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]}};supaPersonnageId=null;render();}};
   bar.appendChild(btnNew);
 
   // ── Grimoire ─────────────────────────────────────────
@@ -2815,6 +2829,22 @@ function exportTXT(){
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
     `  Sorts       : ${S.magie.sorts||0} connus`,
+    ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='sorts').length>0)?[
+      '  Sorts gravés :',
+      ...S.effets_magiques.gravés.filter(e=>e.tab==='sorts').map(e=>`    · ${e.nom}${e.cercle?' ('+e.cercle.replace('1-','').replace('2-','')+')':''}`)
+    ]:[]),
+    ...((S.effets_magiques&&S.effets_magiques.focus&&S.effets_magiques.focus.filter(e=>e.tab==='sorts').length>0)?[
+      '  Sorts Focus :',
+      ...S.effets_magiques.focus.filter(e=>e.tab==='sorts').map(e=>`    · ${e.nom} [Focus]`)
+    ]:[]),
+    ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='invocations').length>0)?[
+      '  Invocations :',
+      ...S.effets_magiques.gravés.filter(e=>e.tab==='invocations').map(e=>`    · ${e.nom}`)
+    ]:[]),
+    ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='formules').length>0)?[
+      '  Formules alchimiques :',
+      ...S.effets_magiques.gravés.filter(e=>e.tab==='formules').map(e=>`    · ${e.nom}`)
+    ]:[]),
     `  Kabbale     : ${Object.entries(S.sephiroth).filter(([,v])=>v>0).map(([id,v])=>{const sp=SEPH.find(x=>x.id===id);return sp?`${sp.nm}(${v})`:''}).filter(Boolean).join(', ')||'—'} (${totalSeph} degrés = ${Math.ceil(totalSeph/3)} PI)${S.monde?' · Monde : '+S.monde:''}`,
     `  Alchimie    : Noir ${S.alchimie.noir||0} / Blanc ${S.alchimie.blanc||0} / Rouge ${S.alchimie.rouge||0}${S.alchimie.voie?' · Voie '+S.alchimie.voie:''}`,
     `  Constructs  : ${Object.entries(S.constructs).filter(([,v])=>v>0).map(([id,v])=>`${id}×${v}`).join(', ')||'—'}`,'',
@@ -2875,7 +2905,7 @@ function toastError(msg){toast(msg,'error');}
 
 
 // ════════════════════════════════════════════════════════
-// GRIMOIRE — Sorts, Invocations, Formules depuis Supabase
+// GRIMOIRE — Intelligent, lié à la fiche du personnage
 // ════════════════════════════════════════════════════════
 let grimCache={sorts:null,invocations:null,formules:null};
 let grimTab='sorts';
@@ -2883,6 +2913,23 @@ let grimSearch='';
 let grimFilters={cercle:'',element:''};
 let grimOpenId=null;
 
+// ── Helpers d'accès au state ──────────────────────────
+function grimGetKaScores(){return kaScores();}
+function grimGetKaDom(){return S.ka_dom||null;}
+function grimGetMagie(){return S.magie||{};}
+function grimGetSephiroth(){return S.sephiroth||{};}
+function grimGetAlchimie(){return S.alchimie||{};}
+function grimGetEffets(){
+  if(!S.effets_magiques)S.effets_magiques={gravés:[],focus:[]};
+  return S.effets_magiques;
+}
+function grimMaxGraves(){
+  const sc=grimGetKaScores();
+  const dom=grimGetKaDom();
+  return dom?(sc[dom]||0):0;
+}
+
+// ── Chargement Supabase ───────────────────────────────
 async function loadGrimTab(tab){
   if(grimCache[tab]) return grimCache[tab];
   if(!supaClient) return [];
@@ -2893,30 +2940,144 @@ async function loadGrimTab(tab){
   return data;
 }
 
-function grimElem(tag,cls,html){
+// ── Logique d'accessibilité ───────────────────────────
+function grimItemAccess(item, tab){
+  const sc=grimGetKaScores();
+  const magie=grimGetMagie();
+  const seph=grimGetSephiroth();
+  const alch=grimGetAlchimie();
+  const dom=grimGetKaDom();
+
+  if(tab==='sorts'){
+    const cercle=item.cercle||'';
+    const elem=item.element||'';
+    // Basse Magie : faut au moins 1 degré Basse Magie
+    if(cercle.includes('Basse')){
+      const hasBasse=(magie.bas||0)>=1;
+      if(!hasBasse) return {ok:false,reason:'Basse Magie requise'};
+    }
+    // Haute Magie : faut au moins 1 degré Haute Magie
+    if(cercle.includes('Haute')){
+      const hasHaut=(magie.haut||0)>=1;
+      if(!hasHaut) return {ok:false,reason:'Haute Magie requise'};
+      // Voie : si le sort a une voie, elle doit correspondre
+      if(item.voie&&magie.voie&&!item.voie.includes(magie.voie)&&!magie.voie.includes(item.voie)){
+        return {ok:'grise',reason:`Voie ${item.voie} requise`};
+      }
+    }
+    // Grand Secret
+    if(cercle.includes('Grand')){
+      if(!(magie.grand>=1)) return {ok:false,reason:'Grand Secret requis'};
+    }
+    // Élément : le Ka de l'élément doit être > 0
+    const elemBase=elem.replace('Au choix','').replace('Variable','').trim();
+    if(elemBase&&elemBase!==''){
+      const elems=elemBase.split(',').map(e=>e.trim()).filter(Boolean);
+      const hasElem=elems.length===0||elems.some(e=>sc[e]&&sc[e]>0);
+      if(!hasElem) return {ok:'grise',reason:`Ka ${elemBase} requis`};
+    }
+    return {ok:true};
+  }
+
+  if(tab==='invocations'){
+    const cercle=item.cercle||'';
+    const sephirah=(item.sephirah||'').toLowerCase();
+    if(cercle.includes('Sceaux')){
+      // Faut avoir au moins 1 degré dans la séphirah
+      if(sephirah&&!(seph[sephirah]>=1)) return {ok:'grise',reason:`Séphirah ${item.sephirah} requise`};
+    }
+    if(cercle.includes('Pentacles')){
+      if(sephirah&&!(seph[sephirah]>=1)) return {ok:false,reason:`Séphirah ${item.sephirah} requise`};
+    }
+    // Élément
+    const elem=(item.element||'').split(',')[0].trim();
+    if(elem&&elem!=='Choix'&&elem!=='Variable'&&elem!=='Celui du Kabbaliste'){
+      if(!(sc[elem]>0)) return {ok:'grise',reason:`Ka ${elem} requis`};
+    }
+    return {ok:true};
+  }
+
+  if(tab==='formules'){
+    const cercle=item.cercle||'';
+    if(cercle.includes('Noir')&&!(alch.noir>=1)) return {ok:false,reason:"Oeuvre au Noir requise"};
+    if(cercle.includes('Blanc')&&!(alch.blanc>=1)) return {ok:false,reason:"Oeuvre au Blanc requise"};
+    if(cercle.includes('Rouge')&&!(alch.rouge>=1)) return {ok:false,reason:"Oeuvre au Rouge requise"};
+    const elem=(item.element||'').trim();
+    if(elem&&elem!=='Un élément'&&elem!==''){
+      if(!(sc[elem]>0)) return {ok:'grise',reason:`Ka ${elem} requis`};
+    }
+    return {ok:true};
+  }
+  return {ok:true};
+}
+
+// ── Gestion sélection effets ──────────────────────────
+function grimIsGrave(item){
+  return (grimGetEffets().gravés||[]).some(e=>e.id===item.id&&e.tab===grimTab);
+}
+function grimIsFocus(item){
+  return (grimGetEffets().focus||[]).some(e=>e.id===item.id&&e.tab===grimTab);
+}
+function grimAddEffet(item){
+  if(!S.effets_magiques)S.effets_magiques={gravés:[],focus:[]};
+  const gravés=S.effets_magiques.gravés||[];
+  const focus=S.effets_magiques.focus||[];
+  const max=grimMaxGraves();
+  // Déjà présent ?
+  if(grimIsGrave(item)||grimIsFocus(item)) return;
+  const payload={id:item.id,tab:grimTab,nom:item.nom,cercle:item.cercle,element:item.element,effet:item.effet};
+  if(gravés.filter(e=>e.tab===grimTab||grimTab==='sorts').length<max||max===0){
+    // Si sorts, compter uniquement les sorts gravés
+    const sortsGraves=gravés.filter(e=>e.tab==='sorts').length;
+    if(grimTab==='sorts'&&sortsGraves<max){
+      S.effets_magiques.gravés.push(payload);
+    } else if(grimTab!=='sorts'){
+      S.effets_magiques.gravés.push(payload);
+    } else {
+      S.effets_magiques.focus.push({...payload,mode:'focus'});
+      toast('Compteur plein — ajouté en Focus uniquement');
+    }
+  } else if(grimTab==='sorts'){
+    S.effets_magiques.focus.push({...payload,mode:'focus'});
+    toast('Compteur plein — ajouté en Focus uniquement');
+  } else {
+    S.effets_magiques.gravés.push(payload);
+  }
+  doLocalSave();
+}
+function grimRemoveEffet(item){
+  if(!S.effets_magiques) return;
+  S.effets_magiques.gravés=(S.effets_magiques.gravés||[]).filter(e=>!(e.id===item.id&&e.tab===grimTab));
+  S.effets_magiques.focus=(S.effets_magiques.focus||[]).filter(e=>!(e.id===item.id&&e.tab===grimTab));
+  doLocalSave();
+}
+
+// ── DOM helpers ───────────────────────────────────────
+function grimEl(tag,cls,html){
   const e=document.createElement(tag);
   if(cls)e.className=cls;
   if(html!==undefined)e.innerHTML=html;
   return e;
 }
-
 function elemColor(el){
   const m={'Air':'#7eb8d4','Feu':'#e05c2a','Terre':'#6b8e4e','Eau':'#3a6b8a','Lune':'#9b8fc0'};
   for(const k of Object.keys(m)) if(el&&el.includes(k)) return m[k];
   return '#888';
 }
 
+// ── Affichage principal ───────────────────────────────
 async function showGrimoire(){
   const old=document.querySelector('.grim-overlay');if(old)old.remove();
-  const overlay=grimElem('div','grim-overlay');
-  const panel=grimElem('div','grim-panel');
+  const overlay=grimEl('div','grim-overlay');
+  const panel=grimEl('div','grim-panel');
 
-  // HEAD
-  const head=grimElem('div','grim-head');
-  const title=grimElem('span','grim-title','✡ Grimoire des Âmes');
-  const tabs=grimElem('div','grim-tabs');
-  ['sorts','invocations','formules'].forEach(t=>{
-    const btn=grimElem('button','grim-tab'+(t===grimTab?' on':''),t==='sorts'?'Magie':t==='invocations'?'Kabbale':'Alchimie');
+  const head=grimEl('div','grim-head');
+  const title=grimEl('span','grim-title','✡ Grimoire des Âmes');
+
+  const tabs=grimEl('div','grim-tabs');
+  const tabDefs=[['sorts','Magie'],['invocations','Kabbale'],['formules','Alchimie']];
+  tabDefs.forEach(([t,label])=>{
+    const btn=grimEl('button','grim-tab'+(t===grimTab?' on':''),label);
     btn.onclick=async()=>{
       grimTab=t;grimSearch='';grimFilters={cercle:'',element:''};grimOpenId=null;
       document.querySelectorAll('.grim-tab').forEach(b=>b.classList.remove('on'));
@@ -2925,32 +3086,40 @@ async function showGrimoire(){
     };
     tabs.appendChild(btn);
   });
-  const searchInp=grimElem('input','grim-search');
+
+  const searchInp=grimEl('input','grim-search');
   searchInp.type='text';searchInp.placeholder='Rechercher…';searchInp.value=grimSearch;
   searchInp.oninput=async(e)=>{grimSearch=e.target.value;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
-  const closeBtn=grimElem('button','grim-close','✕ Fermer');
+
+  const closeBtn=grimEl('button','grim-close','✕ Fermer');
   closeBtn.onclick=()=>overlay.remove();
+
   head.appendChild(title);head.appendChild(tabs);head.appendChild(searchInp);head.appendChild(closeBtn);
 
-  const bodyDiv=grimElem('div','grim-body');
-  bodyDiv.innerHTML='<div class="grim-loading">Chargement du grimoire…</div>';
+  const bodyDiv=grimEl('div','grim-body');
+  bodyDiv.innerHTML='<div class="grim-loading">Invocation des arcanes…</div>';
 
   panel.appendChild(head);
   panel.appendChild(bodyDiv);
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
-
   await renderGrimBody(bodyDiv,searchInp);
 }
 
 async function renderGrimBody(bodyDiv,searchInp){
   bodyDiv.innerHTML='<div class="grim-loading">Invocation des arcanes…</div>';
   const raw=await loadGrimTab(grimTab);
+  const dom=grimGetKaDom();
+  const max=grimMaxGraves();
+  const effets=grimGetEffets();
+  const sortsGraves=(effets.gravés||[]).filter(e=>e.tab==='sorts').length;
+  const sortsFocus=(effets.focus||[]).filter(e=>e.tab==='sorts').length;
 
-  // Filtres dynamiques
+  // Cercles et éléments disponibles
   const cercles=[...new Set(raw.map(r=>r.cercle).filter(Boolean))].sort();
-  const elements=[...new Set(raw.map(r=>r.element).filter(Boolean).flatMap(e=>e.split(',').map(x=>x.trim())))].sort();
+  const elements=[...new Set(raw.map(r=>(r.element||'').split(',').map(x=>x.trim())).flat().filter(e=>e&&!['Au choix','Variable','Choix','Celui du Kabbaliste','Un élément',''].includes(e)))].sort();
 
+  // Filtrage
   let items=raw.filter(r=>{
     const q=grimSearch.toLowerCase();
     const matchSearch=!q||r.nom?.toLowerCase().includes(q)||r.effet?.toLowerCase().includes(q)||r.element?.toLowerCase().includes(q);
@@ -2959,19 +3128,33 @@ async function renderGrimBody(bodyDiv,searchInp){
     return matchSearch&&matchCercle&&matchElem;
   });
 
+  // Trier : accessibles d'abord, puis grisés, puis bloqués
+  items.sort((a,b)=>{
+    const ra=grimItemAccess(a,grimTab);
+    const rb=grimItemAccess(b,grimTab);
+    const score=x=>x.ok===true?0:x.ok==='grise'?1:2;
+    return score(ra)-score(rb)||a.nom.localeCompare(b.nom);
+  });
+
   bodyDiv.innerHTML='';
 
-  // Filtres pills
-  const filtersDiv=grimElem('div','grim-filters');
-  // Cercle pills
+  // ── Compteur sorts gravés ──
+  if(grimTab==='sorts'&&dom){
+    const ctr=grimEl('div','grim-compteur');
+    ctr.innerHTML=`<span class="grim-ctr-lbl">Sorts gravés</span><span class="grim-ctr-val">${sortsGraves} / ${max}</span>${sortsFocus>0?`<span class="grim-ctr-focus">${sortsFocus} en Focus</span>`:''}`;
+    bodyDiv.appendChild(ctr);
+  }
+
+  // ── Filtres ──
+  const filtersDiv=grimEl('div','grim-filters');
   cercles.forEach(c=>{
-    const p=grimElem('button','grim-pill'+(grimFilters.cercle===c?' on':''),c.replace('1-','').replace('2-',''));
+    const label=c.replace('1-','').replace('2-','');
+    const p=grimEl('button','grim-pill'+(grimFilters.cercle===c?' on':''),label);
     p.onclick=async()=>{grimFilters.cercle=grimFilters.cercle===c?'':c;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
     filtersDiv.appendChild(p);
   });
-  // Element pills
-  elements.slice(0,8).forEach(el=>{
-    const p=grimElem('button','grim-pill'+(grimFilters.element===el?' on':''),el);
+  elements.forEach(el=>{
+    const p=grimEl('button','grim-pill'+(grimFilters.element===el?' on':''),el);
     p.style.borderColor=elemColor(el)+'88';
     if(grimFilters.element===el) p.style.background=elemColor(el)+'22';
     p.onclick=async()=>{grimFilters.element=grimFilters.element===el?'':el;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
@@ -2979,49 +3162,82 @@ async function renderGrimBody(bodyDiv,searchInp){
   });
   bodyDiv.appendChild(filtersDiv);
 
-  const count=grimElem('div','grim-count',`${items.length} effet${items.length>1?'s':''} trouvé${items.length>1?'s':''}`);
+  const access=items.filter(i=>grimItemAccess(i,grimTab).ok===true);
+  const count=grimEl('div','grim-count',`${access.length} accessible${access.length>1?'s':''} · ${items.length} total`);
   bodyDiv.appendChild(count);
 
   if(items.length===0){
-    bodyDiv.appendChild(grimElem('div','grim-empty','Aucun effet trouvé pour cette recherche.'));
+    bodyDiv.appendChild(grimEl('div','grim-empty','Aucun effet trouvé.'));
     return;
   }
 
   items.forEach(item=>{
-    const card=grimElem('div','grim-card'+(item.id===grimOpenId?' open':''));
-    card.onclick=()=>{
+    const access=grimItemAccess(item,grimTab);
+    const isGrave=grimIsGrave(item);
+    const isFocus=grimIsFocus(item);
+    const isSelected=isGrave||isFocus;
+
+    let cardCls='grim-card';
+    if(access.ok===false) cardCls+=' grim-blocked';
+    else if(access.ok==='grise') cardCls+=' grim-grise';
+    if(isSelected) cardCls+=' grim-selected';
+    if(item.id===grimOpenId) cardCls+=' open';
+
+    const card=grimEl('div',cardCls);
+    card.onclick=(e)=>{
+      if(e.target.classList.contains('grim-add-btn')||e.target.classList.contains('grim-rem-btn')) return;
       grimOpenId=grimOpenId===item.id?null:item.id;
-      document.querySelectorAll('.grim-card').forEach(c=>c.classList.remove('open'));
-      if(grimOpenId===item.id) card.classList.add('open');
-      const det=card.querySelector('.grim-detail');
-      if(det) det.style.display=grimOpenId===item.id?'block':'none';
+      document.querySelectorAll('.grim-card').forEach(c=>{c.classList.remove('open');c.querySelector('.grim-detail')&&(c.querySelector('.grim-detail').style.display='none');});
+      if(grimOpenId===item.id){card.classList.add('open');const det=card.querySelector('.grim-detail');if(det)det.style.display='block';}
     };
 
-    const cardHead=grimElem('div','grim-card-head');
-    const nom=grimElem('span','grim-card-nom',item.nom);
-    const badges=grimElem('div','grim-card-badges');
+    // Head
+    const cardHead=grimEl('div','grim-card-head');
+    const nom=grimEl('span','grim-card-nom',item.nom);
+    if(isGrave) nom.innerHTML+=' <span class="grim-tag-grave">gravé</span>';
+    if(isFocus) nom.innerHTML+=' <span class="grim-tag-focus">focus</span>';
 
-    if(item.cercle){const b=grimElem('span','grim-badge cercle',item.cercle.replace('1-','').replace('2-',''));badges.appendChild(b);}
-    if(item.element){const b=grimElem('span','grim-badge elem',item.element);b.style.borderColor=elemColor(item.element)+'66';badges.appendChild(b);}
-    if(item.seuil&&item.seuil!==''){const b=grimElem('span','grim-badge seuil','Seuil '+item.seuil);badges.appendChild(b);}
+    const badges=grimEl('div','grim-card-badges');
+    if(item.cercle){const b=grimEl('span','grim-badge cercle',item.cercle.replace('1-','').replace('2-',''));badges.appendChild(b);}
+    if(item.element){
+      const b=grimEl('span','grim-badge elem',item.element);
+      b.style.borderColor=elemColor(item.element)+'66';
+      badges.appendChild(b);
+    }
+    if(item.seuil&&item.seuil!==''){const b=grimEl('span','grim-badge seuil','Seuil '+item.seuil);badges.appendChild(b);}
+    if(access.ok!==true){const b=grimEl('span','grim-badge blocked',access.reason);badges.appendChild(b);}
+
+    // Bouton ajout/retrait
+    if(access.ok===true||access.ok==='grise'){
+      const addBtn=isSelected
+        ? grimEl('button','grim-rem-btn','− Retirer')
+        : grimEl('button','grim-add-btn','+ Ajouter');
+      addBtn.onclick=(e)=>{
+        e.stopPropagation();
+        if(isSelected){grimRemoveEffet(item);}
+        else{grimAddEffet(item);}
+        renderGrimBody(bodyDiv,searchInp);
+      };
+      badges.appendChild(addBtn);
+    }
 
     cardHead.appendChild(nom);cardHead.appendChild(badges);
     card.appendChild(cardHead);
 
-    const detail=grimElem('div','grim-detail');
+    // Détail
+    const detail=grimEl('div','grim-detail');
     detail.style.display=item.id===grimOpenId?'block':'none';
-    if(item.effet) detail.appendChild(grimElem('p','',item.effet));
-    if(item.voie) detail.appendChild(grimElem('p','',`Voie : ${item.voie}`));
-    if(item.sephirah) detail.appendChild(grimElem('p','',`Séphirah : ${item.sephirah}${item.monde?' · Monde : '+item.monde:''}`));
-    if(item.substance) detail.appendChild(grimElem('p','',`Substance : ${item.substance}`));
-    if(item.contrat) detail.appendChild(grimElem('p','',`Contrat : ${item.contrat}`));
-    if(item.focus) detail.appendChild(grimElem('p','',`Focus : ${item.focus}`));
-    if(item['references']) detail.appendChild(grimElem('div','grim-ref',item['references']));
+    if(item.effet) detail.appendChild(grimEl('p','',item.effet));
+    if(item.voie) detail.appendChild(grimEl('p','',`<strong>Voie :</strong> ${item.voie}`));
+    if(item.sephirah) detail.appendChild(grimEl('p','',`<strong>Séphirah :</strong> ${item.sephirah}${item.monde?' · Monde : '+item.monde:''}`));
+    if(item.contrat) detail.appendChild(grimEl('p','',`<strong>Contrat :</strong> ${item.contrat}`));
+    if(item.substance) detail.appendChild(grimEl('p','',`<strong>Substance :</strong> ${item.substance}`));
+    if(item.focus) detail.appendChild(grimEl('p','',`<strong>Focus :</strong> ${item.focus}`));
+    if(item['references']) detail.appendChild(grimEl('div','grim-ref',item['references']));
     card.appendChild(detail);
     bodyDiv.appendChild(card);
   });
 }
-
 // ════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════
