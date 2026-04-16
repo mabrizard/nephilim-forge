@@ -1809,27 +1809,45 @@ function s4(){
               marginBottom:'.5rem',
             }});
             descBox.appendChild(h('p',{style:{fontStyle:'italic',color:'var(--parch-d)',fontSize:'.83rem',marginBottom:'.35rem'}},vDobj.dc));
-            // Contrôles degrés supplémentaires
-            const degRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem',flexWrap:'wrap'}});
-            degRow.appendChild(h('span',{style:{color:isKaDomSel?'var(--gold)':'var(--gold-d)',fontSize:'.75rem',fontFamily:'Cinzel,serif'}},
-              isKaDomSel?`⭐ Ka dominant — base: 2°`:' base: 1°'));
-            degRow.appendChild(h('span',{style:{color:'var(--parch-d)',fontSize:'.75rem'}},'PI supp. :'));
-            degRow.appendChild(h('button',{cls:'qb',disabled:extraDeg<=0,
+            // Résumé degrés de Vécu
+            const degRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem',flexWrap:'wrap',
+              padding:'.3rem .5rem',background:'rgba(201,168,76,.06)',borderRadius:'4px',marginTop:'.3rem'}});
+            // Base gratuite
+            degRow.appendChild(h('span',{style:{color:isKaDomSel?'var(--gold)':'var(--gold-d)',
+              fontSize:'.75rem',fontFamily:'Cinzel,serif'}},
+              isKaDomSel?'⭐ Ka dominant : 2° gratuits':'1° gratuit'));
+            // Degrés supplémentaires achetés
+            if(extraDeg>0){
+              degRow.appendChild(h('span',{style:{color:'var(--parch-d)',fontSize:'.75rem'}},'+'));
+              degRow.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.75rem',fontFamily:'Cinzel,serif'}},
+                `${extraDeg}° achetés (${extraDeg} PI)`));
+            }
+            degRow.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.82rem',
+              fontFamily:'Cinzel,serif',fontWeight:'700',marginLeft:'.3rem'}},
+              `= ${totalDeg}° de Vécu au total`));
+            descBox.appendChild(degRow);
+
+            // Contrôle achat degrés supplémentaires de Vécu
+            const buyRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem',
+              marginTop:'.4rem',paddingTop:'.4rem',borderTop:'1px solid rgba(201,168,76,.12)'}});
+            buyRow.appendChild(h('span',{style:{fontSize:'.75rem',color:'var(--parch-d)',fontStyle:'italic'}},
+              'Acheter des degrés supplémentaires de ce Vécu (1 PI / degré) :'));
+            buyRow.appendChild(h('button',{cls:'qb',disabled:extraDeg<=0,
               onClick:()=>{
                 if(!S.incarnations[ep.id].vecus_deg) S.incarnations[ep.id].vecus_deg={};
                 S.incarnations[ep.id].vecus_deg[inc.vecu]=Math.max(0,extraDeg-1);
                 render();
               }},'−'));
-            degRow.appendChild(h('span',{cls:'qdp'},String(extraDeg)));
-            degRow.appendChild(h('button',{cls:'qb',disabled:left<1,
+            buyRow.appendChild(h('span',{cls:'qdp'},String(extraDeg)));
+            buyRow.appendChild(h('button',{cls:'qb',disabled:left<1,
               onClick:()=>{
                 if(!S.incarnations[ep.id].vecus_deg) S.incarnations[ep.id].vecus_deg={};
                 S.incarnations[ep.id].vecus_deg[inc.vecu]=(extraDeg||0)+1;
                 render();
               }},'✚'));
-            degRow.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.8rem',fontFamily:'Cinzel,serif',fontWeight:'700'}},
-              `= ${totalDeg}° total`));
-            descBox.appendChild(degRow);
+            buyRow.appendChild(h('span',{style:{fontSize:'.72rem',color:'var(--gold-d)'}},
+              `${left} PI restants`));
+            descBox.appendChild(buyRow);
             vbox.appendChild(descBox);
           }
         }
