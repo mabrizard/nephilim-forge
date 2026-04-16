@@ -116,6 +116,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .btn-s{background:transparent;color:var(--parch-d);border-color:var(--gold-d)}.btn-s:hover{color:var(--parch)}
 .btn-e{background:rgba(139,26,26,.14);color:var(--parch);border-color:var(--blood)}.btn-e:hover{background:rgba(139,26,26,.28)}
 .btn-cloud{background:rgba(107,142,107,.12);color:#a0c8a0;border-color:var(--ok)}.btn-cloud:hover{background:rgba(107,142,107,.25)}
+.btn-save{background:rgba(201,168,76,.15);color:var(--gold);border-color:var(--gold-d)}.btn-save:hover{background:rgba(201,168,76,.28)}.btn-save.saved{background:rgba(107,142,107,.15);color:var(--ok);border-color:var(--ok)}
 .btn-grimoire{background:rgba(155,143,192,.15);color:#c0a0ff;border-color:rgba(155,143,192,.5)}.btn-grimoire:hover{background:rgba(155,143,192,.28)}
 .grim-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:150;display:flex;flex-direction:column}
 .grim-panel{display:flex;flex-direction:column;height:100%;max-width:900px;width:100%;margin:0 auto;padding:1rem}
@@ -261,6 +262,24 @@ select option{background:#1a1510}
 .cstr-count{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);margin-top:.3rem;display:block}
 
 /* AUTH PANEL */
+
+/* PAGE LOGIN DÉDIÉE */
+.login-page{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;background:var(--ink)}
+.login-page::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(155,143,192,.12) 0%,transparent 60%);pointer-events:none}
+.login-card{position:relative;background:#1a150e;border:1px solid var(--gold-d);border-radius:14px;padding:2.5rem 2rem;max-width:380px;width:100%;text-align:center}
+.login-sigil{font-size:2.8rem;display:inline-block;animation:spin 20s linear infinite;opacity:.7;margin-bottom:.6rem}
+.login-title{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.4rem;margin-bottom:.3rem}
+.login-sub{color:var(--parch-d);font-style:italic;font-size:.88rem;margin-bottom:1.8rem;line-height:1.5}
+.login-input{width:100%;background:rgba(13,11,8,.85);border:1px solid var(--gold-d);color:var(--parch);padding:.65rem .9rem;border-radius:6px;font-family:'EB Garamond',serif;font-size:.95rem;text-align:center;margin-bottom:.8rem;transition:border-color .2s}
+.login-input:focus{outline:none;border-color:var(--gold)}
+.login-btn{width:100%;font-family:'Cinzel',serif;font-size:.85rem;padding:.75rem;border-radius:6px;cursor:pointer;border:1px solid var(--gold);background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--ink);font-weight:700;transition:all .2s;margin-bottom:.6rem}
+.login-btn:hover{opacity:.88}
+.login-btn:disabled{opacity:.45;cursor:not-allowed}
+.login-skip{background:transparent;border:1px solid var(--gold-d);color:var(--parch-d);padding:.5rem 1rem;border-radius:6px;cursor:pointer;font-family:'Cinzel',serif;font-size:.75rem;transition:all .2s;margin-top:.3rem;width:100%}
+.login-skip:hover{border-color:var(--gold-d);color:var(--parch)}
+.login-msg{font-size:.83rem;min-height:1.3em;margin:.4rem 0;font-style:italic}
+.login-msg.ok{color:var(--ok)}.login-msg.err{color:var(--blood-l)}
+.login-note{font-size:.72rem;color:var(--gold-d);margin-top:1rem;line-height:1.5}
 .auth-panel{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
 .auth-box{background:#1a150e;border:1px solid var(--gold);border-radius:14px;padding:2.5rem 2rem;max-width:420px;width:100%;text-align:center}
 .auth-box h2{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:1.3rem;margin-bottom:.5rem}
@@ -1130,9 +1149,9 @@ function calcTotauxCumules(){
     }
 
     // Bonus arcane adopté : degrés supplémentaires sur la quête
-    if(inc.arcane_adopte){
+    if(inc.arcane_id){
       const epA=EPOQUES.find(e=>e.id===id);
-      const arcDeg=epA&&epA.arcane_bonus||0;
+      const arcDeg=inc.arcane_deg||epA&&epA.arcane_bonus||0;
       if(arcDeg>0&&inc.quete){
         const pts=inc.quete.match(/^(.+?)\s+(\d+)$/);
         if(pts) totaux.quetes[pts[1]]=(totaux.quetes[pts[1]]||0)+arcDeg;
@@ -1342,6 +1361,18 @@ function buildActionBar(){
 
   bar.appendChild(sep());
 
+  // ── Bouton Enregistrer ────────────────────────────────
+  const btnSaveMain=document.createElement('button');
+  btnSaveMain.id='btn-save-main';btnSaveMain.className='btn btn-save';btnSaveMain.innerHTML='💾 Enregistrer';
+  btnSaveMain.onclick=async()=>{
+    if(!S.nom||!S.nom.trim()){toastError('Donnez un nom (étape 1)');return;}
+    doLocalSave();
+    btnSaveMain.innerHTML='✓ Enregistré';btnSaveMain.className='btn btn-save saved';
+    if(supaCurrentUser){const label='Sauvegarde — '+new Date().toLocaleDateString('fr-FR');await saveToSupabase(label);}
+    else toastSuccess('Sauvegardé localement');
+    setTimeout(()=>{btnSaveMain.innerHTML='💾 Enregistrer';btnSaveMain.className='btn btn-save';},2500);
+  };
+  bar.appendChild(btnSaveMain);bar.appendChild(sep());
   // Export JSON
   const btnEJ=document.createElement('button');btnEJ.className='btn btn-s';btnEJ.innerHTML='⬇ JSON';
   btnEJ.onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${S.nom||'nephilim'}_${new Date().toISOString().slice(0,10)}.json`;a.click();toastSuccess('Exporté en JSON');};
@@ -1458,32 +1489,43 @@ function buildSetupBox(){
 
 // ── PANNEAU DE CONNEXION (Magic Link) ─────────────────────
 function showAuthPanel(){
-  const old=document.querySelector('.auth-panel');if(old)old.remove();
-  const panel=h('div',{cls:'auth-panel'});
-  const box=h('div',{cls:'auth-box'});
-  box.appendChild(h('div',{style:{fontSize:'2.5rem',marginBottom:'.3rem'}},'✡'));
-  box.appendChild(h('h2',{},'Forge des Âmes'));
-  box.appendChild(h('p',{},'Connectez-vous avec votre adresse email pour sauvegarder et retrouver vos personnages sur tous vos appareils.'));
-
-  const inp=h('input',{type:'email',placeholder:'votre@email.com'});
-  const msg=h('div',{cls:'auth-msg'});
-  const btn=h('button',{cls:'btn btn-p',style:{width:'100%',marginTop:'.5rem'},
-    onClick:async()=>{
-      const email=inp.value.trim();
-      if(!email.includes('@')){msg.className='auth-msg err';msg.textContent='Email invalide';return;}
-      btn.disabled=true;btn.textContent='⟳ Envoi…';
-      const {error}=await supaSignIn(email);
-      if(error){msg.className='auth-msg err';msg.textContent='Erreur : '+error;btn.disabled=false;btn.textContent='Recevoir le lien';}
-      else{msg.className='auth-msg';msg.textContent='✓ Vérifiez votre boîte mail et cliquez le lien magique !';}
+  if(supaCurrentUser){toast('Déjà connecté : '+supaCurrentUser.email);return;}
+  const existingLogin=document.querySelector('.login-page');
+  if(existingLogin){existingLogin.remove();return;}
+  const page=document.createElement('div');page.className='login-page';
+  const card=document.createElement('div');card.className='login-card';
+  const sigil=document.createElement('div');sigil.className='login-sigil';sigil.textContent='✡';
+  const title=document.createElement('h1');title.className='login-title';title.textContent='Forge des Âmes';
+  const sub=document.createElement('p');sub.className='login-sub';
+  sub.textContent="Connectez-vous pour sauvegarder vos personnages sur tous vos appareils.";
+  const inp=document.createElement('input');inp.className='login-input';inp.type='email';
+  inp.placeholder='votre@email.com';inp.autocomplete='email';
+  const msgDiv=document.createElement('div');msgDiv.className='login-msg';
+  const btn=document.createElement('button');btn.className='login-btn';
+  btn.textContent='Recevoir le lien de connexion';
+  btn.onclick=async()=>{
+    const email=inp.value.trim();
+    if(!email.includes('@')){msgDiv.className='login-msg err';msgDiv.textContent='Email invalide.';return;}
+    btn.disabled=true;btn.textContent='⟳ Envoi…';
+    const {error}=await supaSignIn(email);
+    if(error){msgDiv.className='login-msg err';msgDiv.textContent='Erreur : '+error;btn.disabled=false;btn.textContent='Recevoir le lien';}
+    else{
+      btn.textContent='✓ Lien envoyé !';
+      msgDiv.className='login-msg ok';
+      msgDiv.textContent='Vérifiez votre boîte mail. Cette fenêtre se fermera automatiquement.';
+      const poll=setInterval(async()=>{const u=await supaGetSession();if(u){clearInterval(poll);page.remove();render();}},2000);
     }
-  },'Recevoir le lien magique');
-
-  box.appendChild(inp);
-  box.appendChild(btn);
-  box.appendChild(msg);
-  box.appendChild(h('button',{cls:'modal-close',style:{marginTop:'1.2rem'},onClick:()=>panel.remove()},'Fermer'));
-  panel.appendChild(box);
-  document.body.appendChild(panel);
+  };
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')btn.click();});
+  const skipBtn=document.createElement('button');skipBtn.className='login-skip';
+  skipBtn.textContent='Continuer sans connexion (local uniquement)';
+  skipBtn.onclick=()=>page.remove();
+  const note=document.createElement('p');note.className='login-note';
+  note.textContent='Lien magique par email. Aucun mot de passe requis.';
+  card.appendChild(sigil);card.appendChild(title);card.appendChild(sub);
+  card.appendChild(inp);card.appendChild(btn);card.appendChild(msgDiv);
+  card.appendChild(skipBtn);card.appendChild(note);
+  page.appendChild(card);document.body.appendChild(page);
   setTimeout(()=>inp.focus(),100);
 }
 
@@ -1707,7 +1749,7 @@ function s4(){
         disabled:!chosen&&!canAdd,
         onClick:()=>{
           if(chosen){delete S.incarnations[ep.id];}
-          else{S.incarnations[ep.id]={vecu:null,savoirs:[],quete:null,vecus_deg:{},savoirs_extra:{},sciences_extra:{},arcane_adopte:false};}
+          else{S.incarnations[ep.id]={vecu:null,savoirs:[],quete:null,vecus_deg:{},savoirs_extra:{},sciences_extra:{},arcane_id:null,arcane_deg:0};}
           render();
         }
       },chosen?'✕ Retirer':'+ Choisir');
@@ -1726,10 +1768,10 @@ function s4(){
         h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${ep.savoirs.length} savoirs`));
       ep.quetes.forEach(q=>badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--gold)',background:'rgba(201,168,76,.08)'}},`⚜ ${q}`)));
-      if(ep.arcanes_dispo) badgeRow.appendChild(
-        h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)'}},`🂠 Arcane disponible`));
-      if(ep.arcane_bonus) badgeRow.appendChild(
-        h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)'}},`🂠 Adoption Arcane (+${ep.arcane_bonus}°)`));
+      {const ad=getArcanesForEpoque(ep.id);
+      if(ad.length>0){const nb=ad.length;const bonus=ep.arcane_bonus?' +'+ep.arcane_bonus+'°':'';
+        badgeRow.appendChild(h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)'}},
+          '🂠 '+(nb>=20?'Arcane au choix'+bonus:nb+' Arcane'+(nb>1?'s':'')+bonus)));}}
       card.appendChild(badgeRow);
 
       if(!chosen){
@@ -1943,6 +1985,62 @@ function s4(){
               '💡 Les quêtes non choisies restent accessibles à 2 PI/degré via l\'étape 5.'));
           }
           card.appendChild(qbox);
+        }
+
+        // ── ADOPTION D'ARCANE ─────────────────────────────────
+        {
+          const arcsDispo=getArcanesForEpoque(ep.id);
+          const adopted=getArcaneAdopte();
+          const alreadyHere=!!(inc.arcane_id);
+          if(arcsDispo.length>0||alreadyHere){
+            const arcBonusDeg=ep.arcane_bonus||0;
+            const kadom=S.ka_dom;
+            const arcBox=h('div',{style:{marginBottom:'.8rem',padding:'.8rem',
+              border:'1px solid rgba(192,160,255,.25)',borderRadius:'8px',background:'rgba(192,160,255,.04)'}});
+            arcBox.appendChild(h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',
+              marginBottom:'.5rem'}},
+              h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'var(--seph)'}},"🂠 Adoption d'un Arcane"),
+              h('span',{style:{fontSize:'.68rem',color:'var(--gold-d)',fontStyle:'italic'}},'Facultatif · Unique · Gratuit')));
+            if(adopted&&!alreadyHere){
+              // Arcane déjà adopté dans une autre époque
+              const ao=ARCANES.find(x=>x.id===adopted.arcaneId);
+              arcBox.appendChild(h('p',{style:{fontSize:'.8rem',color:'var(--parch-d)',padding:'.4rem .6rem',
+                background:'rgba(192,160,255,.07)',borderRadius:'5px',border:'1px solid rgba(192,160,255,.15)'}},
+                'Adopté : '+(ao?ao.num+' — '+ao.nm:'?'),' · ',
+                h('span',{style:{fontSize:'.7rem',color:'rgba(192,160,255,.5)'}},'Une seule adoption par généalogie.')));
+            } else {
+              // Sélecteur
+              const arcGrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.3rem',marginBottom:'.4rem'}});
+              arcsDispo.forEach(arc=>{
+                const isSel=inc.arcane_id===arc.id;
+                const isThematic=arc.ka===kadom;
+                arcGrid.appendChild(h('button',{
+                  title:arc.dc+(isThematic?' ⭐ Thématique avec votre Ka !':''),
+                  style:{padding:'.3rem .6rem',fontFamily:'Cinzel,serif',fontSize:'.7rem',
+                    border:'1px solid '+(isSel?'var(--seph)':isThematic?'rgba(192,160,255,.5)':'rgba(192,160,255,.2)'),
+                    borderRadius:'6px',cursor:'pointer',transition:'all .15s',
+                    background:isSel?'rgba(192,160,255,.2)':isThematic?'rgba(192,160,255,.08)':'transparent',
+                    color:isSel?'var(--seph)':isThematic?'#c0a0ff':'var(--parch-d)'},
+                  onClick:()=>{
+                    if(isSel){S.incarnations[ep.id].arcane_id=null;S.incarnations[ep.id].arcane_deg=0;}
+                    else{S.incarnations[ep.id].arcane_id=arc.id;S.incarnations[ep.id].arcane_deg=arcBonusDeg;}
+                    render();
+                  }
+                },arc.num+' '+arc.nm+(isThematic?' ⭐':'')+(isSel?' ✓':'')));
+              });
+              arcBox.appendChild(arcGrid);
+              if(alreadyHere&&inc.arcane_id){
+                const arc=ARCANES.find(x=>x.id===inc.arcane_id);
+                if(arc){
+                  arcBox.appendChild(h('p',{style:{fontSize:'.76rem',color:'var(--seph)',fontStyle:'italic'}},
+                    arc.num+' — '+arc.nm+(arcBonusDeg>0?' · +'+arcBonusDeg+"° Quête d'Arcane":'')));
+                  if(arc.ka===kadom) arcBox.appendChild(h('p',{style:{fontSize:'.7rem',color:'var(--gold-d)',fontStyle:'italic'}},
+                    '⭐ Arcane thématique avec votre Ka '+kadom+'.'));
+                }
+              }
+            }
+            card.appendChild(arcBox);
+          }
         }
 
         // ── AVANTAGES OFFERTS (récapitulatif) ───────────────────
@@ -2374,6 +2472,70 @@ function buildKabbale(){
   return wrap;
 }
 
+// ═══════════════════════════════════════════════════════
+// OEUVRES ALCHIMIQUES (manquantes — cause écran noir)
+// ═══════════════════════════════════════════════════════
+const OEUVRES=[
+  {id:'noir', nm:"Œuvre au Noir",  ico:'⬛',col:'noir', req:null,  dc:"Première étape. Dissolution et purification."},
+  {id:'blanc',nm:"Œuvre au Blanc", ico:'⬜',col:'blanc',req:'noir', dc:"Seconde étape. Sublimation. Requiert 7° Noir."},
+  {id:'rouge',nm:"Œuvre au Rouge", ico:'🟥',col:'rouge',req:'blanc',dc:"Opus Magnum. Requiert 7° Blanc."},
+];
+
+// ═══════════════════════════════════════════════════════
+// ARCANES MAJEURS (22 lames, XXI interdit)
+// ═══════════════════════════════════════════════════════
+const ARCANES=[
+  {id:'mat',        num:'0',    nm:'Le Mat',             ka:null,  special:'mat'},
+  {id:'bateleur',   num:'I',    nm:'Le Bateleur',        ka:'Feu', dc:"Maîtrise de la volonté. Pyrim."},
+  {id:'papesse',    num:'II',   nm:'La Papesse',         ka:'Eau', dc:"Connaissance cachée. Hydrim."},
+  {id:'imperatrice',num:'III',  nm:"L'Impératrice",      ka:'Terre',dc:"Fertilité et nature. Faërim."},
+  {id:'empereur',   num:'IV',   nm:"L'Empereur",         ka:'Feu', dc:"Pouvoir et autorité. Pyrim."},
+  {id:'pape',       num:'V',    nm:'Le Pape',            ka:'Air', dc:"Sagesse et tradition. Éolim."},
+  {id:'amoureux',   num:'VI',   nm:'Les Amoureux',       ka:'Eau', dc:"Choix et union. Hydrim."},
+  {id:'chariot',    num:'VII',  nm:'Le Chariot',         ka:'Feu', dc:"Victoire et maîtrise. Pyrim."},
+  {id:'justice',    num:'VIII', nm:'La Justice',         ka:'Air', dc:"Équilibre et vérité. Éolim."},
+  {id:'ermite',     num:'IX',   nm:"L'Ermite",           ka:'Lune',dc:"Sagesse intérieure. Onirim."},
+  {id:'roue',       num:'X',    nm:'La Roue de Fortune', ka:'Lune',dc:"Cycles du destin. Onirim."},
+  {id:'force',      num:'XI',   nm:'La Force',           ka:'Terre',dc:"Puissance intérieure. Faërim."},
+  {id:'pendu',      num:'XII',  nm:'Le Pendu',           ka:null,  special:'pendu'},
+  {id:'mort',       num:'XIII', nm:"L'Arcane sans Nom",  ka:'Lune',dc:"Transformation radicale. Onirim."},
+  {id:'temperance', num:'XIV',  nm:'La Tempérance',      ka:'Eau', dc:"Harmonie des contraires. Hydrim."},
+  {id:'diable',     num:'XV',   nm:'Le Diable',          ka:'Feu', dc:"Tentation et puissance. Pyrim."},
+  {id:'maison_dieu',num:'XVI',  nm:'La Maison-Dieu',     ka:'Terre',dc:"Chute et révélation. Faërim."},
+  {id:'etoile',     num:'XVII', nm:"L'Étoile",           ka:'Eau', dc:"Espoir et guidance. Hydrim."},
+  {id:'lune_arc',   num:'XVIII',nm:'La Lune',            ka:'Lune',dc:"Illusions et profondeurs. Onirim."},
+  {id:'soleil',     num:'XIX',  nm:'Le Soleil',          ka:'Feu', dc:"Clarté et vie. Pyrim."},
+  {id:'jugement',   num:'XX',   nm:'Le Jugement',        ka:'Air', dc:"Renaissance et transcendance. Éolim."},
+  {id:'monde',      num:'XXI',  nm:'Le Monde',           ka:null,  interdit:true},
+];
+const ARCANES_PAR_EPOQUE={
+  'atlantide':[],'akhenaton':'tous','troie':['pape','force'],
+  'perse':['bateleur'],'babylone':['papesse','ermite'],
+  'alexandre':['papesse','pape','soleil'],'carthage':['imperatrice','mort','etoile'],
+  'incident_jesus':['justice','roue'],'arthuriades':['force'],
+  'croisades':['justice','maison_dieu'],
+  'bûchers':['bateleur','amoureux','temperance','diable','maison_dieu'],
+  'chute_temple':['empereur','temperance','maison_dieu'],
+  'renaissance':['papesse','chariot','roue'],'sublime_porte':['justice','ermite'],
+  'roi_soleil':['diable','lune_arc'],'revolution':['papesse','imperatrice','etoile'],
+  'victorien':['amoureux','chariot'],'viennoise':['imperatrice','mort','jugement'],
+  'annees_folles':['empereur','chariot','maison_dieu'],'annees_noires':['maison_dieu'],
+  'grand_eveil':'tous','apocalypse':'tous',
+};
+function getArcanesForEpoque(epId){
+  const list=ARCANES_PAR_EPOQUE[epId];
+  if(!list||list.length===0) return [];
+  const base=ARCANES.filter(a=>!a.interdit&&!a.special);
+  if(list==='tous') return base;
+  return ARCANES.filter(a=>list.includes(a.id));
+}
+function getArcaneAdopte(){
+  for(const[epId,inc] of Object.entries(S.incarnations)){
+    if(inc&&inc.arcane_id) return {epId,arcaneId:inc.arcane_id,deg:inc.arcane_deg||0};
+  }
+  return null;
+}
+
 function buildAlchimie(){
   const sc=kaScores();
   const wrap=h('div',{});
@@ -2777,6 +2939,9 @@ function s9(){
     ['Savoirs acquis', savoirsList],
     ['Quêtes', Object.entries(tots.quetes).map(([q,d])=>`${q} (${d})`).join(', ')||'—'],
   ]);
+  const arcAdopte=getArcaneAdopte();
+  if(arcAdopte){const ao=ARCANES.find(x=>x.id===arcAdopte.arcaneId);
+    addS('🂠 Arcane',[['Lame',ao?ao.num+' — '+ao.nm:'?'],['Ka thématique',ao&&ao.ka?ao.ka:'—'],['Degrés',arcAdopte.deg]]);}
   addS('🔮 Magie — TOTAUX CUMULÉS',[
     ['Basse Magie (total)',  `${tots.sciences.magie} degrés (${S.magie.bas||0} achetés + ${tots.sciences.magie-(S.magie.bas||0)-(S.magie.haut||0)-(S.magie.grand||0)>0?tots.sciences.magie-(S.magie.bas||0)-(S.magie.haut||0)-(S.magie.grand||0):0} offerts)`],
     ['Haute Magie',   S.magie.haut||0],
@@ -2875,7 +3040,7 @@ function exportTXT(){
     }),
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
-    ...(Object.values(S.incarnations).some(inc=>inc.arcane_adopte)?['  Arcane      : Adopté']:['  Arcane      : —']),
+    ...(()=>{const ad=getArcaneAdopte();if(ad){const a=ARCANES.find(x=>x.id===ad.arcaneId);return ['  Arcane      : '+(a?a.num+' '+a.nm:'?')+' ('+ad.deg+'°)'];}return ['  Arcane      : —'];})(),
     `  Sorts       : ${S.magie.sorts||0} connus`,
     ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='sorts').length>0)?[
       '  Sorts gravés :',
