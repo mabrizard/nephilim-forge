@@ -869,18 +869,50 @@ const EPOQUES=[
    savoirs:['Mystères 1','Histoire invisible 1','Rose+Croix 1','Bohémiens 1'],
   },
   // ── ÈRE 7 : GRAND ÉVEIL ────────────────────────────
-  {id:'arcadia', ere:7, nm:'Le Grand Éveil (Arcadia)', per:'XXe siècle',ico:'🌆',cout:2,
-   dc:'La Guerre Occulte contemporaine. Les Nephilim se réveillent dans un monde saturé d\'information et de bruit.',
+    {id:'annees_noires', ere:7, nm:'Les Années Noires', per:'1933',ico:'🕯️',cout:1,
+   dc:"Tensions mondiales et réseaux occultes. Les Nephilim agissent dans l'ombre des crises qui ébranlent l'Europe.",
    vecus_data:[
-     {nm:'Publicitaire',         ka:'Feu',  dc:'Expert en merchandising sensoriel et réseaux sociaux, maître de la persuasion de masse.'},
-     {nm:'Professeur',           ka:'Air',  dc:'Transmetteur de savoir académique, passeur entre générations et gardien du sens critique.'},
-     {nm:'Sportif professionnel',ka:'Eau',  dc:'Maître de la fluidité et de la performance physique sur la scène mondiale médiatisée.'},
-     {nm:'DJ',                   ka:'Lune', dc:'Créateur de transes nocturnes et d\'illusions sonores dans les clubs obscurs.'},
-     {nm:'Médecin urgentiste',   ka:'Terre',dc:'Pilier de la sauvegarde des vies en terrain de crise — ancré dans la réalité brutale.'},
+     {nm:'Espion',            ka:'Feu',  dc:"Agit dans l'ombre des tensions mondiales montantes — infiltration et manipulation."},
+     {nm:'Traducteur',        ka:'Terre',dc:"Expert en langues anciennes et messages cryptés, gardien des archives secrètes."},
+     {nm:'Artiste de cabaret',ka:'Lune', dc:"Crée des illusions et des réseaux dans la bohème nocturne des capitales."},
    ],
-   sciences:[], sorts:0,
-   quetes:[],
-   savoirs:['Histoire invisible 1','Selenim 1','Synarchie 2','Révélation 2','Ar-Kaïm 2'],
+   sciences:[{nm:'Magie',deg:1},{nm:'Kabbale',deg:3}],
+   sorts:1,
+   quetes:["La Cité des Vertiges 1","L'Arche d'Alliance 2"],
+   savoirs:['Histoire invisible 1','Selenim 1','Lune Noire 1','Cousins 1','Synarchie 1','Révélation 1'],
+   arcanes_dispo:['Arcane IV','Arcane VII'],
+  },
+  {id:'grand_eveil', ere:7, nm:'Le Grand Éveil (Arcadia)', per:'1992',ico:'🌆',cout:2,
+   dc:"Déchirement du Voile occulte. Retour d'Akhenaton, explosion des Sciences Occultes — l'éveil est total et irréversible.",
+   vecus_data:[
+     {nm:'Publicitaire',         ka:'Feu',  dc:"Maître du merchandising sensoriel et des flux d'info."},
+     {nm:'Professeur',           ka:'Air',  dc:"Érudit transmettant le savoir académique, passeur entre générations."},
+     {nm:'Sportif professionnel',ka:'Eau',  dc:"Maître de la performance et de la fluidité sur la scène mondiale médiatisée."},
+     {nm:'DJ',                   ka:'Lune', dc:"Créateur de transes et d'illusions sonores dans les clubs obscurs."},
+     {nm:'Médecin urgentiste',   ka:'Terre',dc:"Pilier de la sauvegarde des vies en terrain de crise."},
+   ],
+   sciences:[{nm:'Magie',deg:3},{nm:'Kabbale',deg:9},{nm:'Alchimie',deg:3}],
+   sorts:1,
+   quetes:['Atalante Fugitive 1','Arcane XXI 2','Trésor des Templiers 2'],
+   savoirs_choix:3,
+   savoirs:['Orichalque 1','Mystères 1','Selenim 1','Arcanes Majeurs 2','Templiers 2','Bohémiens 1','Lune Noire 1','Rose+Croix 1','Cousins 2','Synarchie 1'],
+   arcane_bonus:2,
+  },
+  {id:'apocalypse', ere:7, nm:"Les Chroniques de l'Apocalypse", per:'1999',ico:'🌑',cout:2,
+   dc:"La fin du siècle s'accompagne de prophéties réalisées. Le Voile s'est déchiré — les Nephilim sont au cœur de la tourmente.",
+   vecus_data:[
+     {nm:'Policière',      ka:'Feu',  dc:"Vigilante formée au droit et au combat urbain."},
+     {nm:'Journaliste',    ka:'Air',  dc:"Toujours à l'affût de la vérité derrière les fake news."},
+     {nm:'Informaticien',  ka:'Eau',  dc:"Expert des réseaux et de la résille numérique."},
+     {nm:'Étudiant',       ka:'Lune', dc:"Curieux et adaptable, au cœur des révoltes juvéniles."},
+     {nm:'Militant écolo', ka:'Terre',dc:"Défenseur acharné de la Terre et de ses énergies."},
+   ],
+   sciences:[{nm:'Magie',deg:3},{nm:'Kabbale',deg:9},{nm:'Alchimie',deg:3}],
+   sorts:1,
+   quetes:['Rex Mundi 2',"L'Exode Sidéral 2"],
+   savoirs_choix:3,
+   savoirs:['Templiers 2','Lune Noire 1','Rose+Croix 2','666 1','Synarchie 2','Révélation 2','Ar-Kaïm 2'],
+   arcane_bonus:1,
   },
 ];
 
@@ -1097,6 +1129,15 @@ function calcTotauxCumules(){
       totaux.vecus[inc.vecu]=(totaux.vecus[inc.vecu]||0)+degVecu;
     }
 
+    // Bonus arcane adopté : degrés supplémentaires sur la quête
+    if(inc.arcane_adopte){
+      const epA=EPOQUES.find(e=>e.id===id);
+      const arcDeg=epA&&epA.arcane_bonus||0;
+      if(arcDeg>0&&inc.quete){
+        const pts=inc.quete.match(/^(.+?)\s+(\d+)$/);
+        if(pts) totaux.quetes[pts[1]]=(totaux.quetes[pts[1]]||0)+arcDeg;
+      }
+    }
     // Quête choisie (une seule gratuite par époque)
     if(inc.quete){
       const parts=inc.quete.match(/^(.+?)\s+(\d+)$/);
@@ -1313,15 +1354,17 @@ function buildActionBar(){
 
   // Nouveau
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='✦ Nouveau';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]}};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ?')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]},arcane:null};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
   bar.appendChild(btnNew);
 
-  // ── Grimoire ─────────────────────────────────────────
-  const btnGrim=document.createElement('button');
-  btnGrim.className='btn btn-grimoire';
-  btnGrim.innerHTML='✦ Grimoire';
-  btnGrim.onclick=()=>showGrimoire();
-  bar.appendChild(btnGrim);
+  // ── Grimoire (visible à partir étape 4) ──────────────
+  if(S.step>=4){
+    const btnGrim=document.createElement('button');
+    btnGrim.className='btn btn-grimoire';
+    btnGrim.innerHTML='✦ Grimoire';
+    btnGrim.onclick=()=>showGrimoire();
+    bar.appendChild(btnGrim);
+  }
 
   document.body.appendChild(bar);
 }
@@ -1664,7 +1707,7 @@ function s4(){
         disabled:!chosen&&!canAdd,
         onClick:()=>{
           if(chosen){delete S.incarnations[ep.id];}
-          else{S.incarnations[ep.id]={vecu:null,savoirs:[],quete:null,vecus_deg:{},savoirs_extra:{},sciences_extra:{}};}
+          else{S.incarnations[ep.id]={vecu:null,savoirs:[],quete:null,vecus_deg:{},savoirs_extra:{},sciences_extra:{},arcane_adopte:false};}
           render();
         }
       },chosen?'✕ Retirer':'+ Choisir');
@@ -1683,6 +1726,10 @@ function s4(){
         h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${ep.savoirs.length} savoirs`));
       ep.quetes.forEach(q=>badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--gold)',background:'rgba(201,168,76,.08)'}},`⚜ ${q}`)));
+      if(ep.arcanes_dispo) badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)'}},`🂠 Arcane disponible`));
+      if(ep.arcane_bonus) badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)'}},`🂠 Adoption Arcane (+${ep.arcane_bonus}°)`));
       card.appendChild(badgeRow);
 
       if(!chosen){
@@ -2828,6 +2875,7 @@ function exportTXT(){
     }),
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
+    ...(Object.values(S.incarnations).some(inc=>inc.arcane_adopte)?['  Arcane      : Adopté']:['  Arcane      : —']),
     `  Sorts       : ${S.magie.sorts||0} connus`,
     ...((S.effets_magiques&&S.effets_magiques.gravés&&S.effets_magiques.gravés.filter(e=>e.tab==='sorts').length>0)?[
       '  Sorts gravés :',
