@@ -3435,13 +3435,7 @@ function s7(){
     ml.appendChild(h('div',{cls:`met-card ${S.metier===m.id?'sel':''}`,onClick:()=>{S.metier=m.id;render();}},
       // Titre : nom contemporain
       h('div',{cls:'met-ttl'},m.nm),
-      // Lien explicite vers le vécu historique
-      h('div',{style:{display:'flex',alignItems:'center',gap:'.4rem',margin:'.2rem 0 .4rem',
-        fontFamily:'Cinzel,serif',fontSize:'.72rem'}},
-        h('span',{style:{color:'var(--gold-d)'}},`Vécu :`),
-        h('span',{style:{color:'var(--gold)',fontWeight:'600'}},m.vcu),
-        h('span',{style:{color:'var(--gold-d)',fontSize:'.65rem',fontStyle:'italic'}},'(incarnations passées)'),
-      ),
+
       // Description contemporaine
       h('div',{cls:'met-dc'},m.dc),
       m.ressources?h('div',{style:{fontSize:'.7rem',color:'var(--gold-d)',fontStyle:'italic',marginTop:'.3rem'}},`📦 ${m.ressources}`):null,
@@ -3464,7 +3458,7 @@ function s7(){
     };
     addRow('Ka-Soleil', kaSoleil());
     addRow('Bonus Ka-Soleil', `+${m.ks} (base ${S.ka_soleil_base})`,'var(--parch-d)');
-    addRow('Vécu accordé', m.vcu);
+    addRow('Vécu accordé', m.nm);
     addRow('Ressources', '●'.repeat(m.rs)+'○'.repeat(5-m.rs));
     if(m.ressources) addRow('Équipements', m.ressources, 'var(--parch-d)');
     effBox.appendChild(effGrid);
