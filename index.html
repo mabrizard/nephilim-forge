@@ -1617,7 +1617,14 @@ function buildActionBar(){
 
   // ── GROUPE 5 : Actions ───────────────────────────────
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='+ Nouveau';btnNew.title='Créer un nouveau personnage';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,effets_magiques:{gravés:[],focus:[]},arcane:null};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){
+    S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,effets_magiques:{gravés:[],focus:[]},arcane:null};
+    supaPersonnageId=null;
+    grimCache={sorts:null,invocations:null,formules:null};
+    syncStatus='idle';syncMsg='';  // effacer le message de l'ancien personnage
+    localStorage.removeItem('neph_v3'); // effacer le localStorage pour ne pas recharger l'ancien
+    render();
+  }};
   bar.appendChild(btnNew);
 
   if(S.step>=4){
