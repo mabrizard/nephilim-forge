@@ -1306,6 +1306,7 @@ let S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:
   stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,
   sci_tab:'magie', inc_tab:null, opp_inverse:false,
   mondes_integres:{},
+  notes_simulacre:'',
   effets_magiques:{gravés:[],focus:[]}, arcane:null,
 };
 
@@ -1639,7 +1640,7 @@ function buildActionBar(){
   // ── GROUPE 5 : Actions ───────────────────────────────
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='+ Nouveau';btnNew.title='Créer un nouveau personnage';
   btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){
-    S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,mondes_integres:{},effets_magiques:{gravés:[],focus:[]},arcane:null};
+    S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,mondes_integres:{},notes_simulacre:'',effets_magiques:{gravés:[],focus:[]},arcane:null};
     supaPersonnageId=null;
     grimCache={sorts:null,invocations:null,formules:null};
     syncStatus='idle';syncMsg='';  // effacer le message de l'ancien personnage
@@ -2855,14 +2856,30 @@ function buildKabbale(){
           onClick:()=>{
             if(!S.mondes_integres) S.mondes_integres={};
             S.mondes_integres[m.id]=true;
-            // Compatibilité ancien champ S.monde
             if(m.cercle===2) S.monde=m.nm;
             render();
           }
         },'Intégrer ce Monde');
         mHd.appendChild(btnIntegrer);
       } else if(isIntegre){
-        mHd.appendChild(h('span',{style:{fontSize:'.7rem',color:'var(--seph)'}},'✓ Intégré'));
+        // Bouton annuler intégration
+        const btnAnnuler=h('button',{
+          style:{fontFamily:'Cinzel,serif',fontSize:'.7rem',padding:'.25rem .7rem',
+            border:'1px solid rgba(139,26,26,.4)',borderRadius:'5px',
+            background:'rgba(139,26,26,.08)',color:'var(--blood-l)',cursor:'pointer'},
+          onClick:()=>{
+            if(!S.mondes_integres) S.mondes_integres={};
+            delete S.mondes_integres[m.id];
+            // Réinitialiser les sephiroth du cercle si nécessaire
+            const sephsDuCercle=Object.entries(SEPH_CERCLE).filter(([,cer])=>cer===m.cercle).map(([id])=>id);
+            sephsDuCercle.forEach(id=>{S.sephiroth[id]=0;});
+            if(m.cercle===2) S.monde=null;
+            render();
+          }
+        },'↩ Annuler');
+        const okSpan=h('span',{style:{fontSize:'.7rem',color:'var(--seph)',marginRight:'.4rem'}},'✓ Intégré');
+        mHd.appendChild(okSpan);
+        mHd.appendChild(btnAnnuler);
       } else {
         // Prérequis non remplis
         const prereqMsg=m.cercle===2?'Requiert une Sephirah du 1er cercle ≥ 7':'Requiert une Sephirah du 2e cercle ≥ 7';
@@ -3318,44 +3335,79 @@ function s6(){
       : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
   ));
 
-  // Les 3 Chutes officielles
+  // Les 3 Chutes officielles — max 10, pips visuels
+  const CHUTE_MAX_PAR=10; // max individuel par Chute
   const cg=h('div',{cls:'chute-grid'});
   for(const chute of CHUTES){
     const val=S.chutes[chute.id]||0;
     const bonusChute=val*5;
+    const autresTotal=Object.entries(S.chutes)
+      .filter(([k])=>k!==chute.id)
+      .reduce((a,[,v2])=>a+(v2||0),0);
+    const canAdd=(autresTotal+val)<chuteMax&&val<CHUTE_MAX_PAR;
+    const canRemove=val>0;
 
     const cb=h('div',{cls:'chute-box'});
-    // En-tête
+
+    // En-tête : icône + nom + valeur + bonus PI
     const hd=h('div',{cls:'chute-hd'});
-    hd.appendChild(h('span',{},`${chute.ico} ${chute.nm}`));
+    hd.appendChild(h('span',{style:{fontSize:'.9rem'}},`${chute.ico} ${chute.nm}`));
     const hdr=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem'}});
-    hdr.appendChild(h('span',{style:{color:'var(--blood-l)',fontFamily:'Cinzel,serif',fontSize:'1rem',fontWeight:'700'}},String(val)));
-    if(bonusChute>0)hdr.appendChild(h('span',{style:{color:'var(--ok)',fontSize:'.72rem'}},`+${bonusChute} PI`));
+    hdr.appendChild(h('span',{style:{
+      color:'var(--blood-l)',fontFamily:'Cinzel Decorative,serif',
+      fontSize:'1.3rem',fontWeight:'700',lineHeight:1}},String(val)));
+    hdr.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.7rem'}},`/ ${CHUTE_MAX_PAR}`));
+    if(bonusChute>0) hdr.appendChild(h('span',{style:{
+      color:'var(--ok)',fontSize:'.75rem',fontFamily:'Cinzel,serif',
+      background:'rgba(107,142,107,.12)',padding:'.1rem .4rem',borderRadius:'4px'}},
+      `+${bonusChute} PI`));
     hd.appendChild(hdr);
     cb.appendChild(hd);
 
-    // Description
-    cb.appendChild(h('p',{style:{fontSize:'.75rem',color:'var(--parch-d)',fontStyle:'italic',margin:'.3rem 0 .6rem'}},chute.dc));
+    // Description courte
+    cb.appendChild(h('p',{style:{fontSize:'.72rem',color:'var(--parch-d)',fontStyle:'italic',
+      margin:'.25rem 0 .6rem',lineHeight:1.4}},chute.dc));
 
-    // Slider avec contrôle du total max
-    const sl=document.createElement('input');
-    sl.type='range';sl.min='0';sl.max='3';sl.value=String(val);
-    sl.addEventListener('input',e=>{
-      const newVal=parseInt(e.target.value);
-      const autresTotal=Object.entries(S.chutes)
-        .filter(([k])=>k!==chute.id)
-        .reduce((a,[,v2])=>a+(v2||0),0);
-      if(autresTotal+newVal>chuteMax){sl.value=String(val);return;}
-      S.chutes[chute.id]=newVal;
-      render();
-    });
-    cb.appendChild(sl);
+    // Pips visuels (10 cases)
+    const pipsRow=h('div',{style:{display:'flex',gap:'4px',marginBottom:'.6rem',flexWrap:'wrap'}});
+    for(let i=0;i<CHUTE_MAX_PAR;i++){
+      const pip=h('div',{
+        style:{
+          width:'20px',height:'20px',borderRadius:'50%',
+          border:`1px solid ${i<val?'rgba(192,80,74,.6)':'rgba(201,168,76,.2)'}`,
+          background:i<val?'rgba(192,80,74,.4)':'transparent',
+          cursor:i===val?'pointer':i<val?'pointer':'pointer',
+          transition:'all .15s',flexShrink:0,
+        },
+        title:i<val?`Retirer jusqu'à ${i+1}`:`Ajouter degré ${i+1}`,
+        onClick:()=>{
+          // Clic sur pip déjà actif → retire jusqu'à ce niveau
+          // Clic sur pip suivant → ajoute 1
+          const newVal=i<val?i:(i===val?val+1:val);
+          if(newVal===val) return;
+          if(newVal>val){
+            // Ajouter
+            if(autresTotal+newVal>chuteMax||newVal>CHUTE_MAX_PAR) return;
+          }
+          S.chutes[chute.id]=newVal;render();
+        }
+      });
+      pipsRow.appendChild(pip);
+    }
+    cb.appendChild(pipsRow);
 
-    // Indicateur degrés + bonus
-    const indic=h('div',{style:{display:'flex',justifyContent:'space-between',marginTop:'.3rem',fontSize:'.72rem'}});
-    indic.appendChild(h('span',{style:{color:'var(--parch-d)'}},`${val} degré(s)`));
-    if(bonusChute>0)indic.appendChild(h('span',{style:{color:'var(--ok)'}},`+${bonusChute} PI`));
-    cb.appendChild(indic);
+    // Contrôles +/−
+    const ctrl=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem',justifyContent:'center'}});
+    ctrl.appendChild(h('button',{cls:'qb',disabled:!canRemove,
+      onClick:()=>{S.chutes[chute.id]=Math.max(0,val-1);render();}},'−'));
+    ctrl.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.82rem',
+      color:'var(--blood-l)',minWidth:'2rem',textAlign:'center'}},`${val}°`));
+    ctrl.appendChild(h('button',{cls:'qb',disabled:!canAdd,
+      onClick:()=>{
+        if((autresTotal+val)<chuteMax&&val<CHUTE_MAX_PAR){S.chutes[chute.id]=val+1;render();}
+      }},'✚'));
+    if(bonusChute>0) ctrl.appendChild(h('span',{style:{color:'var(--ok)',fontSize:'.75rem',marginLeft:'.4rem'}},`= +${bonusChute} PI`));
+    cb.appendChild(ctrl);
 
     cg.appendChild(cb);
   }
@@ -3389,13 +3441,34 @@ function s7(){
   d.appendChild(h('div',{cls:'box'},h('h3',{},'Métier du Simulacre'),ml));
   if(S.metier){
     const m=getMetier();
-    d.appendChild(h('div',{cls:'box',style:{background:'rgba(201,168,76,.06)'}},
-      h('h3',{},'⚡ Effets automatiques'),
-      rcRow('Ka-Soleil final',String(kaSoleil())),
-      rcRow('Vécu accordé',m.vcu),
-      rcRow('Ressources','●'.repeat(m.rs)+'○'.repeat(5-m.rs)),
-    ));
+    const effBox=h('div',{cls:'box',style:{background:'rgba(201,168,76,.06)'}});
+    effBox.appendChild(h('h3',{},'⚡ Effets du Métier'));
+    // Grille alignée : label à gauche, valeur à droite
+    const effGrid=h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem .8rem',alignItems:'center'}});
+    const addRow=(lbl,val,color)=>{
+      effGrid.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.75rem',color:'var(--gold-d)',letterSpacing:'.05em',textTransform:'uppercase'}},lbl));
+      effGrid.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.88rem',color:color||'var(--gold)',fontWeight:'600'}},String(val)));
+    };
+    addRow('Ka-Soleil', kaSoleil());
+    addRow('Bonus Ka-Soleil', `+${m.ks} (base ${S.ka_soleil_base})`,'var(--parch-d)');
+    addRow('Vécu accordé', m.vcu);
+    addRow('Ressources', '●'.repeat(m.rs)+'○'.repeat(5-m.rs));
+    if(m.ressources) addRow('Équipements', m.ressources, 'var(--parch-d)');
+    effBox.appendChild(effGrid);
+    d.appendChild(effBox);
   }
+
+  // Champ Notes du Simulacre
+  const notesBox=h('div',{cls:'box'});
+  notesBox.appendChild(h('h3',{},'📝 Notes du Simulacre'));
+  notesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},'Apparence, contacts, historique contemporain, équipements notables…'));
+  const notesTA=document.createElement('textarea');
+  notesTA.placeholder='Ex: Ancien officier reconverti en antiquaire, cicatrice sur le poignet gauche. Appartement rue du Faubourg-St-Honoré. Contacts : Inspecteur Moreau (Police), Dr. Klein (Archéologie)…';
+  notesTA.style.height='100px';notesTA.style.resize='vertical';
+  notesTA.value=S.notes_simulacre||'';
+  notesTA.addEventListener('input',e=>{S.notes_simulacre=e.target.value;});
+  notesBox.appendChild(notesTA);
+  d.appendChild(notesBox);
   const ksb=h('div',{cls:'box'},h('h3',{},'Ka-Soleil de base'));
   const ksRow=h('div',{cls:'sl-row'});
   const ksLbl=h('span',{cls:'sl-lbl'},'Ka-Soleil base');
@@ -3459,7 +3532,7 @@ function s9(){
 
   // ── PENTACLE SVG DYNAMIQUE ────────────────────────────
   {
-    const pentBox=h('div',{cls:'box',style:{marginBottom:'1.5rem',textAlign:'center'}});
+    const pentBox=h('div',{cls:'box',style:{marginBottom:'1.5rem'}});
     pentBox.appendChild(h('h3',{},'✡ Pentacle des Ka'));
 
     const ORDER=['Feu','Air','Eau','Lune','Terre']; // sens horaire — géométrie pentagramme
@@ -3476,21 +3549,31 @@ function s9(){
     const sc2=kaScores(); // utilise kaScores() qui respecte le profil et opp_inverse
     const chuteKhaiba=S.chutes&&S.chutes.khaiba||0;
 
-    const W=320,H=320,CX=160,CY=160,R=110,RLbl=138;
+    const W=400,H=400,CX=200,CY=200,R=135,RLbl=168;
     const ns='http://www.w3.org/2000/svg';
     const svg=document.createElementNS(ns,'svg');
     svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-    svg.setAttribute('width','320');svg.setAttribute('height','320');
+    svg.setAttribute('width','400');svg.setAttribute('height','400');
     svg.style.cssText='max-width:100%;display:inline-block';
 
-    // Fond + cercles de référence
-    for(const r2 of [R*0.25,R*0.5,R*0.75,R]){
+    // Fond + cercles de référence + labels de valeur
+    [1,2,3,4,5].forEach((v,i)=>{
+      const r2=(v/5)*R;
       const circle=document.createElementNS(ns,'circle');
       circle.setAttribute('cx',CX);circle.setAttribute('cy',CY);circle.setAttribute('r',r2);
-      circle.setAttribute('fill','none');circle.setAttribute('stroke','rgba(201,168,76,0.12)');
-      circle.setAttribute('stroke-width','0.5');
+      circle.setAttribute('fill','none');
+      circle.setAttribute('stroke',v===5?'rgba(201,168,76,0.2)':'rgba(201,168,76,0.08)');
+      circle.setAttribute('stroke-width',v===5?'1':'0.5');
+      circle.setAttribute('stroke-dasharray',v===5?'none':'3,3');
       svg.appendChild(circle);
-    }
+      // Label valeur sur le cercle (axe droit)
+      const vLbl=document.createElementNS(ns,'text');
+      vLbl.setAttribute('x',CX+r2+4);vLbl.setAttribute('y',CY-2);
+      vLbl.setAttribute('font-family','Cinzel,serif');vLbl.setAttribute('font-size','8');
+      vLbl.setAttribute('fill','rgba(201,168,76,0.35)');
+      vLbl.textContent=String(v);
+      svg.appendChild(vLbl);
+    });
 
     // Sommets (sens horaire, départ haut = Feu)
     const pts=ORDER.map((ka,i)=>{
@@ -3504,7 +3587,7 @@ function s9(){
       const line=document.createElementNS(ns,'line');
       line.setAttribute('x1',pts[a2].x);line.setAttribute('y1',pts[a2].y);
       line.setAttribute('x2',pts[b2].x);line.setAttribute('y2',pts[b2].y);
-      line.setAttribute('stroke','rgba(201,168,76,0.15)');line.setAttribute('stroke-width','0.8');
+      line.setAttribute('stroke','rgba(201,168,76,0.2)');line.setAttribute('stroke-width','1');
       svg.appendChild(line);
     });
 
@@ -3513,7 +3596,7 @@ function s9(){
       const line=document.createElementNS(ns,'line');
       line.setAttribute('x1',CX);line.setAttribute('y1',CY);
       line.setAttribute('x2',p.x);line.setAttribute('y2',p.y);
-      line.setAttribute('stroke','rgba(201,168,76,0.1)');line.setAttribute('stroke-width','0.5');
+      line.setAttribute('stroke','rgba(201,168,76,0.15)');line.setAttribute('stroke-width','0.8');
       svg.appendChild(line);
     });
 
@@ -3568,54 +3651,69 @@ function s9(){
       svg.appendChild(dot);
     });
 
-    // Étiquettes sommets
+    // Étiquettes sommets — fond coloré + tailles plus lisibles
     pts.forEach(p=>{
       const isDom=p.ka===dom2;
       const val=sc2[p.ka]||0;
       const color=KA_COLORS[p.ka];
-      // Fond étiquette
       const g=document.createElementNS(ns,'g');
-      // Texte ka
+
+      // Fond de l'étiquette
+      const bgRect=document.createElementNS(ns,'rect');
+      const bw=isDom?54:46,bh=isDom?30:26;
+      bgRect.setAttribute('x',p.lx-bw/2);bgRect.setAttribute('y',p.ly-bh/2);
+      bgRect.setAttribute('width',bw);bgRect.setAttribute('height',bh);
+      bgRect.setAttribute('rx','6');bgRect.setAttribute('ry','6');
+      bgRect.setAttribute('fill',isDom?color+'33':'rgba(13,11,8,0.75)');
+      bgRect.setAttribute('stroke',isDom?color:'rgba(201,168,76,0.3)');
+      bgRect.setAttribute('stroke-width',isDom?'1.5':'0.8');
+      g.appendChild(bgRect);
+
+      // Nom Ka
       const t1=document.createElementNS(ns,'text');
-      t1.setAttribute('x',p.lx);t1.setAttribute('y',p.ly-(isDom?2:1));
+      t1.setAttribute('x',p.lx);t1.setAttribute('y',p.ly-6);
       t1.setAttribute('text-anchor','middle');t1.setAttribute('dominant-baseline','middle');
-      t1.setAttribute('font-family','Cinzel, serif');t1.setAttribute('font-size',isDom?'10':'9');
-      t1.setAttribute('fill',isDom?color:'rgba(201,168,76,0.7)');
-      t1.setAttribute('font-weight',isDom?'bold':'normal');
-      t1.textContent=KA_ICONS[p.ka]+' '+p.ka;
+      t1.setAttribute('font-family','Cinzel, serif');
+      t1.setAttribute('font-size',isDom?'10':'9');
+      t1.setAttribute('fill',isDom?'#fff':color);
+      t1.setAttribute('font-weight','600');
+      t1.textContent=p.ka;
       // Score
       const t2=document.createElementNS(ns,'text');
-      t2.setAttribute('x',p.lx);t2.setAttribute('y',p.ly+(isDom?10:9));
+      t2.setAttribute('x',p.lx);t2.setAttribute('y',p.ly+8);
       t2.setAttribute('text-anchor','middle');t2.setAttribute('dominant-baseline','middle');
-      t2.setAttribute('font-family','Cinzel Decorative, serif');t2.setAttribute('font-size',isDom?'13':'11');
-      t2.setAttribute('fill',isDom?'#e8c97a':color);
+      t2.setAttribute('font-family','Cinzel Decorative, serif');
+      t2.setAttribute('font-size',isDom?'14':'12');
+      t2.setAttribute('fill',isDom?'#fff':color);
+      t2.setAttribute('font-weight','bold');
       t2.textContent=String(val);
       g.appendChild(t1);g.appendChild(t2);
       svg.appendChild(g);
     });
 
-    // Ka-Soleil au centre
+    // Ka-Soleil au centre — plus lisible
     const kaSol=kaSoleil();
     const centerCircle=document.createElementNS(ns,'circle');
     centerCircle.setAttribute('cx',CX);centerCircle.setAttribute('cy',CY);
-    centerCircle.setAttribute('r',16);
-    centerCircle.setAttribute('fill','rgba(201,168,76,0.15)');
-    centerCircle.setAttribute('stroke','rgba(201,168,76,0.6)');
-    centerCircle.setAttribute('stroke-width','1');
+    centerCircle.setAttribute('r',22);
+    centerCircle.setAttribute('fill','rgba(201,168,76,0.18)');
+    centerCircle.setAttribute('stroke','rgba(201,168,76,0.7)');
+    centerCircle.setAttribute('stroke-width','1.5');
     svg.appendChild(centerCircle);
-    const solText=document.createElementNS(ns,'text');
-    solText.setAttribute('x',CX);solText.setAttribute('y',CY-3);
-    solText.setAttribute('text-anchor','middle');solText.setAttribute('dominant-baseline','middle');
-    solText.setAttribute('font-family','Cinzel, serif');solText.setAttribute('font-size','7');
-    solText.setAttribute('fill','rgba(201,168,76,0.7)');
-    solText.textContent='☀️';
+    const solLabel=document.createElementNS(ns,'text');
+    solLabel.setAttribute('x',CX);solLabel.setAttribute('y',CY-6);
+    solLabel.setAttribute('text-anchor','middle');solLabel.setAttribute('dominant-baseline','middle');
+    solLabel.setAttribute('font-family','Cinzel, serif');solLabel.setAttribute('font-size','8');
+    solLabel.setAttribute('fill','rgba(201,168,76,0.75)');
+    solLabel.textContent='Ka-☀';
     const solVal=document.createElementNS(ns,'text');
-    solVal.setAttribute('x',CX);solVal.setAttribute('y',CY+7);
+    solVal.setAttribute('x',CX);solVal.setAttribute('y',CY+9);
     solVal.setAttribute('text-anchor','middle');solVal.setAttribute('dominant-baseline','middle');
-    solVal.setAttribute('font-family','Cinzel Decorative, serif');solVal.setAttribute('font-size','10');
-    solVal.setAttribute('fill','#c9a84c');
+    solVal.setAttribute('font-family','Cinzel Decorative, serif');solVal.setAttribute('font-size','14');
+    solVal.setAttribute('fill','#e8c97a');
+    solVal.setAttribute('font-weight','bold');
     solVal.textContent=String(kaSol);
-    svg.appendChild(solText);svg.appendChild(solVal);
+    svg.appendChild(solLabel);svg.appendChild(solVal);
 
     // Indicateur Khaïba
     if(chuteKhaiba>0){
@@ -3627,7 +3725,47 @@ function s9(){
       svg.appendChild(kText);
     }
 
-    pentBox.appendChild(svg);
+    // Disposition : SVG + tableau HTML côte à côte
+    const pentLayout=h('div',{style:{display:'flex',gap:'1.5rem',alignItems:'center',
+      justifyContent:'center',flexWrap:'wrap'}});
+    pentLayout.appendChild(svg);
+
+    // Tableau des scores Ka
+    const kaTable=h('div',{style:{minWidth:'160px'}});
+    Object.entries(sc2).forEach(([ka,score])=>{
+      const isDom2=ka===dom2;
+      const color=KA_COLORS[ka];
+      const dMap2=dom2?domMap2[dom2]:null;
+      const role=isDom2?'Dominant'
+        :(dMap2&&dMap2.neu.includes(ka)?'Neutre'
+        :(dMap2&&dMap2.opp.includes(ka)?'Opposé':''));
+      const row=h('div',{style:{
+        display:'flex',alignItems:'center',gap:'.6rem',
+        padding:'.4rem .6rem',marginBottom:'.3rem',borderRadius:'6px',
+        background:isDom2?color+'22':'rgba(13,11,8,.5)',
+        border:`1px solid ${isDom2?color:'rgba(201,168,76,.15)'}`,
+      }});
+      row.appendChild(h('span',{style:{fontSize:'1.1rem',width:'1.5rem',textAlign:'center'}},KA_ICONS[ka]));
+      row.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',
+        color:isDom2?'#fff':'var(--parch-d)',flex:1}},ka));
+      if(role) row.appendChild(h('span',{style:{fontSize:'.65rem',color:isDom2?color+'cc':'var(--gold-d)',
+        fontFamily:'Cinzel,serif'}},role));
+      row.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.2rem',
+        color:isDom2?'#e8c97a':color,fontWeight:'bold',minWidth:'1.5rem',textAlign:'right'}},String(score)));
+      kaTable.appendChild(row);
+    });
+    // Ka-Soleil
+    const kaSolRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem',
+      padding:'.4rem .6rem',marginTop:'.3rem',borderRadius:'6px',
+      background:'rgba(201,168,76,.08)',border:'1px solid rgba(201,168,76,.25)'}});
+    kaSolRow.appendChild(h('span',{style:{fontSize:'1.1rem'}},'☀️'));
+    kaSolRow.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',
+      color:'var(--parch-d)',flex:1}},'Ka-Soleil'));
+    kaSolRow.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.2rem',
+      color:'#e8c97a',fontWeight:'bold'}},String(kaSol)));
+    kaTable.appendChild(kaSolRow);
+    pentLayout.appendChild(kaTable);
+    pentBox.appendChild(pentLayout);
 
     // Légende Ka-Soleil, Vision-Ka et annotation opposé majeur
     const legDiv=h('div',{style:{display:'flex',justifyContent:'center',gap:'1.5rem',
