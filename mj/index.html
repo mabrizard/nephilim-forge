@@ -282,8 +282,8 @@ const STEP_NAMES = ['','Ka','Pentacle','Profil','Passé','Occultes','Stase','Sim
 // ════════════════════════════════════════════════════════
 function getSupaConfig(){
   return {
-    url: localStorage.getItem('neph_supa_url')||'',
-    key: localStorage.getItem('neph_supa_key')||'',
+    url: 'https://kdhokmafjxsndhqwjfth.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkaG9rbWFmanhzbmRocXdqZnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNDgzNzUsImV4cCI6MjA5MTkyNDM3NX0.YcacdzVIIk8G7-tb0MroIPStlsZTStO7K__Zdbk3eUA',
   };
 }
 function saveSupabaseConfig(){
@@ -312,8 +312,9 @@ function checkLogin(){
   const cfg = getSupaConfig();
 
   // Masquer setup si déjà configuré
-  if(cfg.url && cfg.key){
+  // Config intégrée — masquer setup
     document.getElementById('login-setup').style.display = 'none';
+    if(cfg.url && cfg.key){ // config intégrée
   }
 
   // Vérifier session active

@@ -309,8 +309,20 @@ select option{background:#1a1510}
 // ════════════════════════════════════════════════════════
 // CONFIG SUPABASE — Remplacez par vos valeurs du projet
 // ════════════════════════════════════════════════════════
-const SUPA_URL = localStorage.getItem('neph_supa_url') || '';
-const SUPA_KEY = localStorage.getItem('neph_supa_key') || '';
+// ════════════════════════════════════════════════════════
+// ⚙ CONFIGURATION — À remplir une seule fois par le MJ
+// Supabase → Project Settings → API
+// ════════════════════════════════════════════════════════
+const SUPA_URL_HARDCODED = 'https://kdhokmafjxsndhqwjfth.supabase.co';  // ex: https://xxxx.supabase.co
+const SUPA_KEY_HARDCODED = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkaG9rbWFmanhzbmRocXdqZnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNDgzNzUsImV4cCI6MjA5MTkyNDM3NX0.YcacdzVIIk8G7-tb0MroIPStlsZTStO7K__Zdbk3eUA';      // ex: eyJhbGci…
+
+// Utilise la valeur codée en dur si définie, sinon localStorage (rétrocompatibilité)
+const SUPA_URL = (SUPA_URL_HARDCODED !== 'VOTRE_URL_SUPABASE_ICI')
+  ? SUPA_URL_HARDCODED
+  : (localStorage.getItem('neph_supa_url') || '');
+const SUPA_KEY = (SUPA_KEY_HARDCODED !== 'VOTRE_CLE_ANON_ICI')
+  ? SUPA_KEY_HARDCODED
+  : (localStorage.getItem('neph_supa_key') || '');
 
 let supaClient = null;
 let supaCurrentUser = null;
