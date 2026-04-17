@@ -547,7 +547,7 @@ const KA={
   Feu:  {ico:'🜂',dc:'Passion & volonté',        neu:['Air','Terre'], opp:['Eau','Lune']},
   Terre:{ico:'🜃',dc:'Corps & endurance',         neu:['Feu','Eau'],   opp:['Air','Lune']},
   Eau:  {ico:'🜄',dc:'Intuition & mémoire',       neu:['Air','Terre'], opp:['Feu','Lune']},
-  Lune: {ico:'☽', dc:'Magie & transformation',    neu:['Air','Feu'],   opp:['Terre','Eau']},
+  Lune: {ico:'☽', dc:'Duplicité & charme · séduction',    neu:['Air','Feu'],   opp:['Terre','Eau']},
 };
 // ═══════════════════════════════════════════════════════
 // MÉTAMORPHES OFFICIELS par Ka-élément (source Nephilim Légende)
@@ -555,56 +555,102 @@ const KA={
 // dans Nephilim, ce sont des Onirim (Ophidien) ou Selenim.
 // ═══════════════════════════════════════════════════════
 const METAS={
-  Feu:[  // Ka-Feu (Pyrim) — action, destruction purificatrice
-    {nm:'Djinn',      ico:'🌪️', dc:'Teint hâlé, griffes rouges, voix crépitante et visage enflammé.'},
-    {nm:'Phénix',     ico:'🔥', dc:'Yeux rouges, veines de lave et corps parcouru de flammèches.'},
-    {nm:'Salamandre', ico:'🦎', dc:'Yeux noirs, odeur âcre, parfois mains à quatre doigts.'},
-    {nm:'Cyclope',    ico:'👁',  dc:'Corps musculeux, odeur de braise, voix caverneuse et œil unique.'},
-    {nm:'Surturin',   ico:'💫', dc:'Peau incandescente et chevelure qui s\'enflamme.'},
-    {nm:'Diablesse',  ico:'😈', dc:'Présence de cornes rouges et de griffes acérées.'},
-    {nm:'Manticore',  ico:'🦁', dc:'Visage félin, crocs acérés et queue barbelée.'},
-    {nm:'Hloranide',  ico:'⚡', dc:'Lié à la foudre et à la vendetta.'},
-    {nm:'Basilic',    ico:'🐍', dc:'Regard pétrifiant, écailles de braise.'},
-    {nm:'Hippogriffe',ico:'🦅', dc:'Ailes de rapace et membres antérieurs d\'aigle.'},
+  Feu:[
+    {nm:`Le Djinn`,      ico:`🌪️`,
+     dc:`Teint hâlé, voix crépitante, griffes rouges, pupilles orangées. Le visage peut paraître enflammé. Odeur de fumée.`,
+     temp:`Impulsif, rebelle et violent. Privilégie l'action immédiate sur la réflexion. Déteste l'autorité.`},
+    {nm:`Le Phénix`,     ico:`🔥`,
+     dc:`Visage émacié, yeux totalement rouges, ongles noirs et veines laissant deviner de la lave. Odeur de soufre.`,
+     temp:`Habité par une flamme intérieure, il suit un code d'honneur strict. Incarne la justice impériale et la méticulosité.`},
+    {nm:`La Salamandre`, ico:`🦎`,
+     dc:`Yeux noirs profonds, peau tachetée, sang empoisonné. Parfois mains à quatre doigts. Odeur d'âtre.`,
+     temp:`Civilisatrice et érudite, tournée vers l'invention et le partage de la sapience.`},
+    {nm:`Le Cyclope`,    ico:`👁`,
+     dc:`Corps massif et musculeux, œil unique au centre du front, peau à l'aspect minéral. Odeur de braise.`,
+     temp:`Travailleur solitaire, taciturne et bâtisseur. Évite les conflits inutiles au profit de l'artisanat.`},
+    {nm:`Le Succube`,    ico:`😈`,
+     dc:`Corps hautement sexualisé, présence de cornes et d'une queue. Voix sensuelle et odeur de musc.`,
+     temp:`Tourné vers les émotions charnelles, la séduction cruelle et les plaisirs extrêmes.`},
+    {nm:`L'Hippogriffe`, ico:`🦅`,
+     dc:`Yeux rouges, sourcils plumés, bec de métal et mains griffues.`,
+     temp:`Gardien de la Loi et protecteur du sacré.`},
+    {nm:`Le Basilic`,    ico:`🐍`,
+     dc:`Peau extrêmement dure, griffes de pierre, regard fixe et odeur de forge.`,
+     temp:`Incarne la justice et la loi immuable.`},
   ],
-  Air:[  // Ka-Air (Éolim) — légèreté, pureté, tempête
-    {nm:'Sylphe',  ico:'🌬️', dc:'Odeur d\'ozone, peau translucide et tendance à la lévitation.'},
-    {nm:'Ange',    ico:'👼', dc:'Peau de marbre, pilosité emplumée et pousses d\'ailes vestigiales.'},
-    {nm:'Pégase',  ico:'🐎', dc:'Pelage blanc immaculé et grandes ailes.'},
-    {nm:'Zéphir',  ico:'💨', dc:'Peau bleue nacrée et voix mélodieuse envoûtante.'},
-    {nm:'Simurgh', ico:'🦚', dc:'Bec, serres et peau dorée irisant la lumière.'},
-    {nm:'Efreet',  ico:'✨', dc:'Gestes vifs, odeur d\'encens et regard perçant.'},
-    {nm:'Hurl',    ico:'⛈️', dc:'Peau sombre, silhouette imposante et voix tonnante.'},
+  Air:[
+    {nm:`Le Sylphe`,  ico:`🌬️`,
+     dc:`Cheveux en bataille, odeur d'ozone, voix tonnante et articulations bleutées. Au stade ultime, le corps devient translucide et lévite.`,
+     temp:`Calme olympien alternant avec des phases d'excitation intenses. Sujet à la claustrophobie, souvent tête en l'air.`},
+    {nm:`L'Ange`,     ico:`👼`,
+     dc:`Voix mélodieuse, mains d'une blancheur de marbre et pilosité emplumée. Apparition d'une auréole et d'ailes aux degrés élevés.`,
+     temp:`Érudit, réfléchi et tourné vers la philosophie. Inspire naturellement la fascination et la pureté chez les autres.`},
+    {nm:`Le Zéphir`,  ico:`💨`,
+     dc:`Peau bleue nacrée, silhouette légère et gracieuse.`,
+     temp:`Incarne l'espoir et le renouveau. Caractère fascinant et mystique.`},
+    {nm:`Le Hurl`,    ico:`⛈️`,
+     dc:`Peau et yeux sombres, mains froides et dures.`,
+     temp:`Incarne la colère sacrée, la justice implacable et l'attente.`},
+    {nm:`Le Simurgh`, ico:`🦚`,
+     dc:`Présence d'un bec de rapace, de serres et d'une peau dorée dégageant une odeur de lys.`,
+     temp:`Incarne la raison, la clarté et la rigueur exemplaire.`},
+    {nm:`L'Efreet`,   ico:`✨`,
+     dc:`Crâne chauve, gestes vifs et saccadés, odeur d'encens.`,
+     temp:`Incarne la foi exaltée et la dévotion légendaire.`},
   ],
-  Eau:[  // Ka-Eau (Hydrim) — fluidité, profondeurs marines
-    {nm:'Ondine',  ico:'🌊', dc:'Cheveux bleus, ongles nacrés et aura de séduction aquatique.'},
-    {nm:'Triton',  ico:'🔱', dc:'Peau verdâtre ou écailleuse, mains palmées et regard vitreux.'},
-    {nm:'Sirène',  ico:'🧜', dc:'Voix ensorcelante, chevelure marine et beauté fatale.'},
-    {nm:'Naïade',  ico:'💧', dc:'Liée aux eaux douces, peau transparente et reflets de source.'},
-    {nm:'Limnade', ico:'🏞️', dc:'Métamorphe des étangs et de la contemplation profonde.'},
+  Eau:[
+    {nm:`Le Triton`,  ico:`🔱`,
+     dc:`Regard vitreux, peau verdâtre écailleuse et mains palmées. Laisse des traces d'eau derrière lui.`,
+     temp:`Rusé, flegmatique et proche de la violence brute des océans.`},
+    {nm:`L'Ondine`,   ico:`🌊`,
+     dc:`Cheveux bleus, peau luisante, ongles nacrés et dents pointues. Haleine iodée.`,
+     temp:`Utilitariste, mercantile et curieuse. Préfère contourner les obstacles par la ruse.`},
+    {nm:`La Naïade`,  ico:`💧`,
+     dc:`Apparence pure et fascinante, peau transparente laissant voir des veines bleutées, visage très lisse.`,
+     temp:`Calme et purificatrice. Recherche le contact humain et génère une forte attraction chez les profanes.`},
+    {nm:`La Limnade`, ico:`🏞️`,
+     dc:`Peau mimétique et changeante, odeur de fraîcheur printanière.`,
+     temp:`Métamorphe du secret, de la confidence et de la contemplation profonde.`},
   ],
-  Terre:[  // Ka-Terre (Faërim) — cycles de la nature, solidité
-    {nm:'Elfe',      ico:'🌿', dc:'Traits fins, peau d\'écorce rugueuse et chevelure de feuilles.'},
-    {nm:'Satyre',    ico:'🐐', dc:'Cornes, sabots fendus, instincts fougueux et appétit des plaisirs.'},
-    {nm:'Nymphe',    ico:'🌸', dc:'Corps filiforme, yeux dorés et exuvie saisonnière.'},
-    {nm:'Gargouille',ico:'🗿', dc:'Peau de pierre moussue, corps difforme et queue barbelée.'},
-    {nm:'Mandragore',ico:'🌱', dc:'Membres noueux, mains racineuses et aura de putréfaction douce.'},
-    {nm:'Cobale',    ico:'⛏️', dc:'Peau anthracite, membres épais et visage de pierre taillée.'},
-    {nm:'Dactyle',   ico:'🔨', dc:'Corps trapu, mains à six doigts et petites cornes métalliques.'},
-    {nm:'Sphinx',    ico:'🏺', dc:'Apogée diurne de la Terre, corps mi-humain mi-fauve.'},
+  Lune:[
+    {nm:`Le Serpent`,  ico:`🐉`,
+     dc:`Absence totale d'odeur, voix sifflante, peau froide devenant écailleuse, langue bifide et mains atrophiées.`,
+     temp:`Illusionniste, menteur et charmeur. Adepte du jeu de rôle permanent et des secrets de l'âme.`},
+    {nm:`L'Ophidien`,  ico:`🌑`,
+     dc:`Visage asymétrique, crâne allongé, griffes noires et yeux totalement noirs. Parfum opiacé.`,
+     temp:`Incarne l'animalité primale et les cauchemars. Prédateur traquant ses victimes.`},
+    {nm:`La Méduse`,   ico:`💜`,
+     dc:`Femme pâle aux cheveux se transformant en serpents ; bas du corps ophidien à queues multiples.`,
+     temp:`Beauté froide et terrorisante. Maîtresse des poisons, des venins et des potions alchimiques.`},
+    {nm:`La Chimère`,  ico:`🌀`,
+     dc:`Forme mouvante et instable, yeux de bouc ou blancs révulsés, crinières multicolores. Griffes noires.`,
+     temp:`Méprise la réalité au profit des songes. Caractère changeant et instable, parfois parasite.`},
   ],
-  Lune:[  // Ka-Lune (Onirim) — rêves, illusions, étrangeté
-    {nm:'Ophidien', ico:'🐍', dc:'Visage asymétrique, crâne allongé et griffes noires. (Souvent perçu comme "vampire" par les humains.)'},
-    {nm:'Serpent',  ico:'🐉', dc:'Voix sifflante, yeux reptiliens, langue bifide et peau écailleuse.'},
-    {nm:'Chimère',  ico:'🌀', dc:'Forme complexe et mouvante issue des rêves éveillés.'},
-    {nm:'Méduse',   ico:'💜', dc:'Forme redoutée liée aux perversions et distorsions lunaires.'},
-    {nm:'Chat',     ico:'🐱', dc:'Étrangeté lunaire incarnée : souplesse et regard impénétrable.'},
-    // Selenim (cas particulier — Lune Noire)
-    {nm:'Selenim — Ver',      ico:'🪱', dc:'Corps vermiforme. Selenim : Lune Noire. Imago anatomique.'},
-    {nm:'Selenim — Insecte',  ico:'🕷️', dc:'Araignée ou scarabée. Selenim : Lune Noire. Imago anatomique.'},
-    {nm:'Selenim — Oiseau',   ico:'🦴', dc:'Squelette creux. Selenim : Lune Noire. Imago anatomique.'},
-    {nm:'Selenim — Reptile',  ico:'🐊', dc:'Crocodile ou cobra. Selenim : Lune Noire. Imago anatomique.'},
-    {nm:'Selenim — Prédateur',ico:'🐺', dc:'Loup ou ours. Selenim : Lune Noire. (Souvent perçu comme "loup-garou".)'},
+  Terre:[
+    {nm:`L'Elfe`,       ico:`🌿`,
+     dc:`Traits fins, ongles de bois, peau d'écorce et chevelure de feuilles. Odeur d'humus.`,
+     temp:`Pacifique, fier et protecteur. Tourné vers la guérison et l'harmonie avec la nature.`},
+    {nm:`Le Satyre`,    ico:`🐐`,
+     dc:`Voix basse, pilosité développée, cornes sur le front et sabots. Odeur de musc.`,
+     temp:`Fougueux, provocateur et vindicatif. Recherche les plaisirs terrestres et l'ivresse.`},
+    {nm:`Le Cobale`,    ico:`⛏️`,
+     dc:`Peau anthracite, membres épais, visage de pierre taillée et barbe de lichen. Odeur poussiéreuse.`,
+     temp:`Solitaire, tourné vers l'obscurité des profondeurs et l'hermétisme.`},
+    {nm:`La Mandragore`,ico:`🌱`,
+     dc:`Teint blême, membres noueux et mains racineuses. Aura de putréfaction douce.`,
+     temp:`Incarne le sauvage, l'enfoui et la sorcellerie liée à la décomposition.`},
+    {nm:`La Gargouille`,ico:`🗿`,
+     dc:`Peau de pierre moussue, corps difforme, queue barbelée et cornes recourbées.`,
+     temp:`Agressive, cruelle et prédatrice nocturne.`},
+    {nm:`La Nymphe`,    ico:`🌸`,
+     dc:`Corps filiforme, yeux dorés et exuvie saisonnière (mue).`,
+     temp:`Liée au cycle des saisons et à la renaissance perpétuelle.`},
+    {nm:`Le Dactyle`,   ico:`🔨`,
+     dc:`Corps trapu, mains à six doigts et petites cornes métalliques. Voix grondante.`,
+     temp:`Inventeur matérialiste, artisan débordant de vitalité.`},
+    {nm:`Le Sphinx`,    ico:`🏺`,
+     dc:`Pelage blond, crinière abondante, yeux de chat et présence d'ailes.`,
+     temp:`Tourné vers la réflexion profonde et la sagesse observatrice.`},
   ],
 };
 
@@ -707,7 +753,7 @@ const VOIES_ALCH=[
 const EPOQUES=[
   // ── ÈRE 1 : ATLANTIDE ──────────────────────────────
   {id:'atlantide', ere:1, nm:'La Chute de l\'Atlantide', per:'Jadis',ico:'🌊',cout:0,
-   dc:'La blessure primordiale. Naissance de la race déchue des Nephilim, contraints de s\'incarner dans des Simulacres humains pour survivre.',
+   dc:`La blessure primordiale. Naissance de la race déchue des Nephilim, contraints de s\'incarner dans des Simulacres humains pour survivre.`,
    vecus_data:[
      {nm:'Héros',    ka:'Feu',  dc:'Fondateur parmi les humains, enseignant l\'honneur et la guerre aux premières lignées.'},
      {nm:'Sage',     ka:'Air',  dc:'Observateur des astres et du Ka-Soleil des hommes, gardien des savoirs primordiaux.'},
@@ -721,7 +767,7 @@ const EPOQUES=[
   },
   // ── ÈRE 2 : GUERRES ÉLÉMENTAIRES ───────────────────
   {id:'deluge', ere:2, nm:'Le Déluge', per:'−10000',ico:'🌊',cout:2,
-   dc:'Temps des catastrophes mondiales. Les Nephilim comprennent leur exil et cherchent l\'Agartha pour fuir leurs prisons de chair.',
+   dc:`Temps des catastrophes mondiales. Les Nephilim comprennent leur exil et cherchent l\'Agartha pour fuir leurs prisons de chair.`,
    vecus_data:[
      {nm:'Oracle',      ka:'Air',  dc:'Orateur hors-pair donnant des visions d\'un futur sombre aux survivants des eaux.'},
      {nm:'Matriarche',  ka:'Eau',  dc:'Figure d\'autorité guidant les premières grandes familles à travers les flots dévastateurs.'},
@@ -734,7 +780,7 @@ const EPOQUES=[
    savoirs:['Kaïm 1','Champs magiques 1','Nephilim 2','Orichalque 2','Mystères 2','Histoire invisible 1'],
   },
   {id:'premiers_dieux', ere:2, nm:'Les Premiers Dieux', per:'−9000',ico:'⚡',cout:1,
-   dc:'Naissance des panthéons divins. Les Nephilim deviennent les dieux des premiers peuples.',
+   dc:`Naissance des panthéons divins. Les Nephilim deviennent les dieux des premiers peuples.`,
    vecus_data:[
      {nm:'Conteur',             ka:'Feu',  dc:'Gardien des mythes fondateurs, forgeant l\'identité des peuples naissants par le feu des récits.'},
      {nm:'Gardien du feu sacré',ka:'Air',  dc:'Prêtre veillant sur la flamme divine, lien vivant entre le Ka céleste et le monde terrestre.'},
@@ -747,7 +793,7 @@ const EPOQUES=[
    savoirs:['Nephilim 1','Mystères 1','Histoire invisible 1','Champs magiques 1'],
   },
   {id:'premier_peuple', ere:2, nm:'Le Premier Peuple', per:'−8000',ico:'🏕️',cout:1,
-   dc:'Premières civilisations sédentaires. Fondation des traditions et des savoirs ésotériques fondateurs.',
+   dc:`Premières civilisations sédentaires. Fondation des traditions et des savoirs ésotériques fondateurs.`,
    vecus_data:[
      {nm:'Conteur',   ka:'Feu',  dc:'Transmetteur oral des légendes de l\'Atlantide perdue, gardien de la mémoire brûlante.'},
      {nm:'Prêtre',    ka:'Air',  dc:'Intercesseur entre les dieux et les hommes des premières cités sédentarisées.'},
@@ -760,7 +806,7 @@ const EPOQUES=[
    savoirs:['Nephilim 1','Mystères 2','Champs magiques 1','Histoire invisible 1'],
   },
   {id:'premiere_cite', ere:2, nm:'La Première Cité', per:'−7000',ico:'🏛️',cout:1,
-   dc:'Premières cités-états. Naissance de l\'écriture, de la politique et des premières guerres organisées.',
+   dc:`Premières cités-états. Naissance de l\'écriture, de la politique et des premières guerres organisées.`,
    vecus_data:[
      {nm:'Prêtre-roi', ka:'Feu',  dc:'Souverain divin, incarnation du Ka céleste sur terre, entre guerre et prière.'},
      {nm:'Scribe',     ka:'Air',  dc:'Maître de l\'écriture cunéiforme et gardien des archives secrètes de la cité.'},
@@ -774,7 +820,7 @@ const EPOQUES=[
   },
   // ── ÈRE 3 : COMPACTS SECRETS ───────────────────────
   {id:'mahabharata', ere:3, nm:'Le Mahabharata', per:'−3000',ico:'⚔️',cout:1,
-   dc:'Plongez dans la noble guerre épique de l\'Inde ancienne. Vécus de combattants d\'élite, prêtres et mystiques.',
+   dc:`Plongez dans la noble guerre épique de l\'Inde ancienne. Vécus de combattants d\'élite, prêtres et mystiques.`,
    vecus_data:[
      {nm:'Kashtriya',                ka:'Feu',  dc:'Combattant noble et diplomate, expert des armes blanches et des vertus guerrières des Kshatriya.'},
      {nm:'Brahmane',                 ka:'Air',  dc:'Prêtre considéré comme un avatar divin par les humains, gardien oral des Védas sacrés.'},
@@ -787,7 +833,7 @@ const EPOQUES=[
    savoirs:['Nephilim 1','Orichalque 1','Mystères 1','Histoire invisible 1','Drakaon 2','Effets-Dragons 1'],
   },
   {id:'akhenaton', ere:3, nm:'Le Rêve d\'Akhenaton', per:'−1350',ico:'𓂀',cout:2,
-   dc:'La révolution monothéiste. Akhenaton, peut-être un Nephilim éveillé, bouleverse l\'Égypte avec son culte solaire.',
+   dc:`La révolution monothéiste. Akhenaton, peut-être un Nephilim éveillé, bouleverse l\'Égypte avec son culte solaire.`,
    vecus_data:[
      {nm:'Dracomache',           ka:'Feu',  dc:'Chasseur de Dragons et de créatures occultes au service du culte solaire d\'Aton.'},
      {nm:'Émissaire d\'Akhenaton',ka:'Air', dc:'Messager diplomatique de la révolution spirituelle du pharaon-Nephilim.'},
@@ -800,7 +846,7 @@ const EPOQUES=[
    savoirs:['Champs magiques 2','Mystères 1','Histoire invisible 1','Akasha 1','Effets-Dragons 1'],
   },
   {id:'troie', ere:3, nm:'La Chute de Troie', per:'−1200',ico:'🏹',cout:1,
-   dc:'Guerre de Troie. Dix ans d\'intrigues divines et humaines mêlées derrière les murailles imprenables.',
+   dc:`Guerre de Troie. Dix ans d\'intrigues divines et humaines mêlées derrière les murailles imprenables.`,
    vecus_data:[
      {nm:'Guerrier achéen',ka:'Feu',  dc:'Héros de bronze à la carrière brutale et glorieuse devant les portes de Troie.'},
      {nm:'Aède',           ka:'Air',  dc:'Poète-conteur transmettant les hauts faits pour l\'éternité en vers immortels.'},
@@ -810,11 +856,11 @@ const EPOQUES=[
    ],
    sciences:[], sorts:0,
    quetes:[],
-   savoirs:['Nephilim 1','Histoire invisible 1','Akasha 1','Effets-Dragons 2','Selenim 1'],
+   savoirs:['Nephilim 1','Histoire invisible 1','Akasha 1','Effets-Dragons 2'],
   },
   // ── ÈRE 4 : HERMÉTISME ─────────────────────────────
   {id:'babylone', ere:4, nm:'L\'Empire de Babylone', per:'−580',ico:'🔯',cout:1,
-   dc:'Captivité babylonienne. Naissance de la Kabbale juive dans l\'exil. Les Nephilim tissent leurs réseaux en Orient.',
+   dc:`Captivité babylonienne. Naissance de la Kabbale juive dans l\'exil. Les Nephilim tissent leurs réseaux en Orient.`,
    vecus_data:[
      {nm:'Soldat chaldéen',  ka:'Feu',  dc:'Guerrier de l\'empire néo-babylonien, gardien des remparts de Nabuchodonosor.'},
      {nm:'Devin (Barû)',     ka:'Air',  dc:'Spécialiste de la divination par les entrailles, oracle attitré du roi de Babylone.'},
@@ -827,7 +873,7 @@ const EPOQUES=[
    savoirs:['Drakaon 2','Effets-Dragons 1','Champs magiques 2','Mystères 1'],
   },
   {id:'alexandre', ere:4, nm:'L\'Empire d\'Alexandre', per:'−330',ico:'⚡',cout:1,
-   dc:'Hellénisation du monde connu. Syncrétisme religieux et magique à grande échelle — les Nephilim voyagent avec les légions.',
+   dc:`Hellénisation du monde connu. Syncrétisme religieux et magique à grande échelle — les Nephilim voyagent avec les légions.`,
    vecus_data:[
      {nm:'Hétaïroï', ka:'Feu',  dc:'Compagnon d\'Alexandre, cavalier d\'élite de la garde royale macédonienne aux quatre coins du monde.'},
      {nm:'Stratège', ka:'Air',  dc:'Général maîtrisant la géopolitique et la philosophie des cités conquises.'},
@@ -841,7 +887,7 @@ const EPOQUES=[
   },
   // ── ÈRE 5 : GUERRES SECRÈTES ───────────────────────
   {id:'jesus', ere:5, nm:'L\'Incident Jésus', per:'30',ico:'✝️',cout:2,
-   dc:'Le basculement des croyances. Un message qui remodèle la Guerre Occulte pour des siècles à venir. Ère du message et de la révolte.',
+   dc:`Le basculement des croyances. Un message qui remodèle la Guerre Occulte pour des siècles à venir. Ère du message et de la révolte.`,
    vecus_data:[
      {nm:'Sicaire zélote',      ka:'Feu',  dc:'Révolté politique luttant violemment contre l\'occupant romain par le feu et le couteau.'},
      {nm:'Prêcheur',            ka:'Air',  dc:'Porteur de message et grand orateur lors du bouleversement religieux de Judée.'},
@@ -854,7 +900,7 @@ const EPOQUES=[
    savoirs:['Sciences occultes 2','Arcanes Majeurs 2','Templiers 1','Bohémiens 1'],
   },
   {id:'temple', ere:5, nm:'La Chute du Temple', per:'1314',ico:'⚔️',cout:2,
-   dc:'La fin d\'un âge d\'or occulte. La dissolution de l\'Ordre du Temple brise un réseau nephilim mondial tissé depuis des décennies.',
+   dc:`La fin d\'un âge d\'or occulte. La dissolution de l\'Ordre du Temple brise un réseau nephilim mondial tissé depuis des décennies.`,
    vecus_data:[
      {nm:'Routier',              ka:'Feu',  dc:'Mercenaire aguerri aux armes, vivant sans clémence sur les routes de France après la chute.'},
      {nm:'Moniale',              ka:'Air',  dc:'Femme de foi gérant les secrets des abbayes et leurs trésors cachés loin des inquisiteurs.'},
@@ -868,7 +914,7 @@ const EPOQUES=[
   },
   // ── ÈRE 6 : NOUVEAUX MONDES ────────────────────────
   {id:'renaissance_occ', ere:6, nm:'Les Arcanes de la Renaissance', per:'XVe',ico:'🎨',cout:2,
-   dc:'Participation aux découvertes scientifiques, à l\'alchimie florentine et à la compilation des savoirs occultes antiques.',
+   dc:`Participation aux découvertes scientifiques, à l\'alchimie florentine et à la compilation des savoirs occultes antiques.`,
    vecus_data:[
      {nm:'Apothicaire',            ka:'Feu',  dc:'Maître des substances et des poisons, alchimiste praticien des transmutations.'},
      {nm:'Évêque défroqué',        ka:'Air',  dc:'Prélat renégat porteur des secrets de l\'Église et de ses archives interdites.'},
@@ -881,7 +927,7 @@ const EPOQUES=[
    savoirs:['Mystères 1','Histoire invisible 1','Rose+Croix 2'],
   },
   {id:'revolution', ere:6, nm:'Conspirations de la Révolution', per:'1789',ico:'⚙️',cout:1,
-   dc:'Le temps des discours enflammés. Les loges maçonniques et sociétés secrètes s\'affrontent pour l\'âme de l\'Europe.',
+   dc:`Le temps des discours enflammés. Les loges maçonniques et sociétés secrètes s\'affrontent pour l\'âme de l\'Europe.`,
    vecus_data:[
      {nm:'Député',         ka:'Feu',  dc:'Maître de la joute orale capable de convaincre et de réfuter l\'Assemblée constituante.'},
      {nm:'Mathématicienne',ka:'Air',  dc:'Esprit logique appliquant les sciences nouvelles aux mystères anciens des loges.'},
@@ -894,7 +940,7 @@ const EPOQUES=[
    savoirs:['Bohémiens 1','Lune Noire 1','Rose+Croix 1','Synarchie 2'],
   },
   {id:'victorien', ere:6, nm:'Vapeurs Victoriennes', per:'1837',ico:'🚂',cout:1,
-   dc:'L\'aventure et l\'industrie. L\'Empire britannique ouvre le monde — et ses mystères — aux Nephilim éveillés.',
+   dc:`L\'aventure et l\'industrie. L\'Empire britannique ouvre le monde — et ses mystères — aux Nephilim éveillés.`,
    vecus_data:[
      {nm:'Explorateur',           ka:'Feu',  dc:'Tête brûlée parcourant le globe en quête de cités perdues et de reliques nephilim.'},
      {nm:'Aliéniste',             ka:'Air',  dc:'Médecin de l\'âme étudiant les tréfonds de la psyché humaine — précurseur de Freud.'},
@@ -917,7 +963,7 @@ const EPOQUES=[
    sciences:[{nm:'Magie',deg:1},{nm:'Kabbale',deg:3}],
    sorts:1,
    quetes:["La Cité des Vertiges 1","L'Arche d'Alliance 2"],
-   savoirs:['Histoire invisible 1','Selenim 1','Lune Noire 1','Cousins 1','Synarchie 1','Révélation 1'],
+   savoirs:['Histoire invisible 1','Lune Noire 1','Cousins 1','Synarchie 1','Révélation 1'],
    arcanes_dispo:['Arcane IV','Arcane VII'],
   },
   {id:'grand_eveil', ere:7, nm:'Le Grand Éveil (Arcadia)', per:'1992',ico:'🌆',cout:2,
@@ -933,7 +979,7 @@ const EPOQUES=[
    sorts:1,
    quetes:['Atalante Fugitive 1','Arcane XXI 2','Trésor des Templiers 2'],
    savoirs_choix:3,
-   savoirs:['Orichalque 1','Mystères 1','Selenim 1','Arcanes Majeurs 2','Templiers 2','Bohémiens 1','Lune Noire 1','Rose+Croix 1','Cousins 2','Synarchie 1'],
+   savoirs:['Orichalque 1','Mystères 1','Arcanes Majeurs 2','Templiers 2','Bohémiens 1','Lune Noire 1','Rose+Croix 1','Cousins 2','Synarchie 1'],
    arcane_bonus:2,
   },
   {id:'apocalypse', ere:7, nm:"Les Chroniques de l'Apocalypse", per:'1999',ico:'🌑',cout:2,
@@ -1582,7 +1628,7 @@ function s1(){
   const nb=h('div',{cls:'box'},h('h3',{},'Identité'));
   const r1=h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.8rem',marginBottom:'.8rem'}});
   const iNom=document.createElement('input');
-  iNom.type='text';iNom.placeholder='Nom du Nephilim…';iNom.value=S.nom||'';
+  iNom.type='text';iNom.placeholder="Nom d'Immortel…";iNom.value=S.nom||'';
   iNom.addEventListener('input',e=>{
     S.nom=e.target.value;
     const s=document.querySelector('.hdr-sub');
@@ -1591,7 +1637,7 @@ function s1(){
   const iJoueur=document.createElement('input');
   iJoueur.type='text';iJoueur.placeholder='Nom du joueur…';iJoueur.value=S.joueur||'';
   iJoueur.addEventListener('input',e=>{S.joueur=e.target.value;});
-  r1.appendChild(h('div',{},h('div',{cls:'lbl'},'Nom du Nephilim'),iNom));
+  r1.appendChild(h('div',{},h('div',{cls:'lbl'},'Nom d\'Immortel'),iNom));
   r1.appendChild(h('div',{},h('div',{cls:'lbl'},'Nom du joueur'),iJoueur));
   nb.appendChild(r1);d.appendChild(nb);
   const g=h('div',{cls:'ka-grid'});
@@ -1643,32 +1689,36 @@ function s2(){
   const mb=h('div',{cls:'box'},h('h3',{},'Métamorphe'));
   const mg=h('div',{cls:'meta-grid'});
   for(const m of(METAS[S.ka_dom]||[])){
-    // Marquer les Selenim distinctement
-    const isSelenim=m.nm.startsWith('Selenim');
     mg.appendChild(h('div',{
       cls:`meta-card ${S.metamorphe===m.nm?'sel':''}`,
-      style:isSelenim?{borderColor:'rgba(155,143,192,.3)'}:{},
       onClick:()=>{S.metamorphe=m.nm;render();}
     },
       h('span',{cls:'meta-ico'},m.ico),
-      h('span',{cls:'meta-nm'},m.nm+(isSelenim?' 🌑':'')),
+      h('span',{cls:'meta-nm'},m.nm),
       h('span',{cls:'meta-dc'},m.dc),
     ));
   }
   mb.appendChild(mg);
 
-  // Aperçu du métamorphe sélectionné
+  // Aperçu du métamorphe sélectionné — Description + Tempérament
   if(S.metamorphe){
     const selMeta=(METAS[S.ka_dom]||[]).find(m=>m.nm===S.metamorphe);
     if(selMeta){
-      mb.appendChild(h('div',{cls:'info-box',style:{marginTop:'1rem'}},
-        h('strong',{},`${selMeta.ico} ${selMeta.nm} — Manifestations physiques :`),
-        h('br',{}), selMeta.dc,
-        selMeta.nm.startsWith('Selenim')
-          ? h('p',{style:{marginTop:'.4rem',color:'var(--seph)',fontSize:'.8rem',fontStyle:'normal'}},
-              '⚠ Les Selenim (Lune Noire) ne choisissent pas un métamorphe légendaire mais développent un Imago anatomique.')
-          : null,
-      ));
+      const preview=h('div',{cls:'info-box',style:{marginTop:'1rem'}});
+      preview.appendChild(h('p',{style:{fontFamily:'Cinzel,serif',fontSize:'.85rem',
+        color:'var(--gold)',marginBottom:'.6rem'}},`${selMeta.ico} ${selMeta.nm}`));
+      // Description physique
+      preview.appendChild(h('p',{style:{fontWeight:'700',fontSize:'.78rem',
+        color:'var(--gold-d)',marginBottom:'.2rem',fontFamily:'Cinzel,serif',textTransform:'uppercase',letterSpacing:'.06em'}},'Description'));
+      preview.appendChild(h('p',{style:{fontStyle:'italic',color:'var(--parch-d)',
+        fontSize:'.85rem',marginBottom:'.7rem'}},selMeta.dc));
+      // Tempérament
+      if(selMeta.temp){
+        preview.appendChild(h('p',{style:{fontWeight:'700',fontSize:'.78rem',
+          color:'var(--gold-d)',marginBottom:'.2rem',fontFamily:'Cinzel,serif',textTransform:'uppercase',letterSpacing:'.06em'}},'Tempérament'));
+        preview.appendChild(h('p',{style:{color:'var(--parch)',fontSize:'.85rem'}},selMeta.temp));
+      }
+      mb.appendChild(preview);
     }
   }
   d.appendChild(mb);
@@ -1678,7 +1728,46 @@ function s2(){
 function s3(){
   const d=h('div',{cls:'step'});
   d.appendChild(h('div',{cls:'step-ttl','data-n':'III'},'Profil de Départ'));
-  d.appendChild(h('p',{cls:'step-sub'},'Le niveau d\'éveil détermine votre budget de PI, votre Sapience initiale et vos degrés de Chute maximum.'));
+  d.appendChild(h('p',{cls:'step-sub'},'Le niveau d\'éveil détermine votre budget de PI, votre Sapience initiale et vos degrés de Chute maximum. Cliquez sur un profil pour le sélectionner.'));
+
+  // ── Pentacle mis à jour selon profil ─────────────────
+  if(S.ka_dom){
+    const sc3=kaScores(),data3=KA[S.ka_dom];
+    const roleMap3={dom:'Dominant',neu:'Neutre',opp:'Opposé'};
+    const roles3={[S.ka_dom]:'dom'};
+    data3.neu.forEach(k=>{roles3[k]='neu';});
+    data3.opp.forEach(k=>{roles3[k]='opp';});
+    let oppTxt3='selon profil';
+    if(S.profil==='Éveillé') oppTxt3='3 et 2 (Éveillé)';
+    else if(S.profil==='Révélé') oppTxt3='2 et 1 (Révélé)';
+    else if(S.profil==='Immortel') oppTxt3='1 et 0 (Immortel)';
+    const pentaBox=h('div',{cls:'box',style:{marginBottom:'1.2rem'}});
+    pentaBox.appendChild(h('h3',{},'⚡ Pentacle — se met à jour selon votre choix'));
+    const penta3=h('div',{cls:'penta'});
+    for(const ka of Object.keys(KA)){
+      const role=roles3[ka]||'neu';
+      const kd=KA[ka];
+      penta3.appendChild(h('div',{cls:`kb ${role}`},
+        h('span',{cls:'ki'},kd.ico),
+        h('span',{cls:'kr'},roleMap3[role]),
+        h('span',{cls:'kn'},ka),
+        h('span',{cls:'ks'},String(sc3[ka]||0)),
+      ));
+    }
+    pentaBox.appendChild(penta3);
+    pentaBox.appendChild(h('div',{style:{textAlign:'center',fontFamily:'Cinzel,serif',
+      fontSize:'.78rem',color:'var(--gold-d)',marginTop:'.5rem'}},
+      `Dominant=5 · Neutres=4 · Opposés : ${oppTxt3}`));
+    d.appendChild(pentaBox);
+  }
+
+  d.appendChild(h('div',{style:{textAlign:'center',fontFamily:'Cinzel,serif',
+    fontSize:'.8rem',color:'var(--parch-d)',fontStyle:'italic',
+    marginBottom:'1rem',padding:'.5rem',
+    background:'rgba(201,168,76,.05)',borderRadius:'6px',
+    border:'1px solid rgba(201,168,76,.12)'}},
+    '👆 Cliquez sur un profil pour le sélectionner — le Pentacle se met à jour automatiquement'));
+
   // Données officielles 5e édition
   const profs=[
     {id:'Éveillé', pi:25, ps:5,  chmax:2, ico:'🌱', dc:'Nephilim récemment réveillé. Quelques incarnations, grande flexibilité.'},
