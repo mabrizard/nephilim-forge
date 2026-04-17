@@ -721,25 +721,41 @@ const VOIES_MAGIE=[
 ];
 
 // ═══════════════════════════════════════════════════════
-// MONDES DE KABBALE (obligatoire au 2e palier)
+// MONDES DE KABBALE — 3 cercles officiels Nephilim
 // ═══════════════════════════════════════════════════════
 const MONDES=[
-  {id:'sohar',   nm:'Sohar',           dc:'Monde de lumière et de splendeur. Associé à Yesod. Entités lumineuses et révélatrices.'},
-  {id:'assiah',  nm:'Assiah',          dc:'Le monde physique. Entités proches de la matière. Premier pas du kabbaliste.'},
-  {id:'yetzirah',nm:'Yetzirah',        dc:'Monde de la formation. Entités angéliques et archétypales.'},
-  {id:'beriah',  nm:'Beriah',          dc:'Monde de la création. Entités de puissance créatrice pure.'},
-  {id:'atziluth',nm:'Atziluth',        dc:'Monde de l\'émanation divine. Entités d\'une puissance absolue.'},
+  {id:'aresh',  nm:'Aresh',  cercle:1,
+   dc:`1er Cercle - Sceaux. Monde des Elements physiques. Donne acces a Malkuth, Yesod, Hod, Netzah.`},
+  {id:'sohar',  nm:'Sohar',  cercle:2,
+   dc:`2e Cercle - Pentacles. Monde de la Lumiere astrale. Donne acces a Tiphareth, Geburah, Chesed. Requiert une Sephirah du 1er cercle >= 7.`},
+  {id:'ethesh', nm:'Ethesh', cercle:3,
+   dc:`3e Cercle - Cles. Monde des Forces divines. Donne acces a Binah, Chokmah, Kether. Requiert une Sephirah du 2e cercle >= 7.`},
 ];
+const SEPH_CERCLE={malkuth:1,yesod:1,hod:1,netzah:1,tipheret:2,geburah:2,chesed:2,binah:3,chokmah:3,kether:3};
+const CERCLE_MONDE={1:'aresh',2:'sohar',3:'ethesh'};
+function mondeOk(mondeId){if(!S.mondes_integres)S.mondes_integres={};return !!S.mondes_integres[mondeId];}
+function sephMondeOk(sephId){const cercle=SEPH_CERCLE[sephId]||1;return mondeOk(CERCLE_MONDE[cercle]);}
+function cerclePrerequis(cercle){
+  if(cercle===1)return true;
+  if(cercle===2)return['malkuth','yesod','hod','netzah'].some(id=>(S.sephiroth[id]||0)>=7);
+  if(cercle===3)return['tipheret','geburah','chesed'].some(id=>(S.sephiroth[id]||0)>=7);
+  return false;
+}
 
 // ═══════════════════════════════════════════════════════
 // VOIES ALCHIMIQUES (officielles)
 // ═══════════════════════════════════════════════════════
 const VOIES_ALCH=[
-  {id:'soufre',      nm:'Voie du Soufre',      ka:'Feu',   dc:'Transmutation active et purificatrice. Destruction pour mieux recréer.'},
-  {id:'mercure',     nm:'Voie du Mercure',     ka:'Air',   dc:'Fluidité et communication entre les substances. Maîtrise des transitions.'},
-  {id:'sel',         nm:'Voie du Sel',         ka:'Terre', dc:'Fixation et cristallisation. Permanence et résistance.'},
-  {id:'eau_forte',   nm:'Voie de l\'Eau-Forte',ka:'Eau',   dc:'Dissolution et séparation. Révèle l\'essence cachée des choses.'},
-  {id:'quintessence',nm:'Voie de la Quintessence',ka:'Lune',dc:'Synthèse des quatre éléments. Accès à la matière éthérée.'},
+  {id:'breve',   nm:'Voie Breve',          constructs:['choix_1'],
+   dc:`Le chemin le plus rapide vers l'Agartha. Un seul construct au choix. Des que l'Oeuvre au Rouge est entamee, plus aucune formule de Noir ou Blanc.`},
+  {id:'seche',   nm:'Voie Seche',           constructs:['athanor','creuset'],
+   dc:`Maitrise l'essence masculine du cosmos. Athanor (poudres) et Creuset (metaux) uniquement.`},
+  {id:'humide',  nm:'Voie Humide',          constructs:['alambic','aludel','cornue'],
+   dc:`Maitrise l'ame de la matiere. Alambic (liqueurs), Aludel (vapeurs) et Cornue (ambres) uniquement.`},
+  {id:'royale',  nm:'Voie Royale',          constructs:['athanor','creuset','alambic','aludel','cornue'],
+   dc:`L'Art Royal. Cinq constructs. Chemin complet et equilibre, acces a tous les processus du Grand Oeuvre.`},
+  {id:'spagyrie',nm:'Voie de la Spagyrie',  constructs:['athanor','creuset','alambic','aludel','cornue'],
+   dc:`Voie Cachee. Specialisee dans la creation d'etres artificiels. But : receptacle pour le Pentacle.`},
 ];
 
 // ═══════════════════════════════════════════════════════
@@ -1289,6 +1305,7 @@ let S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:
   // Chutes officielles (3 seules valides) + bonus PI calculé automatiquement
   stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,
   sci_tab:'magie', inc_tab:null, opp_inverse:false,
+  mondes_integres:{},
   effets_magiques:{gravés:[],focus:[]}, arcane:null,
 };
 
@@ -1493,7 +1510,11 @@ function calcAttrs(){
 function sapience(){return Math.floor(piLeft()/2);}
 function getMetier(){return METIERS.find(m=>m.id===S.metier)||null;}
 function kaSoleil(){const m=getMetier();return S.ka_soleil_base+(m?m.ks:0);}
-function sephOk(sp){if(!sp.req)return true;return(S.sephiroth[sp.req]||0)>=7;}
+function sephOk(sp){
+  if(sp.req&&(S.sephiroth[sp.req]||0)<7) return false;
+  if(typeof sephMondeOk==='function'&&!sephMondeOk(sp.id)) return false;
+  return true;
+}
 
 // ════════════════════════════════════════════════════════
 // COMPATIBILITÉ (anciens appels Google Sheets → Supabase)
@@ -1618,7 +1639,7 @@ function buildActionBar(){
   // ── GROUPE 5 : Actions ───────────────────────────────
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='+ Nouveau';btnNew.title='Créer un nouveau personnage';
   btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){
-    S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,effets_magiques:{gravés:[],focus:[]},arcane:null};
+    S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,mondes_integres:{},effets_magiques:{gravés:[],focus:[]},arcane:null};
     supaPersonnageId=null;
     grimCache={sorts:null,invocations:null,formules:null};
     syncStatus='idle';syncMsg='';  // effacer le message de l'ancien personnage
@@ -2736,6 +2757,25 @@ function buildKabbale(){
     `Degrés libres à placer : ${poolFree2 + poolFree} (${poolFree} pool + ${poolFree2} PI)`
   ));
 
+  // ── Monde actif affiché au-dessus de l'arbre ─────────
+  {
+    const mondeActif=MONDES.filter(m=>mondeOk(m.id)).sort((a,b)=>b.cercle-a.cercle)[0];
+    if(mondeActif){
+      wrap.appendChild(h('div',{style:{
+        textAlign:'center',fontFamily:'Cinzel,serif',fontSize:'.82rem',
+        color:'var(--seph)',padding:'.5rem',marginBottom:'.8rem',
+        background:'rgba(192,160,255,.06)',borderRadius:'7px',
+        border:'1px solid rgba(192,160,255,.2)'}},
+        `🌍 ${mondeActif.nm} — ${['','1er Cercle (Sceaux)','2e Cercle (Pentacles)','3e Cercle (Clés)'][mondeActif.cercle]} actif`));
+    } else {
+      wrap.appendChild(h('div',{style:{
+        textAlign:'center',fontFamily:'Cinzel,serif',fontSize:'.78rem',
+        color:'var(--blood-l)',padding:'.5rem',marginBottom:'.8rem',
+        background:'rgba(139,26,26,.05)',borderRadius:'7px',
+        border:'1px solid rgba(139,26,26,.2)'}},
+        `🔒 Intégrez le Monde d'Aresh (1er Cercle) pour accéder aux Sephiroth`));
+    }
+  }
   // Arbre des Sephiroth
   const tree=h('div',{cls:'seph-tree'});
   for(let r=0;r<=5;r++){
@@ -2780,26 +2820,60 @@ function buildKabbale(){
   }
   wrap.appendChild(tree);
 
-  // Choix Monde
-  const needMonde=(S.sephiroth['hod']||0)>0||(S.sephiroth['netzah']||0)>0;
-  if(needMonde){
-    const mbox=h('div',{cls:'box',style:{marginTop:'1rem'}});
-    mbox.appendChild(h('h3',{},'🌍 Choix du Monde (2e palier)'));
-    const msel=document.createElement('select');
-    const mopt0=document.createElement('option');mopt0.value='';mopt0.textContent='— Choisir un Monde —';
-    msel.appendChild(mopt0);
+  // ── MONDES — intégration par cercle ──────────────────
+  {
+    if(!S.mondes_integres) S.mondes_integres={};
+    const mondesBox=h('div',{cls:'box',style:{marginTop:'1rem'}});
+    mondesBox.appendChild(h('h3',{},'🌍 Mondes de la Kabbale'));
+    mondesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},
+      `L'accès aux Sephiroth est conditionné par l'intégration du Monde correspondant. Chaque cercle unlock de nouvelles Sephiroth.`));
+
     for(const m of MONDES){
-      const o=document.createElement('option');o.value=m.nm;o.textContent=m.nm;
-      if(S.monde===m.nm)o.selected=true;
-      msel.appendChild(o);
+      const isIntegre=mondeOk(m.id);
+      const prereqOk=cerclePrerequis(m.cercle);
+      const sephsOfCercle=Object.entries(SEPH_CERCLE).filter(([,cer])=>cer===m.cercle).map(([id])=>id);
+      const cercleLabel=['','1er Cercle — Sceaux','2e Cercle — Pentacles','3e Cercle — Clés'][m.cercle];
+      const sephsNames=sephsOfCercle.map(id=>{const sp=SEPH.find(s=>s.id===id);return sp?sp.nm:id;}).join(', ');
+
+      const mCard=h('div',{style:{
+        padding:'.8rem',marginBottom:'.6rem',borderRadius:'8px',
+        border:`1px solid ${isIntegre?'var(--seph)':prereqOk?'rgba(192,160,255,.3)':'rgba(192,160,255,.1)'}`,
+        background:isIntegre?'rgba(192,160,255,.08)':'rgba(13,11,8,.4)',
+        opacity:prereqOk?'1':'0.5',
+      }});
+
+      const mHd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.4rem'}});
+      mHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.82rem',
+        color:isIntegre?'var(--seph)':'var(--parch-d)'}},
+        `${isIntegre?'✓ ':''}${m.nm} — ${cercleLabel}`));
+
+      if(prereqOk&&!isIntegre){
+        const btnIntegrer=h('button',{
+          style:{fontFamily:'Cinzel,serif',fontSize:'.7rem',padding:'.25rem .7rem',
+            border:'1px solid rgba(192,160,255,.4)',borderRadius:'5px',
+            background:'rgba(192,160,255,.1)',color:'#c0a0ff',cursor:'pointer'},
+          onClick:()=>{
+            if(!S.mondes_integres) S.mondes_integres={};
+            S.mondes_integres[m.id]=true;
+            // Compatibilité ancien champ S.monde
+            if(m.cercle===2) S.monde=m.nm;
+            render();
+          }
+        },'Intégrer ce Monde');
+        mHd.appendChild(btnIntegrer);
+      } else if(isIntegre){
+        mHd.appendChild(h('span',{style:{fontSize:'.7rem',color:'var(--seph)'}},'✓ Intégré'));
+      } else {
+        // Prérequis non remplis
+        const prereqMsg=m.cercle===2?'Requiert une Sephirah du 1er cercle ≥ 7':'Requiert une Sephirah du 2e cercle ≥ 7';
+        mHd.appendChild(h('span',{style:{fontSize:'.7rem',color:'var(--blood-l)'}},'🔒 '+prereqMsg));
+      }
+      mCard.appendChild(mHd);
+      mCard.appendChild(h('p',{style:{fontSize:'.78rem',color:'var(--parch-d)',fontStyle:'italic',marginBottom:'.3rem'}},m.dc));
+      mCard.appendChild(h('p',{style:{fontSize:'.72rem',color:'var(--gold-d)'}},`Sephiroth : ${sephsNames}`));
+      mondesBox.appendChild(mCard);
     }
-    msel.addEventListener('change',e=>{S.monde=e.target.value||null;render();});
-    mbox.appendChild(msel);
-    if(S.monde){
-      const mDc=MONDES.find(m=>m.nm===S.monde);
-      if(mDc) mbox.appendChild(h('p',{cls:'lbl',style:{color:'var(--seph)',marginTop:'.4rem',fontStyle:'italic'}},mDc.dc));
-    }
-    wrap.appendChild(mbox);
+    wrap.appendChild(mondesBox);
   }
 
   // ── Invocations choisies via le Grimoire ────────────
@@ -3062,18 +3136,31 @@ function buildAlchimie(){
     cbox.appendChild(h('p',{cls:'lbl'},'Équipements alchimiques permanents du laboratoire.'));
     const cgrid=h('div',{cls:'cstr-types'});
     const leftC=piLeft();
+    // Voie alchimique active → constructs autorisés
+    const voieActuelle=S.alchimie.voie?VOIES_ALCH.find(v=>v.nm===S.alchimie.voie):null;
+    const constructsOk=voieActuelle
+      ?(voieActuelle.constructs[0]==='choix_1'?null:voieActuelle.constructs)
+      :null; // null = tous autorisés
+
     for(const ct of CONSTRUCT_TYPES){
       const cnt=S.constructs[ct.id]||0;
-      const card=h('div',{cls:`cstr-type ${cnt>0?'sel':''}`},
+      const blocked=constructsOk&&!constructsOk.includes(ct.id);
+      // Voie Brève : un seul construct — si un autre est sélectionné, bloquer
+      const breveSingleUsed=voieActuelle&&voieActuelle.id==='breve'&&
+        Object.values(S.constructs).some(v=>v>0)&&cnt===0;
+
+      const card=h('div',{cls:`cstr-type ${cnt>0?'sel':''} ${blocked?'locked':''}`,
+        style:{opacity:blocked||breveSingleUsed?'0.35':'1',
+               cursor:blocked||breveSingleUsed?'not-allowed':'pointer'}},
         h('span',{},ct.ico+' '),
         h('span',{cls:'cstr-type-nm'},ct.nm),
-        h('span',{cls:'cstr-type-dc'},ct.dc),
+        h('span',{cls:'cstr-type-dc'},blocked?`🔒 Non autorisé (${voieActuelle?.nm})`:ct.dc),
         h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:'.4rem',marginTop:'.4rem'}},
-          h('button',{cls:'qb',disabled:cnt<=0,
-            onClick:e=>{e.stopPropagation();S.constructs[ct.id]=Math.max(0,cnt-1);render();}},'−'),
+          h('button',{cls:'qb',disabled:cnt<=0||blocked,
+            onClick:e=>{e.stopPropagation();if(!blocked){S.constructs[ct.id]=Math.max(0,cnt-1);render();}}},'−'),
           h('span',{cls:'cstr-count'},String(cnt)),
-          h('button',{cls:'qb',disabled:leftC<1,
-            onClick:e=>{e.stopPropagation();S.constructs[ct.id]=(cnt||0)+1;render();}},'✚'),
+          h('button',{cls:'qb',disabled:leftC<1||blocked||breveSingleUsed,
+            onClick:e=>{e.stopPropagation();if(!blocked&&!breveSingleUsed){S.constructs[ct.id]=(cnt||0)+1;render();}}},'✚'),
         ),
       );
       cgrid.appendChild(card);
@@ -3855,6 +3942,12 @@ function doLocalLoad(){
       if(!Array.isArray(S.effets_magiques.gravés)) S.effets_magiques.gravés=[];
       if(!Array.isArray(S.effets_magiques.focus)) S.effets_magiques.focus=[];
       if(S.arcane===undefined) S.arcane=null;
+      if(!S.mondes_integres) S.mondes_integres={};
+      // Migrer ancien S.monde vers mondes_integres
+      if(S.monde&&!S.mondes_integres['sohar']){
+        const oldM=MONDES.find(m=>m.nm===S.monde);
+        if(oldM) S.mondes_integres[oldM.id]=true;
+      }
     }
   }catch(e){}
 }
