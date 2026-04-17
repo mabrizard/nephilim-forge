@@ -2620,74 +2620,72 @@ function buildMagie(){
       box.appendChild(vbox);
     }
 
-    // Sorts (Basse Magie uniquement)
-    if(lv.id==='bas'&&cur>0){
+    // Sorts — affiché pour Basse ET Haute Magie
+    if((lv.id==='bas'||lv.id==='haut')&&cur>0){
       const sbox=h('div',{style:{marginTop:'.6rem'}});
-      const cptRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.8rem',flexWrap:'wrap',marginBottom:'.6rem'}});
-      cptRow.appendChild(h('span',{cls:'lbl',style:{margin:0}},`Sorts mémorisés (max Ka dominant = ${domVal}) :`));
-      cptRow.appendChild(h('button',{cls:'qb',disabled:(S.magie.sorts||0)<=0,
-        onClick:()=>{S.magie.sorts=Math.max(0,(S.magie.sorts||0)-1);render();}},'−'));
-      cptRow.appendChild(h('span',{cls:'qdp'},String(S.magie.sorts||0)));
-      cptRow.appendChild(h('button',{cls:'qb',disabled:(S.magie.sorts||0)>=domVal,
-        onClick:()=>{S.magie.sorts=Math.min(domVal,(S.magie.sorts||0)+1);render();}},'✚'));
-      cptRow.appendChild(h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`/ ${domVal} · au-delà = "sur focus"`));
-      sbox.appendChild(cptRow);
-      // ── Sorts choisis via le Grimoire Supabase ──────────
+      // Compteur seulement sur Basse Magie (c'est là que se fixe le max)
+      if(lv.id==='bas'){
+        const cptRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.8rem',flexWrap:'wrap',marginBottom:'.6rem'}});
+        cptRow.appendChild(h('span',{cls:'lbl',style:{margin:0}},`Sorts mémorisés (max Ka dominant = ${domVal}) :`));
+        cptRow.appendChild(h('button',{cls:'qb',disabled:(S.magie.sorts||0)<=0,
+          onClick:()=>{S.magie.sorts=Math.max(0,(S.magie.sorts||0)-1);render();}},'−'));
+        cptRow.appendChild(h('span',{cls:'qdp'},String(S.magie.sorts||0)));
+        cptRow.appendChild(h('button',{cls:'qb',disabled:(S.magie.sorts||0)>=domVal,
+          onClick:()=>{S.magie.sorts=Math.min(domVal,(S.magie.sorts||0)+1);render();}},'✚'));
+        cptRow.appendChild(h('span',{style:{fontSize:'.75rem',color:'var(--gold-d)'}},`/ ${domVal} · au-delà = "sur focus"`));
+        sbox.appendChild(cptRow);
+      }
+      // ── Sorts choisis via le Grimoire (filtrés par cercle) ─
       {
         const effets=grimGetEffets();
-        const sortsGraves=(effets.gravés||[]).filter(e=>e.tab==='sorts');
-        const sortsFocus=(effets.focus||[]).filter(e=>e.tab==='sorts');
-        const totalChoisis=sortsGraves.length+sortsFocus.length;
+        // Filtrer par cercle correspondant au niveau
+        const cercleName=lv.id==='bas'?'Basse Magie':'Haute Magie';
+        const sortsGraves=(effets.gravés||[]).filter(e=>e.tab==='sorts'&&(e.cercle||'').includes(cercleName.split(' ')[0]));
+        const sortsFocus=(effets.focus||[]).filter(e=>e.tab==='sorts'&&(e.cercle||'').includes(cercleName.split(' ')[0]));
+        // Si pas de cercle défini dans les effets, on les montre tous sur Basse Magie
+        const sortsGravesAll=(effets.gravés||[]).filter(e=>e.tab==='sorts');
+        const sortsFocusAll=(effets.focus||[]).filter(e=>e.tab==='sorts');
+        const useFiltered=sortsGraves.length>0||sortsFocus.length>0;
+        const displayGraves=useFiltered?sortsGraves:(lv.id==='bas'?sortsGravesAll.filter(e=>!(e.cercle||'').includes('Haute')):sortsGravesAll.filter(e=>(e.cercle||'').includes('Haute')));
+        const displayFocus=useFiltered?sortsFocus:(lv.id==='bas'?sortsFocusAll.filter(e=>!(e.cercle||'').includes('Haute')):sortsFocusAll.filter(e=>(e.cercle||'').includes('Haute')));
+        const totalChoisis=displayGraves.length+displayFocus.length;
 
         const grimoireBox=h('div',{style:{
           marginTop:'.8rem',padding:'.8rem',
           border:'1px solid rgba(155,143,192,.25)',
           borderRadius:'8px',background:'rgba(155,143,192,.04)'}});
 
-        // Titre + bouton Grimoire
-        const grimHd=h('div',{style:{display:'flex',alignItems:'center',
-          justifyContent:'space-between',marginBottom:'.5rem'}});
+        const grimHd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.5rem'}});
         grimHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'#c0a0ff'}},
-          `📖 Sorts choisis via le Grimoire (${totalChoisis} / ${S.magie.sorts||0})`));
-        const btnGrimOpen=h('button',{
+          `📖 Sorts ${cercleName} — ${totalChoisis} choisi${totalChoisis>1?'s':''}`+(lv.id==='bas'?` / ${S.magie.sorts||0} max`:'')));
+        grimHd.appendChild(h('button',{
           style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',padding:'.25rem .7rem',
             border:'1px solid rgba(155,143,192,.4)',borderRadius:'5px',
             background:'rgba(155,143,192,.1)',color:'#c0a0ff',cursor:'pointer'},
-          onClick:()=>{
-            // Ouvrir le grimoire sur l'onglet Magie
-            grimTab='sorts';grimSearch='';grimFilters={cercle:'',element:''};
-            showGrimoire();
-          }
-        },'✦ Ouvrir le Grimoire');
-        grimHd.appendChild(btnGrimOpen);
+          onClick:()=>{grimTab='sorts';grimSearch='';grimFilters={cercle:'',element:''};showGrimoire();}
+        },'✦ Grimoire'));
+        grimHd.appendChild(grimHd);
         grimoireBox.appendChild(grimHd);
 
         if(totalChoisis===0){
           grimoireBox.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',fontSize:'.82rem'}},
-            'Aucun sort sélectionné. Utilisez le Grimoire pour choisir vos sorts.'));
+            `Aucun sort de ${cercleName} sélectionné. Utilisez le Grimoire.`));
         } else {
           const listDiv=h('div',{cls:'il',style:{gap:'.3rem'}});
-
-          sortsGraves.forEach(e=>{
-            const row=h('div',{cls:'ir sel',style:{padding:'.4rem .7rem'}});
-            row.appendChild(h('div',{cls:'ir-nm'},
-              h('strong',{},e.nom||''),
-              h('small',{style:{color:'var(--gold-d)'}},
-                ` · ${(e.cercle||'').replace('1-','').replace('2-','')} · ${e.element||''}`)));
+          displayGraves.forEach(e=>{
+            const row=h('div',{cls:'ir sel',style:{padding:'.35rem .7rem'}});
+            row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||''),
+              h('small',{style:{color:'var(--gold-d)'}},` · ${(e.cercle||'')} · ${e.element||''}`)));
             row.appendChild(h('span',{style:{color:'var(--gold)',fontSize:'.75rem',flexShrink:0}},'🔮 gravé'));
             listDiv.appendChild(row);
           });
-
-          sortsFocus.forEach(e=>{
-            const row=h('div',{cls:'ir',style:{padding:'.4rem .7rem',opacity:'.75'}});
-            row.appendChild(h('div',{cls:'ir-nm'},
-              h('strong',{},e.nom||''),
-              h('small',{style:{color:'var(--gold-d)'}},
-                ` · ${(e.cercle||'').replace('1-','').replace('2-','')}`)));
+          displayFocus.forEach(e=>{
+            const row=h('div',{cls:'ir',style:{padding:'.35rem .7rem',opacity:'.75'}});
+            row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||''),
+              h('small',{style:{color:'var(--gold-d)'}},` · ${(e.cercle||'')}`)));
             row.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.75rem',flexShrink:0}},'focus'));
             listDiv.appendChild(row);
           });
-
           grimoireBox.appendChild(listDiv);
         }
         sbox.appendChild(grimoireBox);
@@ -3051,23 +3049,40 @@ function buildAlchimie(){
     box.appendChild(hd);
     box.appendChild(h('p',{cls:'lbl',style:{margin:'.3rem 0 .5rem'}},ov.dc));
 
-    // Voie obligatoire Œuvre au Blanc
+    // Voie alchimique obligatoire dès l'Œuvre au Blanc
     if(ov.id==='blanc'&&cur>0){
-      box.appendChild(h('p',{cls:'lbl'},'Voie alchimique (obligatoire) :'));
-      const vsel=document.createElement('select');
-      const vopt0=document.createElement('option');vopt0.value='';vopt0.textContent='— Choisir une Voie —';
-      vsel.appendChild(vopt0);
+      const voieBox=h('div',{style:{marginTop:'.7rem',padding:'.7rem',
+        background:'rgba(224,92,42,.05)',borderRadius:'7px',
+        border:'1px solid rgba(224,92,42,.2)'}});
+      voieBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem',color:'#e8a080',fontFamily:'Cinzel,serif',fontSize:'.8rem'}},
+        `⚗️ Voie alchimique — obligatoire dès l'Œuvre au Blanc`));
+      voieBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.5rem',fontSize:'.72rem',color:'var(--parch-d)',fontStyle:'italic'}},
+        `⚠ Ne pas confondre avec les Voies de la Haute Magie (Sentier sinueux, Labyrinthe…) — ce sont des logiques distinctes.`));
+      const voieGrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.4rem',marginBottom:'.5rem'}});
       for(const v of VOIES_ALCH){
-        const o=document.createElement('option');o.value=v.nm;o.textContent=`${v.nm} (Ka ${v.ka})`;
-        if(S.alchimie.voie===v.nm)o.selected=true;
-        vsel.appendChild(o);
+        const isSel=S.alchimie.voie===v.nm;
+        const btn=h('button',{
+          title:v.dc,
+          style:{padding:'.35rem .8rem',fontFamily:'Cinzel,serif',fontSize:'.73rem',
+            border:'1px solid '+(isSel?'#e8a080':'rgba(224,92,42,.3)'),
+            borderRadius:'6px',cursor:'pointer',
+            background:isSel?'rgba(224,92,42,.18)':'transparent',
+            color:isSel?'#e8a080':'var(--parch-d)',transition:'all .15s'},
+          onClick:()=>{S.alchimie.voie=isSel?null:v.nm;render();}
+        },v.nm+(isSel?' ✓':''));
+        voieGrid.appendChild(btn);
       }
-      vsel.addEventListener('change',e=>{S.alchimie.voie=e.target.value||null;render();});
-      box.appendChild(vsel);
+      voieBox.appendChild(voieGrid);
       if(S.alchimie.voie){
         const vDc=VOIES_ALCH.find(v=>v.nm===S.alchimie.voie);
-        if(vDc) box.appendChild(h('p',{cls:'lbl',style:{color:'#e8a080',marginTop:'.3rem',fontStyle:'italic'}},vDc.dc));
+        if(vDc){
+          voieBox.appendChild(h('p',{style:{fontSize:'.78rem',color:'#e8a080',fontStyle:'italic',marginBottom:'.3rem'}},vDc.dc));
+          const cstLabel=vDc.constructs[0]==='choix_1'?'1 construct au choix':vDc.constructs.join(', ');
+          voieBox.appendChild(h('p',{style:{fontSize:'.73rem',color:'var(--gold-d)'}},
+            `Constructs autorisés : ${cstLabel}`));
+        }
       }
+      box.appendChild(voieBox);
     }
     wrap.appendChild(box);
   }
@@ -3127,34 +3142,83 @@ function buildAlchimie(){
 
   }
 
-  // ── Formules choisies via le Grimoire ───────────────
+  // ── Formules choisies via le Grimoire (groupées par Œuvre) ──
   {
     const effAlch=grimGetEffets();
     const formGraves=(effAlch.gravés||[]).filter(e=>e.tab==='formules');
+    // Voie alchimique active — bloque certains constructs
+    const voieAlch=S.alchimie.voie?VOIES_ALCH.find(v=>v.nm===S.alchimie.voie):null;
+    const constructsAutorisés=voieAlch?voieAlch.constructs:null;
+
     const formBox=h('div',{style:{marginTop:'1rem',padding:'.8rem',
       border:'1px solid rgba(224,92,42,.18)',borderRadius:'8px',background:'rgba(224,92,42,.03)'}});
-    const formHd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.5rem'}});
-    formHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',color:'#e8a080'}},
-      '📖 Formules choisies (' + formGraves.length + ')'));
+    const formHd=h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.7rem'}});
+    formHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.82rem',color:'#e8a080'}},
+      '📖 Formules alchimiques (' + formGraves.length + ')'));
     formHd.appendChild(h('button',{
       style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',padding:'.25rem .7rem',
         border:'1px solid rgba(224,92,42,.28)',borderRadius:'5px',
         background:'rgba(224,92,42,.06)',color:'#e8a080',cursor:'pointer'},
       onClick:()=>{grimTab='formules';grimSearch='';grimFilters={cercle:'',element:''};showGrimoire();}
-    },'Grimoire Alchimie'));
+    },'✦ Grimoire Alchimie'));
     formBox.appendChild(formHd);
-    if(formGraves.length===0){
-      formBox.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',fontSize:'.8rem'}},
-        'Aucune formule — utilisez le Grimoire.'));
-    } else {
-      const formList=h('div',{cls:'il',style:{gap:'.25rem'}});
-      formGraves.forEach(e=>{
-        const row=h('div',{cls:'ir sel',style:{padding:'.35rem .7rem'}});
-        row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||'')));
-        row.appendChild(h('span',{style:{color:'#e8a080',fontSize:'.75rem'}},'formule'));
-        formList.appendChild(row);
+
+    // Grouper par Œuvre
+    const OEUVRE_GROUPS=[
+      {key:'Noir',  label:'⬛ Œuvre au Noir',  active:(S.alchimie.noir||0)>0},
+      {key:'Blanc', label:'⬜ Œuvre au Blanc', active:(S.alchimie.blanc||0)>0},
+      {key:'Rouge', label:'🟥 Œuvre au Rouge', active:(S.alchimie.rouge||0)>0},
+    ];
+    let anyGroup=false;
+    for(const grp of OEUVRE_GROUPS){
+      if(!grp.active) continue;
+      // Filtrer les formules de cette Œuvre (champ oeuvre ou cercle)
+      const grpForms=formGraves.filter(e=>{
+        const oeuvreField=(e.oeuvre||e.cercle||'');
+        return oeuvreField.toLowerCase().includes(grp.key.toLowerCase());
       });
-      formBox.appendChild(formList);
+      if(grpForms.length===0) continue;
+      anyGroup=true;
+      const grpDiv=h('div',{style:{marginBottom:'.7rem'}});
+      grpDiv.appendChild(h('p',{style:{fontFamily:'Cinzel,serif',fontSize:'.75rem',
+        color:'#e8a080',marginBottom:'.3rem',borderBottom:'1px solid rgba(224,92,42,.15)',paddingBottom:'.2rem'}},grp.label));
+      const fList=h('div',{cls:'il',style:{gap:'.25rem'}});
+      grpForms.forEach(e=>{
+        // Vérifier si le construct est autorisé par la voie
+        const cst=(e.construct||e.substance||'').toLowerCase();
+        const blocked=constructsAutorisés&&cst&&
+          constructsAutorisés[0]!=='choix_1'&&
+          !constructsAutorisés.includes(cst);
+        // Bloquer Noir/Blanc si Voie Brève + Rouge entamé
+        const blockedBrève=voieAlch&&voieAlch.id==='breve'&&(S.alchimie.rouge||0)>0&&
+          (grp.key==='Noir'||grp.key==='Blanc');
+        const row=h('div',{cls:`ir ${blocked||blockedBrève?'':'sel'}`,
+          style:{padding:'.35rem .7rem',opacity:blocked||blockedBrève?'0.4':'1'}});
+        row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||''),
+          h('small',{style:{color:'var(--gold-d)'}},cst?` · ${cst}`:'')));
+        if(blocked) row.appendChild(h('span',{style:{color:'var(--blood-l)',fontSize:'.7rem'}},'🔒 voie'));
+        else if(blockedBrève) row.appendChild(h('span',{style:{color:'var(--blood-l)',fontSize:'.7rem'}},'🔒 brève'));
+        else row.appendChild(h('span',{style:{color:'#e8a080',fontSize:'.75rem'}},'⚗️'));
+        fList.appendChild(row);
+      });
+      grpDiv.appendChild(fList);
+      formBox.appendChild(grpDiv);
+    }
+    if(!anyGroup){
+      if(formGraves.length===0){
+        formBox.appendChild(h('p',{style:{color:'var(--parch-d)',fontStyle:'italic',fontSize:'.8rem'}},
+          'Aucune formule sélectionnée — utilisez le Grimoire.'));
+      } else {
+        // Formules sans oeuvre définie — afficher toutes
+        const fList=h('div',{cls:'il',style:{gap:'.25rem'}});
+        formGraves.forEach(e=>{
+          const row=h('div',{cls:'ir sel',style:{padding:'.35rem .7rem'}});
+          row.appendChild(h('div',{cls:'ir-nm'},h('strong',{},e.nom||'')));
+          row.appendChild(h('span',{style:{color:'#e8a080',fontSize:'.75rem'}},'⚗️'));
+          fList.appendChild(row);
+        });
+        formBox.appendChild(fList);
+      }
     }
     wrap.appendChild(formBox);
   }
