@@ -3433,10 +3433,23 @@ function s7(){
   const ml=h('div',{cls:'met-list'});
   for(const m of METIERS){
     ml.appendChild(h('div',{cls:`met-card ${S.metier===m.id?'sel':''}`,onClick:()=>{S.metier=m.id;render();}},
+      // Titre : nom contemporain
       h('div',{cls:'met-ttl'},m.nm),
+      // Lien explicite vers le vécu historique
+      h('div',{style:{display:'flex',alignItems:'center',gap:'.4rem',margin:'.2rem 0 .4rem',
+        fontFamily:'Cinzel,serif',fontSize:'.72rem'}},
+        h('span',{style:{color:'var(--gold-d)'}},`Vécu :`),
+        h('span',{style:{color:'var(--gold)',fontWeight:'600'}},m.vcu),
+        h('span',{style:{color:'var(--gold-d)',fontSize:'.65rem',fontStyle:'italic'}},'(incarnations passées)'),
+      ),
+      // Description contemporaine
       h('div',{cls:'met-dc'},m.dc),
       m.ressources?h('div',{style:{fontSize:'.7rem',color:'var(--gold-d)',fontStyle:'italic',marginTop:'.3rem'}},`📦 ${m.ressources}`):null,
-      h('div',{},h('span',{cls:'badge'},`☀ +${m.ks}`),h('span',{cls:'badge'},`Rs ${m.rs}`),h('span',{cls:'badge'},m.vcu))));
+      // Badges
+      h('div',{style:{display:'flex',gap:'.3rem',marginTop:'.5rem',flexWrap:'wrap'}},
+        h('span',{cls:'badge'},`☀ +${m.ks}`),
+        h('span',{cls:'badge'},`Rs ${m.rs}`),
+      )));
   }
   d.appendChild(h('div',{cls:'box'},h('h3',{},'Métier du Simulacre'),ml));
   if(S.metier){
