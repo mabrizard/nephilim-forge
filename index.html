@@ -543,11 +543,11 @@ async function showVersionsModal(){
 // DATA
 // ════════════════════════════════════════════════════════
 const KA={
-  Air:  {ico:'🜁',dc:'Intellect & éloquence',   neu:['Feu','Eau'],   opp:['Terre','Lune']},
-  Feu:  {ico:'🜂',dc:'Passion & volonté',        neu:['Air','Terre'], opp:['Eau','Lune']},
-  Terre:{ico:'🜃',dc:'Corps & endurance',         neu:['Feu','Eau'],   opp:['Air','Lune']},
-  Eau:  {ico:'🜄',dc:'Intuition & mémoire',       neu:['Air','Terre'], opp:['Feu','Lune']},
-  Lune: {ico:'☽', dc:'Duplicité & charme · séduction',    neu:['Air','Feu'],   opp:['Terre','Eau']},
+  Air:  {ico:'🜁',dc:'Intellect & éloquence',          neu:['Feu','Eau'],   opp:['Terre','Lune']},
+  Feu:  {ico:'🜂',dc:'Passion & volonté',               neu:['Terre','Air'], opp:['Lune','Eau']},
+  Terre:{ico:'🜃',dc:'Corps & endurance',                neu:['Feu','Lune'],  opp:['Air','Eau']},
+  Eau:  {ico:'🜄',dc:'Intuition & mémoire',              neu:['Air','Lune'],  opp:['Feu','Terre']},
+  Lune: {ico:'☽', dc:'Duplicité & charme · séduction', neu:['Terre','Eau'], opp:['Feu','Air']},
 };
 // ═══════════════════════════════════════════════════════
 // MÉTAMORPHES OFFICIELS par Ka-élément (source Nephilim Légende)
@@ -1098,7 +1098,7 @@ let S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:
   vecus:{}, sciences:{},
   // Chutes officielles (3 seules valides) + bonus PI calculé automatiquement
   stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,
-  sci_tab:'magie', inc_tab:null,
+  sci_tab:'magie', inc_tab:null, opp_inverse:false,
   effets_magiques:{gravés:[],focus:[]}, arcane:null,
 };
 
@@ -1116,18 +1116,21 @@ let syncMsg='Non connecté à Google Sheets';
 function kaScores(){
   if(!S.ka_dom)return{Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
   const d=KA[S.ka_dom];
-  const domVal=5;
-  const neuVal=domVal-1; // neutres = dominant - 1
-
-  // Valeurs des opposés selon profil
-  let opp1=3,opp2=2;
-  if(S.profil==='Révélé'){opp1=2;opp2=1;}
-  else if(S.profil==='Immortel'){opp1=1;opp2=0;}
-
+  // Valeurs officielles 5e éd. selon profil
+  let domVal=5,neuVal=4,oppMin=3,oppMaj=2;
+  if(S.profil==='Révélé') {domVal=4;neuVal=3;oppMin=2;oppMaj=1;}
+  else if(S.profil==='Immortel'){domVal=3;neuVal=2;oppMin=1;oppMaj=1;}// min 1
+  // opp[0]=opposé mineur (valeur plus forte), opp[1]=opposé majeur (valeur plus faible)
+  // Le joueur peut inverser via S.opp_inverse
   const sc={Air:neuVal,Feu:neuVal,Terre:neuVal,Eau:neuVal,Lune:neuVal};
   sc[S.ka_dom]=domVal;
-  sc[d.opp[0]]=opp1;
-  sc[d.opp[1]]=opp2;
+  if(S.opp_inverse){
+    sc[d.opp[0]]=oppMaj;
+    sc[d.opp[1]]=oppMin;
+  } else {
+    sc[d.opp[0]]=oppMin;
+    sc[d.opp[1]]=oppMaj;
+  }
   return sc;
 }
 // ═══════════════════════════════════════════════════════
@@ -1424,7 +1427,7 @@ function buildActionBar(){
 
   // ── GROUPE 5 : Actions ───────────────────────────────
   const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='+ Nouveau';btnNew.title='Créer un nouveau personnage';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,effets_magiques:{gravés:[],focus:[]},arcane:null};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
+  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,effets_magiques:{gravés:[],focus:[]},arcane:null};supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};render();}};
   bar.appendChild(btnNew);
 
   if(S.step>=4){
@@ -1730,34 +1733,89 @@ function s3(){
   d.appendChild(h('div',{cls:'step-ttl','data-n':'III'},'Profil de Départ'));
   d.appendChild(h('p',{cls:'step-sub'},'Le niveau d\'éveil détermine votre budget de PI, votre Sapience initiale et vos degrés de Chute maximum. Cliquez sur un profil pour le sélectionner.'));
 
-  // ── Pentacle mis à jour selon profil ─────────────────
+  // ── Pentacle mis à jour selon profil + choix opposé ──
   if(S.ka_dom){
     const sc3=kaScores(),data3=KA[S.ka_dom];
-    const roleMap3={dom:'Dominant',neu:'Neutre',opp:'Opposé'};
-    const roles3={[S.ka_dom]:'dom'};
-    data3.neu.forEach(k=>{roles3[k]='neu';});
-    data3.opp.forEach(k=>{roles3[k]='opp';});
-    let oppTxt3='selon profil';
-    if(S.profil==='Éveillé') oppTxt3='3 et 2 (Éveillé)';
-    else if(S.profil==='Révélé') oppTxt3='2 et 1 (Révélé)';
-    else if(S.profil==='Immortel') oppTxt3='1 et 0 (Immortel)';
+    // Valeurs selon profil
+    let domVal3=5,neuVal3=4,oppMin3=3,oppMaj3=2;
+    if(S.profil==='Révélé') {domVal3=4;neuVal3=3;oppMin3=2;oppMaj3=1;}
+    else if(S.profil==='Immortel'){domVal3=3;neuVal3=2;oppMin3=1;oppMaj3=1;}
+    const opp0=S.opp_inverse?data3.opp[1]:data3.opp[0]; // opposé mineur
+    const opp1=S.opp_inverse?data3.opp[0]:data3.opp[1]; // opposé majeur (le plus faible)
+    const roleMap3={dom:'Dominant',neu:'Neutre'};
+    roleMap3[opp0]='Opp. min.';
+    roleMap3[opp1]='Opp. maj.';
+    const roleClass={dom:'dom',neu:'neu'};
+    roleClass[opp0]='opp';roleClass[opp1]='opp';
+
     const pentaBox=h('div',{cls:'box',style:{marginBottom:'1.2rem'}});
-    pentaBox.appendChild(h('h3',{},'⚡ Pentacle — se met à jour selon votre choix'));
+    pentaBox.appendChild(h('h3',{},'⚡ Pentacle — mise à jour automatique'));
     const penta3=h('div',{cls:'penta'});
     for(const ka of Object.keys(KA)){
-      const role=roles3[ka]||'neu';
+      const role=roleClass[ka]||'neu';
       const kd=KA[ka];
       penta3.appendChild(h('div',{cls:`kb ${role}`},
         h('span',{cls:'ki'},kd.ico),
-        h('span',{cls:'kr'},roleMap3[role]),
+        h('span',{cls:'kr'},roleMap3[ka]||'Neutre'),
         h('span',{cls:'kn'},ka),
         h('span',{cls:'ks'},String(sc3[ka]||0)),
       ));
     }
     pentaBox.appendChild(penta3);
+
+    // Tableau récapitulatif
+    let oppTxt3='—';
+    if(S.profil==='Éveillé') oppTxt3=`${oppMin3} et ${oppMaj3}`;
+    else if(S.profil==='Révélé') oppTxt3=`${oppMin3} et ${oppMaj3}`;
+    else if(S.profil==='Immortel') oppTxt3=`${oppMin3} et ${oppMaj3}`;
     pentaBox.appendChild(h('div',{style:{textAlign:'center',fontFamily:'Cinzel,serif',
       fontSize:'.78rem',color:'var(--gold-d)',marginTop:'.5rem'}},
-      `Dominant=5 · Neutres=4 · Opposés : ${oppTxt3}`));
+      `Dom=${domVal3} · Neu=${neuVal3} · Opp=${oppTxt3}`));
+
+    // Choix de l'opposé mineur/majeur
+    if(S.profil){
+      const oppBox=h('div',{style:{marginTop:'.8rem',padding:'.7rem',
+        background:'rgba(201,168,76,.04)',borderRadius:'7px',
+        border:'1px solid rgba(201,168,76,.15)'}});
+      oppBox.appendChild(h('p',{style:{fontFamily:'Cinzel,serif',fontSize:'.78rem',
+        color:'var(--gold-d)',marginBottom:'.5rem'}},
+        'Choisissez quel opposé est le plus fort (mineur) :'));
+      const oppGrid=h('div',{style:{display:'flex',gap:'.5rem',flexWrap:'wrap'}});
+      const opt1Label=`${KA[data3.opp[0]].ico} ${data3.opp[0]} = ${!S.opp_inverse?oppMin3:oppMaj3} (${!S.opp_inverse?'mineur':'majeur'})`;
+      const opt2Label=`${KA[data3.opp[1]].ico} ${data3.opp[1]} = ${!S.opp_inverse?oppMaj3:oppMin3} (${!S.opp_inverse?'majeur':'mineur'})`;
+      const btn1=h('button',{
+        style:{padding:'.4rem .9rem',fontFamily:'Cinzel,serif',fontSize:'.75rem',
+          border:`1px solid ${!S.opp_inverse?'var(--gold)':'var(--gold-d)'}`,borderRadius:'6px',
+          background:!S.opp_inverse?'rgba(201,168,76,.12)':'transparent',
+          color:!S.opp_inverse?'var(--gold)':'var(--parch-d)',cursor:'pointer'},
+        onClick:()=>{S.opp_inverse=false;render();}
+      },opt1Label);
+      const btn2=h('button',{
+        style:{padding:'.4rem .9rem',fontFamily:'Cinzel,serif',fontSize:'.75rem',
+          border:`1px solid ${S.opp_inverse?'var(--gold)':'var(--gold-d)'}`,borderRadius:'6px',
+          background:S.opp_inverse?'rgba(201,168,76,.12)':'transparent',
+          color:S.opp_inverse?'var(--gold)':'var(--parch-d)',cursor:'pointer'},
+        onClick:()=>{S.opp_inverse=true;render();}
+      },opt2Label);
+      oppGrid.appendChild(btn1);oppGrid.appendChild(btn2);
+      oppBox.appendChild(oppGrid);
+
+      // Annotation dynamique sur l'opposé majeur
+      const OPP_ANNOT={
+        Feu:"Votre personnage n'est pas guidé par la passion ni les coups d'éclat.",
+        Air:"Votre personnage n'est pas attiré par le savoir ni la diplomatie.",
+        Eau:"Votre personnage n'est pas porté sur l'intuition ni la mémoire profonde.",
+        Terre:"Votre personnage n'est pas ancré dans le monde physique ni l'endurance.",
+        Lune:"Votre personnage n'est pas attiré par les mensonges ni les illusions.",
+      };
+      const majKa=opp1;
+      if(OPP_ANNOT[majKa]){
+        oppBox.appendChild(h('p',{style:{fontSize:'.78rem',color:'var(--parch-d)',
+          fontStyle:'italic',marginTop:'.5rem'}},
+          `💡 Opposé majeur ${KA[majKa].ico} ${majKa} : ${OPP_ANNOT[majKa]}`));
+      }
+      pentaBox.appendChild(oppBox);
+    }
     d.appendChild(pentaBox);
   }
 
@@ -3075,18 +3133,18 @@ function s9(){
     const pentBox=h('div',{cls:'box',style:{marginBottom:'1.5rem',textAlign:'center'}});
     pentBox.appendChild(h('h3',{},'✡ Pentacle des Ka'));
 
-    const ORDER=['Feu','Air','Eau','Lune','Terre']; // sens horaire
+    const ORDER=['Feu','Air','Eau','Lune','Terre']; // sens horaire — géométrie pentagramme
     const KA_COLORS={Feu:'#e05c2a',Air:'#7eb8d4',Eau:'#3a6b8a',Lune:'#9b8fc0',Terre:'#6b8e4e'};
     const KA_ICONS={Feu:'🜂',Air:'🜁',Eau:'🜄',Lune:'☽',Terre:'🜃'};
     const domMap2={
-      Air:{neu:['Feu','Eau'],opp:['Terre','Lune']},
-      Feu:{neu:['Air','Terre'],opp:['Eau','Lune']},
-      Terre:{neu:['Feu','Eau'],opp:['Air','Lune']},
-      Eau:{neu:['Air','Terre'],opp:['Feu','Lune']},
-      Lune:{neu:['Air','Feu'],opp:['Terre','Eau']},
+      Air:  {neu:['Feu','Eau'],   opp:['Terre','Lune']},
+      Feu:  {neu:['Terre','Air'], opp:['Lune','Eau']},
+      Terre:{neu:['Feu','Lune'],  opp:['Air','Eau']},
+      Eau:  {neu:['Air','Lune'],  opp:['Feu','Terre']},
+      Lune: {neu:['Terre','Eau'], opp:['Feu','Air']},
     };
     const dom2=S.ka_dom;
-    const sc2=kaScores();
+    const sc2=kaScores(); // utilise kaScores() qui respecte le profil et opp_inverse
     const chuteKhaiba=S.chutes&&S.chutes.khaiba||0;
 
     const W=320,H=320,CX=160,CY=160,R=110,RLbl=138;
@@ -3242,16 +3300,27 @@ function s9(){
 
     pentBox.appendChild(svg);
 
-    // Légende Ka-Soleil et Vision-Ka
+    // Légende Ka-Soleil, Vision-Ka et annotation opposé majeur
     const legDiv=h('div',{style:{display:'flex',justifyContent:'center',gap:'1.5rem',
       marginTop:'.5rem',flexWrap:'wrap',fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--gold-d)'}});
     legDiv.appendChild(h('span',{},`☀️ Ka-Soleil : ${kaSol}`));
     legDiv.appendChild(h('span',{},`👁 Vision-Ka : ${sc2[dom2]||0}`));
     if(S.ka_dom){
       const dMap=domMap2[S.ka_dom];
+      const OPP_ANNOT9={
+        Feu:"Pas attiré par la passion ni les coups d'éclat.",
+        Air:"Pas attiré par le savoir ni la diplomatie.",
+        Eau:"Pas porté sur l'intuition ni la mémoire profonde.",
+        Terre:"Pas ancré dans le monde physique ni l'endurance.",
+        Lune:"Pas attiré par les mensonges ni les illusions.",
+      };
       if(dMap){
-        const oppMaj=dMap.opp[1]||dMap.opp[0];
-        if(oppMaj==='Lune') legDiv.appendChild(h('span',{style:{color:'var(--parch-d)'}},'☽ Opposition Lune — faible attirance pour les illusions'));
+        const oppMajKa=S.opp_inverse?dMap.opp[0]:dMap.opp[1];
+        if(OPP_ANNOT9[oppMajKa]){
+          pentBox.appendChild(h('p',{style:{textAlign:'center',fontSize:'.72rem',
+            color:'var(--parch-d)',fontStyle:'italic',marginTop:'.3rem'}},
+            `${KA[oppMajKa].ico} Opposé majeur ${oppMajKa} : ${OPP_ANNOT9[oppMajKa]}`));
+        }
       }
     }
     pentBox.appendChild(legDiv);
