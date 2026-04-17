@@ -2768,36 +2768,6 @@ function buildAlchimie(){
     mpbox.appendChild(mpgrid);
     wrap.appendChild(mpbox);
 
-    // Formules accessibles
-    const fbox=h('div',{cls:'box'});
-    fbox.appendChild(h('h3',{},'📜 Formules accessibles'));
-    const oeuvresOk=[];
-    if((S.alchimie.noir||0)>0) oeuvresOk.push('Noir');
-    if((S.alchimie.blanc||0)>0) oeuvresOk.push('Blanc');
-    if((S.alchimie.rouge||0)>0) oeuvresOk.push('Rouge');
-    const formDispos=(FORMULES||[]).filter(f=>{
-      const oeuvre=(f.oeuvre||f.cercle||'').replace('1-Oeuvre au ','').replace('2-Oeuvre au ','');
-      return oeuvresOk.some(o=>oeuvre.toLowerCase().includes(o.toLowerCase()));
-    });
-    if(formDispos.length===0){
-      fbox.appendChild(h('p',{cls:'lbl'},'Progressez dans les Œuvres pour débloquer des formules.'));
-    } else {
-      fbox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.5rem'}},`${formDispos.length} formules accessibles`));
-      const fgrid=h('div',{cls:'il'});
-      for(const fm of formDispos.slice(0,20)){
-        const construct=fm.construct||fm.substance||'';
-        const hasC=construct?((S.constructs[construct.toLowerCase()]||0)>0):true;
-        fgrid.appendChild(h('div',{cls:`ir ${hasC?'sel':''}`,style:{opacity:hasC||!construct?'1':'0.55'}},
-          h('div',{cls:'ir-nm'},
-            h('strong',{},fm.nm||''),
-            h('small',{},` ${fm.dc||fm.effet||''}`),
-          ),
-        ));
-      }
-      if(formDispos.length>20) fgrid.appendChild(h('p',{cls:'lbl',style:{textAlign:'center',marginTop:'.4rem'}},`… et ${formDispos.length-20} autres`));
-      fbox.appendChild(fgrid);
-    }
-    wrap.appendChild(fbox);
   }
 
   // ── Formules choisies via le Grimoire ───────────────
