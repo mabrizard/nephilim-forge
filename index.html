@@ -2470,32 +2470,6 @@ function buildKabbale(){
   }
   wrap.appendChild(tree);
 
-  // Invocations accessibles
-  const totalSeph2=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
-  if(totalSeph2>0){
-    const invbox=h('div',{cls:'box',style:{marginTop:'1rem'}});
-    invbox.appendChild(h('h3',{},'✡️ Invocations accessibles'));
-    const invgrid=h('div',{cls:'il'});
-    const invDispos=INVOCATIONS.filter(inv=>{
-      const sephScore=S.sephiroth[inv.sephira.toLowerCase()]||0;
-      return sephScore>0&&(inv.ka==='Choix'||inv.ka==='Variable'||inv.ka===S.ka_dom);
-    });
-    if(invDispos.length===0){
-      invgrid.appendChild(h('p',{cls:'lbl'},'Placez des degrés dans les Sephiroth pour accéder aux invocations.'));
-    } else {
-      for(const inv of invDispos){
-        invgrid.appendChild(h('div',{cls:'ir'},
-          h('div',{cls:'ir-nm'},
-            h('strong',{},inv.nm),
-            h('small',{},` [${inv.sephira} · Ka ${inv.ka} · Deg.${inv.deg}] ${inv.dc}`),
-          ),
-        ));
-      }
-    }
-    invbox.appendChild(invgrid);
-    wrap.appendChild(invbox);
-  }
-
   // Choix Monde
   const needMonde=(S.sephiroth['hod']||0)>0||(S.sephiroth['netzah']||0)>0;
   if(needMonde){
@@ -3703,6 +3677,7 @@ function elemColor(el){
 async function showGrimoire(){
   const old=document.querySelector('.grim-overlay');if(old)old.remove();
   const overlay=grimEl('div','grim-overlay');
+  overlay.onclick=(e)=>{if(e.target===overlay){overlay.remove();render();}};
   const panel=grimEl('div','grim-panel');
 
   const head=grimEl('div','grim-head');
@@ -3726,7 +3701,7 @@ async function showGrimoire(){
   searchInp.oninput=async(e)=>{grimSearch=e.target.value;grimOpenId=null;await renderGrimBody(bodyDiv,searchInp);};
 
   const closeBtn=grimEl('button','grim-close','✕ Fermer');
-  closeBtn.onclick=()=>overlay.remove();
+  closeBtn.onclick=()=>{overlay.remove();render();};
 
   head.appendChild(title);head.appendChild(tabs);head.appendChild(searchInp);head.appendChild(closeBtn);
 
