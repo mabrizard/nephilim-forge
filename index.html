@@ -1852,41 +1852,10 @@ function s1(){
 
 function s2(){
   const d=h('div',{cls:'step'});
-  d.appendChild(h('div',{cls:'step-ttl','data-n':'II'},'Pentacle & Métamorphe'));
-  d.appendChild(h('p',{cls:'step-sub'},'Le Ka dominant structure les autres éléments. Les Ka opposés dépendent de votre profil (à choisir à l\'étape 3).'));
-  const data=KA[S.ka_dom],sc=kaScores();
+  d.appendChild(h('div',{cls:'step-ttl','data-n':'II'},'Métamorphe'));
+  d.appendChild(h('p',{cls:'step-sub'},`Choisissez la forme physique que prend votre Ka. Le Pentacle complet est configurable à l'étape suivante.`));
 
-  // Rôles : dominant, 2 neutres, 2 opposés
-  const roleMap={};
-  roleMap[S.ka_dom]='dom';
-  data.neu.forEach(k=>{roleMap[k]='neu';});
-  data.opp.forEach(k=>{roleMap[k]='opp';});
-  const roleLbl={dom:'Dominant',neu:'Neutre',opp:'Opposé'};
-
-  const penta=h('div',{cls:'penta'});
-  for(const ka of Object.keys(KA)){
-    const role=roleMap[ka]||'neu';
-    const kd=KA[ka];
-    penta.appendChild(h('div',{cls:`kb ${role}`},
-      h('span',{cls:'ki'},kd.ico),
-      h('span',{cls:'kr'},roleLbl[role]),
-      h('span',{cls:'kn'},ka),
-      h('span',{cls:'ks'},String(sc[ka]||0)),
-    ));
-  }
-  d.appendChild(penta);
-
-  // Info-box avec règle selon profil
-  let oppTxt='Opposés : selon profil (choisir à l\'étape 3)';
-  if(S.profil==='Éveillé') oppTxt='Opposés : 3 et 2 (Éveillé)';
-  else if(S.profil==='Révélé') oppTxt='Opposés : 2 et 1 (Révélé)';
-  else if(S.profil==='Immortel') oppTxt='Opposés : 1 et 0 (Immortel)';
-  d.appendChild(h('div',{cls:'info-box'},
-    h('strong',{},'Pentacle 5e éd. :'),' Dominant=5 · Neutres=4 · ',oppTxt,
-    h('br',{}),'Oppositions fixes : Feu↔Eau · Air↔Terre · Lune opposée à Terre & Eau'
-  ));
-
-  const mb=h('div',{cls:'box'},h('h3',{},'Métamorphe'));
+  const mb=h('div',{cls:'box'},h('h3',{},'Choisissez votre Métamorphe'));
   const mg=h('div',{cls:'meta-grid'});
   for(const m of(METAS[S.ka_dom]||[])){
     mg.appendChild(h('div',{
@@ -2664,7 +2633,6 @@ function buildMagie(){
             background:'rgba(155,143,192,.1)',color:'#c0a0ff',cursor:'pointer'},
           onClick:()=>{grimTab='sorts';grimSearch='';grimFilters={cercle:'',element:''};showGrimoire();}
         },'✦ Grimoire'));
-        grimHd.appendChild(grimHd);
         grimoireBox.appendChild(grimHd);
 
         if(totalChoisis===0){
