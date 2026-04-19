@@ -298,288 +298,98 @@ select option{background:#1a1510}
 .ver-btn:hover{border-color:var(--gold);color:var(--gold)}
 @media(max-width:580px){.ka-grid{grid-template-columns:repeat(2,1fr)}.prf-grid{grid-template-columns:1fr}.attr-grid{grid-template-columns:repeat(2,1fr)}.sci-tabs{flex-direction:column}}
 
-/* ═══════════════════════════════════════════════════
-   FICHE NEPHILIM — STYLE PARCHEMIN OFFICIEL
-   ═══════════════════════════════════════════════════ */
-
-/* Palette */
-:root{
-  --parch-bg:#f2e8d0;
-  --parch-mid:#e8d9b8;
-  --parch-dark:#d4c49a;
-  --ink:#1a0e05;
-  --ink-med:#3d1f00;
-  --ink-light:#5a3010;
-  --gold-dark:#6b4010;
-  --gold-mid:#8b6530;
-  --gold-light:#c49040;
-  --gold-pale:#e5d8b0;
-  --band-start:#5a3005;
-  --band-end:#b07830;
-  --blood:#8b1a1a;
-}
-
-/* ── Conteneur principal ─────────────────── */
-.fp{
-  font-family:'EB Garamond','Garamond',Georgia,serif;
-  background:var(--parch-bg);
-  background-image:
-    radial-gradient(ellipse at 20% 30%, rgba(180,140,80,.07) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 70%, rgba(160,120,60,.06) 0%, transparent 60%);
-  color:var(--ink);
-  border-radius:4px;
-  padding:1.4rem;
-  max-width:900px;
-  margin:0 auto;
-  box-shadow:0 6px 32px rgba(0,0,0,.4), inset 0 0 60px rgba(180,140,80,.06);
-  border:1px solid var(--gold-mid);
-}
-
-/* ── En-tête ─────────────────────────────── */
-.fp-hd{
-  display:flex;align-items:center;gap:1rem;
-  padding-bottom:.9rem;margin-bottom:1.1rem;
-  border-bottom:2px solid var(--gold-mid);
-  flex-wrap:wrap;
-}
-.fp-name{
-  font-family:'Cinzel Decorative',serif;
-  font-size:1.75rem;color:var(--ink-med);
-  text-shadow:1px 1px 2px rgba(255,255,255,.5),0 0 20px rgba(180,140,60,.2);
-  flex:1;min-width:160px;
-  letter-spacing:.04em;
-}
-.fp-ps-badge{
-  border:2px solid var(--gold-mid);
-  border-radius:6px;padding:.45rem 1rem;
-  background:linear-gradient(135deg,var(--gold-pale),#f0e4c0);
-  text-align:center;white-space:nowrap;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
-}
-.fp-ps-lbl{
-  font-family:'Cinzel',serif;font-size:.6rem;
-  letter-spacing:.12em;text-transform:uppercase;
-  color:var(--gold-dark);display:block;
-}
-.fp-ps-val{
-  font-family:'Cinzel Decorative',serif;
-  font-size:1.6rem;color:var(--ink-med);display:block;
-  line-height:1.1;
-}
-.fp-metamorphe-badge{
-  border:1px solid var(--gold-mid);
-  border-radius:4px;padding:.3rem .7rem;
-  background:linear-gradient(90deg,var(--gold-pale),#ede8d0);
-  font-family:'Cinzel',serif;font-size:.75rem;
-  color:var(--ink-light);letter-spacing:.05em;
-}
-
-/* ── Phrase ──────────────────────────────── */
-.fp-phrase{
-  border:1px solid rgba(139,101,48,.4);
-  border-radius:4px;
-  padding:.5rem .9rem;
-  font-style:italic;color:var(--ink-med);
-  background:rgba(255,255,255,.25);
-  margin:0 0 1rem;text-align:center;
-  font-size:.9rem;min-height:2rem;
-  box-shadow:inset 0 1px 3px rgba(0,0,0,.05);
-}
-
-/* ── Grilles ─────────────────────────────── */
-.fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;}
-.fp-grid-3{display:grid;grid-template-columns:1.7fr 1.1fr 1fr;gap:.9rem;align-items:start;}
-
-/* ── Section — bandeau + corps ───────────── */
+/* ─── FICHE OFFICIELLE STYLE PARCHEMIN ─── */
+.fp{font-family:'EB Garamond','Garamond',Georgia,serif;background:#f5efe0;color:#1a0e05;
+  border-radius:6px;padding:1.4rem;max-width:880px;margin:0 auto;
+  box-shadow:0 4px 24px rgba(0,0,0,.35);}
+.fp-hd{display:flex;align-items:center;gap:1rem;
+  padding-bottom:.8rem;margin-bottom:1rem;
+  border-bottom:2px solid #8b6530;flex-wrap:wrap;}
+.fp-name{font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#3d1f00;
+  text-shadow:0 1px 0 rgba(255,255,255,.5);flex:1;min-width:160px;}
+.fp-ps-badge{border:2px solid #8b6530;border-radius:6px;padding:.4rem .8rem;
+  background:#e5d8b0;text-align:center;white-space:nowrap;}
+.fp-ps-lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;
+  text-transform:uppercase;color:#8b6530;display:block;}
+.fp-ps-val{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:#3d1f00;display:block;}
+.fp-metamorphe-badge{border:1px solid #8b6530;border-radius:4px;padding:.3rem .6rem;
+  background:#ede3c4;font-family:'Cinzel',serif;font-size:.75rem;color:#5a3010;}
+/* Grille 2 cols principale */
+.fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;align-items:start;}
+.fp-grid-3{display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:.9rem;align-items:start;}
+/* Section */
 .fp-sec{break-inside:avoid;margin-bottom:0;}
-.fp-sec-hd{
-  font-family:'Cinzel',serif;
-  font-size:.72rem;letter-spacing:.12em;
-  text-transform:uppercase;
-  color:#f5efe0;
-  background:linear-gradient(90deg,var(--band-start) 0%,#8b5020 40%,var(--band-end) 100%);
-  padding:.32rem .7rem;
-  border-radius:4px 4px 0 0;
-  text-shadow:0 1px 2px rgba(0,0,0,.5);
-  letter-spacing:.1em;
-}
-.fp-sec-bd{
-  background:linear-gradient(180deg,rgba(255,255,255,.45) 0%,rgba(240,228,200,.35) 100%);
-  border:1px solid rgba(139,101,48,.3);
-  border-top:none;
-  border-radius:0 0 4px 4px;
-  padding:.5rem .65rem;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.4);
-}
-
-/* ── Ligne clé / valeur ──────────────────── */
-.fp-r{
-  display:flex;justify-content:space-between;
-  align-items:baseline;
-  padding:.2rem 0;
-  border-bottom:1px dotted rgba(139,101,48,.25);
-  font-size:.85rem;
-  gap:.4rem;
-}
+.fp-sec-hd{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;
+  text-transform:uppercase;color:#f5efe0;
+  background:linear-gradient(90deg,#6b4010 0%,#a0682a 60%,#c49040 100%);
+  padding:.3rem .65rem;border-radius:3px 3px 0 0;}
+.fp-sec-bd{background:rgba(255,255,255,.42);border:1px solid rgba(139,101,48,.35);
+  border-top:none;border-radius:0 0 3px 3px;padding:.45rem .6rem;}
+/* Ligne clé/valeur */
+.fp-r{display:flex;justify-content:space-between;align-items:baseline;
+  padding:.18rem 0;border-bottom:1px dotted rgba(139,101,48,.22);font-size:.84rem;}
 .fp-r:last-child{border-bottom:none;}
-.fp-rk{
-  color:var(--ink-light);font-size:.74rem;
-  font-family:'Cinzel',serif;letter-spacing:.03em;
-  flex-shrink:0;
-}
-.fp-rv{
-  color:var(--ink);font-weight:600;
-  text-align:right;max-width:62%;
-  font-size:.85rem;
-}
-
-/* ── Ka table ────────────────────────────── */
-.fp-ka{
-  display:flex;align-items:center;gap:.5rem;
-  padding:.25rem .35rem;border-radius:4px;
-  margin-bottom:.22rem;
-  transition:background .15s;
-}
-.fp-ka.dom{
-  background:linear-gradient(90deg,rgba(139,101,48,.2),rgba(139,101,48,.1));
-  border:1px solid rgba(139,101,48,.5);
-}
-.fp-ka.neu{
-  background:rgba(0,0,0,.04);
-  border:1px solid rgba(139,101,48,.15);
-}
-.fp-ka.opp{
-  background:transparent;
-  border:1px solid rgba(139,101,48,.1);
-  opacity:.85;
-}
-.fp-ka-ico{font-size:1.05rem;width:1.3rem;text-align:center;}
-.fp-ka-nm{
-  flex:1;font-family:'Cinzel',serif;
-  font-size:.78rem;color:var(--ink-med);
-}
-.fp-ka-role{
-  font-size:.62rem;color:var(--gold-mid);
-  font-family:'Cinzel',serif;
-  width:3rem;text-align:center;
-  font-style:italic;
-}
-.fp-ka-score{
-  font-family:'Cinzel Decorative',serif;
-  font-size:1.3rem;color:var(--ink);
-  min-width:1.5rem;text-align:right;
-  font-weight:700;
-}
-.fp-ka.dom .fp-ka-nm{color:var(--ink-med);font-weight:700;}
-.fp-ka.dom .fp-ka-score{color:var(--band-start);}
-
-/* ── Chutes pips ─────────────────────────── */
-.fp-pip{
-  display:inline-block;width:10px;height:10px;
-  border-radius:50%;margin:0 1.5px;vertical-align:middle;
-  transition:background .1s;
-}
-.fp-pip.on{
-  background:radial-gradient(circle at 35% 35%,#c43030,var(--blood));
-  border:1px solid #6b0a0a;
-  box-shadow:0 0 3px rgba(139,26,26,.4);
-}
-.fp-pip.off{
-  background:rgba(245,239,224,.8);
-  border:1px solid rgba(139,26,26,.25);
-}
-
-/* ── Tableau Incarnations ────────────────── */
-.fp-inc-tbl{width:100%;border-collapse:collapse;font-size:.8rem;}
-.fp-inc-tbl td{
-  padding:.22rem .35rem;
-  border-bottom:1px dotted rgba(139,101,48,.2);
-}
+.fp-rk{color:#5a3010;font-size:.75rem;font-family:'Cinzel',serif;letter-spacing:.02em;}
+.fp-rv{color:#1a0e05;font-weight:600;text-align:right;max-width:58%;}
+/* Ka table */
+.fp-ka{display:flex;align-items:center;gap:.45rem;padding:.22rem .3rem;
+  border-radius:4px;margin-bottom:.2rem;}
+.fp-ka.dom{background:rgba(139,101,48,.18);border:1px solid rgba(139,101,48,.5);}
+.fp-ka.neu{background:rgba(0,0,0,.04);border:1px solid rgba(139,101,48,.15);}
+.fp-ka.opp{background:rgba(0,0,0,.02);border:1px solid rgba(139,101,48,.1);}
+.fp-ka-ico{font-size:1rem;width:1.2rem;text-align:center;}
+.fp-ka-nm{flex:1;font-family:'Cinzel',serif;font-size:.78rem;color:#3d1f00;}
+.fp-ka-role{font-size:.62rem;color:#8b6530;font-family:'Cinzel',serif;
+  width:3.5rem;text-align:center;}
+.fp-ka-score{font-family:'Cinzel Decorative',serif;font-size:1.25rem;color:#1a0e05;
+  min-width:1.4rem;text-align:right;font-weight:700;}
+/* Chutes pips */
+.fp-pip{display:inline-block;width:9px;height:9px;border-radius:50%;
+  margin:0 1px;vertical-align:middle;}
+.fp-pip.on{background:#8b1a1a;border:1px solid #6b0a0a;}
+.fp-pip.off{background:transparent;border:1px solid rgba(139,26,26,.3);}
+/* Incarnations table */
+.fp-inc-tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+.fp-inc-tbl td{padding:.2rem .3rem;border-bottom:1px dotted rgba(139,101,48,.2);}
 .fp-inc-tbl tr:last-child td{border-bottom:none;}
-.fp-inc-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
-.fp-inc-era{
-  font-family:'Cinzel',serif;font-size:.7rem;
-  color:var(--ink-light);
-}
-.fp-inc-vecu{color:var(--ink);}
-.fp-inc-quete{
-  color:var(--gold-dark);font-style:italic;font-size:.72rem;
-}
-
-/* ── Quêtes & Savoirs ────────────────────── */
-.fp-2col{display:grid;grid-template-columns:1fr 1fr;gap:.05rem .5rem;}
-.fp-qrow{
-  display:flex;justify-content:space-between;
-  align-items:baseline;
-  font-size:.79rem;
-  padding:.16rem 0;
-  border-bottom:1px dotted rgba(139,101,48,.15);
-  gap:.3rem;
-}
+.fp-inc-era{font-family:'Cinzel',serif;font-size:.7rem;color:#5a3010;}
+.fp-inc-vecu{color:#1a0e05;}
+.fp-inc-quete{color:#6b4010;font-style:italic;font-size:.72rem;}
+/* Quêtes / Savoirs 2 cols */
+.fp-2col{display:grid;grid-template-columns:1fr 1fr;gap:.1rem .5rem;}
+.fp-qrow{display:flex;justify-content:space-between;font-size:.78rem;
+  padding:.15rem 0;border-bottom:1px dotted rgba(139,101,48,.15);}
 .fp-qrow:last-child{border-bottom:none;}
-.fp-qnm{flex:1;color:var(--ink);}
-.fp-qdeg{
-  font-family:'Cinzel Decorative',serif;
-  font-size:.88rem;color:var(--ink-light);
-  min-width:1.3rem;text-align:right;
-  flex-shrink:0;
-}
-
-/* ── Attributs ───────────────────────────── */
-.fp-attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:.22rem;}
-.fp-attr{
-  display:flex;justify-content:space-between;
-  align-items:center;
-  background:linear-gradient(90deg,rgba(139,101,48,.07),rgba(139,101,48,.03));
-  border-radius:3px;padding:.24rem .45rem;
-  border:1px solid rgba(139,101,48,.12);
-  font-size:.8rem;
-}
-.fp-attr-nm{
-  color:var(--ink-light);font-family:'Cinzel',serif;
-  font-size:.68rem;letter-spacing:.02em;
-}
-.fp-attr-val{
-  font-weight:700;color:var(--ink-med);
-  font-family:'Cinzel Decorative',serif;font-size:.95rem;
-}
-
-/* ── Notes ───────────────────────────────── */
-.fp-notes{
-  background:rgba(255,255,255,.3);
-  border:1px dashed rgba(139,101,48,.3);
-  border-radius:4px;padding:.5rem;
-  min-height:50px;font-size:.82rem;
-  color:var(--ink);font-style:italic;
-  white-space:pre-wrap;line-height:1.5;
-}
-
-/* ── Sciences badges ─────────────────────── */
-.fp-sci-badge{
-  background:linear-gradient(90deg,rgba(139,101,48,.12),rgba(139,101,48,.06));
-  border-radius:4px;padding:.22rem .55rem;
-  font-size:.78rem;font-family:'Cinzel',serif;
-  color:var(--ink-med);border:1px solid rgba(139,101,48,.2);
-  display:inline-flex;align-items:center;gap:.3rem;
-}
-.fp-sci-badges{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.4rem;}
-
-/* ── Boutons print/export ────────────────── */
-.fp-actions{
-  display:flex;gap:.7rem;justify-content:center;
-  flex-wrap:wrap;margin-top:1.2rem;padding-top:.9rem;
-  border-top:1px solid rgba(139,101,48,.2);
-}
-
+.fp-qnm{flex:1;color:#1a0e05;}
+.fp-qdeg{font-family:'Cinzel Decorative',serif;font-size:.85rem;
+  color:#5a3010;min-width:1.5rem;text-align:right;}
+/* Attributs box */
+.fp-attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:.2rem;}
+.fp-attr{display:flex;justify-content:space-between;
+  background:rgba(139,101,48,.06);border-radius:3px;
+  padding:.22rem .4rem;font-size:.8rem;}
+.fp-attr-nm{color:#5a3010;font-family:'Cinzel',serif;font-size:.7rem;}
+.fp-attr-val{font-weight:700;color:#1a0e05;}
+/* Phrase */
+.fp-phrase{border:1px solid rgba(139,101,48,.4);border-radius:4px;
+  padding:.5rem .7rem;font-style:italic;color:#2a1000;
+  background:rgba(255,255,255,.3);margin:0 0 .9rem;text-align:center;
+  font-size:.88rem;min-height:2rem;}
+/* Stase */
+.fp-stase{font-size:.85rem;color:#2a1000;font-style:italic;}
+/* ── PRINT A4 PORTRAIT ───────────────────────────── */
 @media print{
   @page{
-    margin:.9cm 1.1cm;
+    margin:1cm 1.2cm;
     size:A4 portrait;
   }
 
-  /* Masquer tout sauf fiche */
+  /* Masquer TOUT sauf la fiche */
   body *{visibility:hidden !important;}
-  .fp-container,.fp-container *{visibility:visible !important;}
+  .fp-container,
+  .fp-container *{visibility:visible !important;}
+
+  /* Positionner la fiche en haut */
   .fp-container{
     position:absolute !important;
     top:0 !important;left:0 !important;
@@ -587,74 +397,93 @@ select option{background:#1a1510}
     display:block !important;
   }
 
-  /* Fiche */
   .fp{
     box-shadow:none !important;
-    border:none !important;
     border-radius:0 !important;
-    padding:.3cm .4cm !important;
+    padding:.3cm !important;
+    width:100% !important;
     max-width:none !important;
     font-size:7.5pt !important;
-    background:#f2e8d0 !important;
+    background:#f5efe0 !important;
     color:#1a0e05 !important;
   }
 
-  /* Forcer les couleurs */
-  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
-
-  /* Bandeaux */
+  /* Titres de sections */
   .fp-sec-hd{
-    font-size:6.8pt !important;
-    padding:.2rem .55rem !important;
-    background:linear-gradient(90deg,#5a3005,#8b5020,#b07830) !important;
+    font-size:7pt !important;
+    padding:.2rem .5rem !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
     color:#f5efe0 !important;
+    background:linear-gradient(90deg,#6b4010,#a0682a,#c49040) !important;
   }
-  .fp-sec-bd{padding:.35rem .5rem !important;}
 
-  /* Typographie */
-  .fp-name{font-size:1.1rem !important;}
+  /* Fond parchemin forcé */
+  .fp-sec-bd{
+    background:rgba(255,255,255,.4) !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  .fp-ka.dom{
+    background:rgba(139,101,48,.18) !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  .fp-pip.on{
+    background:#8b1a1a !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+
+  /* En-tête */
+  .fp-hd{padding-bottom:.4rem !important;margin-bottom:.6rem !important;}
+  .fp-name{font-size:1.2rem !important;}
   .fp-ps-val{font-size:1.1rem !important;}
-  .fp-phrase{font-size:7pt !important;margin-bottom:.5rem !important;}
-  .fp-r{font-size:7pt !important;padding:.12rem 0 !important;}
-  .fp-rk{font-size:6.2pt !important;}
-  .fp-rv{font-size:7pt !important;}
-  .fp-ka-nm{font-size:6.8pt !important;}
-  .fp-ka-score{font-size:9.5pt !important;}
-  .fp-ka-ico{font-size:.9rem !important;}
-  .fp-inc-tbl td{font-size:6.5pt !important;padding:.1rem .25rem !important;}
+
+  /* GRILLE 3 COLONNES → réduite pour A4 */
+  .fp-grid-3{
+    display:grid !important;
+    grid-template-columns:1.6fr 1fr 1fr !important;
+    gap:.5rem !important;
+  }
+  .fp-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:.5rem !important;
+  }
+
+  /* Textes */
+  .fp-r{font-size:7.5pt !important;padding:.12rem 0 !important;}
+  .fp-rk{font-size:6.5pt !important;}
+  .fp-rv{font-size:7.5pt !important;}
+  .fp-ka-nm{font-size:7pt !important;}
+  .fp-ka-score{font-size:10pt !important;}
+  .fp-inc-tbl td{font-size:6.5pt !important;padding:.12rem .25rem !important;}
   .fp-qrow{font-size:6.5pt !important;padding:.1rem 0 !important;}
   .fp-attr{font-size:6.5pt !important;padding:.15rem .3rem !important;}
-  .fp-attr-nm{font-size:5.8pt !important;}
-  .fp-attr-val{font-size:.8rem !important;}
-  .fp-qdeg{font-size:.8rem !important;}
-  .fp-sci-badge{font-size:6.5pt !important;padding:.15rem .4rem !important;}
+  .fp-attr-nm{font-size:6pt !important;}
+  .fp-phrase{font-size:7.5pt !important;padding:.3rem !important;margin-bottom:.5rem !important;}
+  .fp-2col{gap:.05rem .4rem !important;}
 
-  /* Pips Chutes */
+  /* Pips Chutes réduits */
   .fp-pip{width:7px !important;height:7px !important;margin:0 1px !important;}
-  .fp-pip.on{background:radial-gradient(circle,#c43030,#8b1a1a) !important;}
 
-  /* SVG pentacle réduit */
-  .fp-sec-bd svg{width:185px !important;height:185px !important;}
+  /* SVG Pentacle : réduire */
+  .fp-sec-bd svg{width:200px !important;height:200px !important;}
 
-  /* Grilles */
-  .fp-grid-3{grid-template-columns:1.6fr 1fr 1fr !important;gap:.5rem !important;}
-  .fp-grid{grid-template-columns:1fr 1fr !important;gap:.5rem !important;}
-  .fp-attr-grid{gap:.18rem !important;}
-  .fp-hd{padding-bottom:.5rem !important;margin-bottom:.6rem !important;}
-
-  /* Espacement sections */
-  .fp > * + *{margin-top:.5rem !important;}
-  .fp-sec{margin-bottom:.3rem !important;}
-
-  /* Sauts de page */
+  /* SAUTS DE PAGE */
+  /* Page 1 : En-tête + Bloc haut (topGrid) */
+  /* Page 2 : Bloc milieu (midGrid) + Bloc bas (botGrid) */
   .fp-mid-grid{break-before:page !important;}
+
+  /* Ne jamais couper à l'intérieur d'une section */
   .fp-sec{break-inside:avoid !important;}
   .fp-inc-tbl{break-inside:avoid !important;}
 
-  /* Cacher boutons */
-  .fp-actions{display:none !important;}
+  /* Boutons impression masqués */
+  .fp-container > div:last-child{display:none !important;}
 
-  a{color:inherit !important;text-decoration:none !important;}
+  a{color:inherit !important;}
 }
 </style>
 </head>
@@ -3906,13 +3735,7 @@ function s9(){
     const s=h('div',{cls:'fp-sec'});
     s.appendChild(h('div',{cls:'fp-sec-hd'},title));
     const bd=h('div',{cls:'fp-sec-bd'});
-    if(typeof content==='string'){
-      if(content.trim()){
-        bd.appendChild(h('div',{cls:'fp-notes'},content));
-      } else {
-        bd.appendChild(h('p',{style:{fontSize:'.78rem',color:'var(--ink-light)',fontStyle:'italic',margin:0}},'—'));
-      }
-    }
+    if(typeof content==='string') bd.appendChild(h('p',{style:{fontSize:'.82rem',color:'#1a0e05',margin:0}},content));
     else if(Array.isArray(content)){
       content.forEach(([k,v])=>{
         const r=h('div',{cls:'fp-r'});
@@ -4130,20 +3953,16 @@ function s9(){
     const ch=CHUTES.find(x=>x.id===cid);
     if(!ch)return;
     const val=S.chutes[cid]||0;
-    const row=h('div',{style:{display:'flex',alignItems:'center',gap:'.4rem',
-      marginBottom:'.4rem',padding:'.18rem 0',
-      borderBottom:'1px dotted rgba(139,101,48,.2)'}});
+    const row=h('div',{style:{display:'flex',alignItems:'center',gap:'.4rem',marginBottom:'.35rem'}});
     row.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',
-      color:'var(--ink-light)',width:'4.2rem',flexShrink:0,letterSpacing:'.03em'}},
-      ch.ico+' '+ch.nm));
-    const pipsDiv=h('div',{style:{flex:1,lineHeight:1}});
+      color:'#5a3010',width:'4rem',flexShrink:0}},ch.ico+' '+ch.nm));
+    const pipsDiv=h('div',{style:{flex:1}});
     for(let i=0;i<10;i++){
       pipsDiv.appendChild(h('span',{cls:`fp-pip ${i<val?'on':'off'}`},''));
     }
     row.appendChild(pipsDiv);
-    row.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1rem',
-      color:'#8b1a1a',minWidth:'1.2rem',textAlign:'right',fontWeight:'700'}},
-      val>0?String(val):'—'));
+    row.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'.9rem',
+      color:'#8b1a1a',minWidth:'1rem',textAlign:'right'}},val>0?String(val):''));
     chutesBd.appendChild(row);
   });
   const chutesSec=h('div',{cls:'fp-sec'});
@@ -4284,10 +4103,12 @@ function s9(){
   if(activeSeph) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Sephiroth'),h('span',{cls:'fp-rv',style:{fontSize:'.75rem'}},activeSeph)));
   sciBd.appendChild(h('div',{style:{height:'.4rem'}}));
   // Alchimie
-  {const ab=h('div',{cls:'fp-sci-badges'});
-  [['⬛ Noir',S.alchimie.noir||0],['⬜ Blanc',S.alchimie.blanc||0],['🟥 Rouge',S.alchimie.rouge||0]].forEach(([lbl,val])=>{
-    ab.appendChild(h('span',{cls:'fp-sci-badge'},lbl,' : ',h('strong',{},String(val))));
-  });sciBd.appendChild(ab);}
+  sciBd.appendChild(h('div',{style:{display:'flex',gap:'.5rem',marginBottom:'.3rem',flexWrap:'wrap'}},
+    ...[['⬛ Noir',S.alchimie.noir||0],['⬜ Blanc',S.alchimie.blanc||0],['🟥 Rouge',S.alchimie.rouge||0]].map(([lbl,val])=>
+      h('span',{style:{background:'rgba(139,101,48,.1)',borderRadius:'4px',padding:'.2rem .5rem',
+        fontSize:'.78rem',fontFamily:'Cinzel,serif',color:'#3d1f00'}},`${lbl} : ${val}`)
+    )
+  ));
   if(S.alchimie.voie) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Voie Alchimie'),h('span',{cls:'fp-rv'},S.alchimie.voie)));
   const sciSec=h('div',{cls:'fp-sec'});
   sciSec.appendChild(h('div',{cls:'fp-sec-hd'},'Sciences occultes'));
@@ -4318,10 +4139,12 @@ function s9(){
   botGrid.appendChild(noteCol);
   fp.appendChild(botGrid);
 
-  {const acts=h('div',{cls:'fp-actions'});
-  acts.appendChild(h('button',{cls:'btn btn-e',onClick:exportTXT},'📄 Export .TXT'));
-  acts.appendChild(h('button',{cls:'btn btn-e',onClick:()=>window.print()},'🖨️ Imprimer'));
-  fpContainer.appendChild(acts);}
+  fpContainer.appendChild(h('div',{style:{textAlign:'center',marginTop:'1rem',display:'flex',
+    gap:'.7rem',justifyContent:'center',flexWrap:'wrap'}},
+    h('button',{cls:'btn btn-e',onClick:exportTXT},'📄 Export .TXT'),
+    h('button',{cls:'btn btn-e',onClick:exportFichePDF,style:{background:'rgba(122,80,40,.85)',color:'#f5efe0',borderColor:'rgba(196,144,64,.5)'}},'📋 Fiche PDF'),
+    h('button',{cls:'btn btn-e',onClick:()=>window.print()},'🖨️ Imprimer'),
+  ));
 
   d.appendChild(fpContainer);
 
@@ -4487,6 +4310,633 @@ function closeModal(){const m=document.querySelector('.modal-bg');if(m)m.remove(
 // ════════════════════════════════════════════════════════
 // EXPORT TXT
 // ════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════
+// EXPORT FICHE PDF — génère un HTML dans nouvelle fenêtre
+// ════════════════════════════════════════════════════════
+function exportFichePDF(){
+  const at=calcAttrs(), sc=kaScores(), mt=getMetier(), tots=calcTotauxCumules();
+  const sap=sapience(), psTotal=(S.ps_initial||0)+sap;
+  const KA_COLORS={Feu:'#C85020',Air:'#4090C0',Eau:'#206080',Lune:'#806090',Terre:'#508030'};
+  const KA_ICONS={Feu:'🜂',Air:'🜁',Eau:'🜄',Lune:'☽',Terre:'🜃'};
+
+  // ── helpers HTML ──────────────────────────────────
+  const e=(tag,attrs,inner)=>{
+    const a=Object.entries(attrs||{}).map(([k,v])=>`${k}="${v}"`).join(' ');
+    if(inner===undefined) return `<${tag}${a?' '+a:''}/>`;
+    return `<${tag}${a?' '+a:''}>${inner}</${tag}>`;
+  };
+  const div=(cls,inner,style='')=>e('div',{class:cls,...(style?{style}:{})},inner);
+  const span=(cls,inner,style='')=>e('span',{class:cls,...(style?{style}:{})},inner);
+  const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // ── bandeau de section ────────────────────────────
+  const sec=(title,content,cls='')=>`
+    <div class="sec ${cls}">
+      <div class="sec-hd">${esc(title)}</div>
+      <div class="sec-bd">${content}</div>
+    </div>`;
+
+  // ── ligne label / valeur ──────────────────────────
+  const row=(k,v)=>`<div class="row"><span class="rk">${esc(k)}</span><span class="rv">${esc(String(v||'—'))}</span></div>`;
+
+  // ── pips (Chutes) ─────────────────────────────────
+  const pips=(val,max=10)=>{
+    let h='';
+    for(let i=0;i<max;i++) h+=`<span class="pip ${i<val?'on':'off'}"></span>`;
+    return h;
+  };
+
+  // ── Pentacle SVG ──────────────────────────────────
+  const buildSVG=()=>{
+    const W=220,H=220,CX=110,CY=110,R=82,RL=104;
+    const ns='';
+    const ORDER=['Feu','Air','Eau','Lune','Terre'];
+    const pts=ORDER.map((ka,i)=>{
+      const a=(i/5)*Math.PI*2-Math.PI/2;
+      return {ka,x:CX+Math.cos(a)*R,y:CY+Math.sin(a)*R,
+              lx:CX+Math.cos(a)*RL,ly:CY+Math.sin(a)*RL,a};
+    });
+    let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+    // fond
+    svg+=`<rect width="${W}" height="${H}" fill="#F5EFE0" rx="4"/>`;
+    // cercles de référence
+    [.25,.5,.75,1].forEach(f=>{
+      svg+=`<circle cx="${CX}" cy="${CY}" r="${R*f}" fill="none" stroke="rgba(139,96,64,.15)" stroke-width="${f===1?1:.5}" stroke-dasharray="${f===1?'none':'2,3'}"/>`;
+    });
+    // axes + pentagramme
+    pts.forEach(p=>{
+      svg+=`<line x1="${CX}" y1="${CY}" x2="${p.x}" y2="${p.y}" stroke="rgba(139,96,64,.12)" stroke-width="0.6"/>`;
+    });
+    [[0,2],[1,3],[2,4],[3,0],[4,1]].forEach(([a,b])=>{
+      svg+=`<line x1="${pts[a].x}" y1="${pts[a].y}" x2="${pts[b].x}" y2="${pts[b].y}" stroke="rgba(139,96,64,.18)" stroke-width="0.7"/>`;
+    });
+    // polygone scores
+    const maxK=Math.max(...Object.values(sc),1);
+    const poly=pts.map(p=>{
+      const v=sc[p.ka]||0, r=(v/Math.max(maxK,10))*R;
+      return `${CX+Math.cos(p.a)*r},${CY+Math.sin(p.a)*r}`;
+    }).join(' ');
+    const kh=S.chutes&&S.chutes.khaiba||0;
+    const pfill=kh>=2?'rgba(139,26,26,.25)':'rgba(139,96,64,.15)';
+    const pstroke=kh>=2?'rgba(139,26,26,.7)':'rgba(139,96,64,.6)';
+    svg+=`<polygon points="${poly}" fill="${pfill}" stroke="${pstroke}" stroke-width="1.5"/>`;
+    // labels + points
+    pts.forEach(p=>{
+      const isDom=p.ka===S.ka_dom;
+      const color=KA_COLORS[p.ka];
+      const val=sc[p.ka]||0;
+      const r=(val/Math.max(maxK,10))*R;
+      const px=CX+Math.cos(p.a)*r, py=CY+Math.sin(p.a)*r;
+      // fond label
+      const bw=isDom?50:42, bh=isDom?28:24;
+      svg+=`<rect x="${p.lx-bw/2}" y="${p.ly-bh/2}" width="${bw}" height="${bh}" rx="4" fill="${isDom?color+'44':'rgba(245,239,224,.9)'}" stroke="${isDom?color:'rgba(139,96,64,.4)'}" stroke-width="${isDom?1.5:.8}"/>`;
+      svg+=`<text x="${p.lx}" y="${p.ly-4}" text-anchor="middle" dominant-baseline="middle" font-family="serif" font-size="${isDom?9:8}" fill="${isDom?'#2a0e00':color}" font-weight="${isDom?'bold':'normal'}">${p.ka}</text>`;
+      svg+=`<text x="${p.lx}" y="${p.ly+9}" text-anchor="middle" dominant-baseline="middle" font-family="serif" font-size="${isDom?13:11}" fill="${isDom?'#2a0e00':color}" font-weight="bold">${val}</text>`;
+      // point score
+      svg+=`<circle cx="${px}" cy="${py}" r="${isDom?4.5:3}" fill="${color}" stroke="rgba(245,239,224,.8)" stroke-width="1"/>`;
+    });
+    // Ka-Soleil centre
+    const ks=kaSoleil();
+    svg+=`<circle cx="${CX}" cy="${CY}" r="18" fill="rgba(139,96,64,.18)" stroke="rgba(139,96,64,.55)" stroke-width="1.2"/>`;
+    svg+=`<text x="${CX}" y="${CY-4}" text-anchor="middle" dominant-baseline="middle" font-family="serif" font-size="7" fill="rgba(139,96,64,.8)">Ka-☀</text>`;
+    svg+=`<text x="${CX}" y="${CY+8}" text-anchor="middle" dominant-baseline="middle" font-family="serif" font-size="12" fill="#4A2800" font-weight="bold">${ks}</text>`;
+    svg+=`</svg>`;
+    return svg;
+  };
+
+  // ════════════════════════════════════════════════
+  // PAGE 1 — Identité + Pentacle + Chutes + Incarnations + Attributs
+  // ════════════════════════════════════════════════
+
+  // -- Ka table
+  const kaRows=Object.entries(sc).map(([ka,val])=>{
+    const isDom=ka===S.ka_dom;
+    const dMap=KA[S.ka_dom]||{neu:[],opp:[]};
+    const role=isDom?'Dom':dMap.neu.includes(ka)?'Neu':'Opp';
+    return `<div class="ka-row ${isDom?'dom':''}">
+      <span class="ka-ico">${KA_ICONS[ka]||''}</span>
+      <span class="ka-nm">${esc(ka)}</span>
+      <span class="ka-role">${role}</span>
+      <span class="ka-val" style="color:${KA_COLORS[ka]}">${val}</span>
+    </div>`;
+  }).join('');
+  const kaSolRow=`<div class="ka-row" style="margin-top:.3rem;border-top:1px solid rgba(139,96,64,.25);padding-top:.25rem">
+    <span class="ka-ico">☀️</span>
+    <span class="ka-nm">Ka-Soleil</span>
+    <span class="ka-role"></span>
+    <span class="ka-val">${kaSoleil()}</span>
+  </div>`;
+
+  // -- Attributs grille
+  const attrs=[
+    ['Initiative',at.initiative],['Mouvement',at.initiative],
+    ['Perspicacité',at.perspicacite],['Récupération',at.recuperation],
+    ['Bonus Dom.','+'+at.bonus_dom],['Voile',at.voile],
+  ].map(([nm,val])=>`<div class="attr-cell"><span class="attr-nm">${esc(nm)}</span><span class="attr-val">${esc(String(val))}</span></div>`).join('');
+
+  // -- Chutes
+  const chutesHTML=CHUTES.map(ch=>{
+    const val=S.chutes[ch.id]||0;
+    return `<div class="chute-row">
+      <span class="chute-lbl">${esc(ch.ico)} ${esc(ch.nm)}</span>
+      <span class="chute-pips">${pips(val,10)}</span>
+      <span class="chute-val">${val>0?val:'—'}</span>
+    </div>`;
+  }).join('');
+
+  // -- Incarnations
+  const incRows=Object.entries(S.incarnations).map(([id,inc])=>{
+    const ep=EPOQUES.find(e=>e.id===id);
+    if(!ep) return '';
+    const vObj=ep.vecus_data&&ep.vecus_data.find(v=>v.nm===inc.vecu);
+    const isDom=vObj&&vObj.ka===S.ka_dom;
+    return `<tr>
+      <td class="inc-ep">${esc(ep.ico||'')} ${esc(ep.nm)}</td>
+      <td class="inc-vecu ${isDom?'dom':''}">${esc(inc.vecu||'—')}</td>
+      <td class="inc-quete">${esc(inc.quete||'')}</td>
+    </tr>`;
+  }).join('');
+
+  // -- Quêtes (toutes en 2 cols)
+  const ALL_QUETES=['Arcadia','Arcane XXI le Monde','Arche d\'Alliance','Atalante Fugitive',
+    'Les Champs Polemoka','La Cité des Vertiges','L\'Exode Sidéral','Hyperborée',
+    'La Jérusalem Céleste','Les Portes Noires','La Quête du Graal','Le Rex Mundi',
+    'Le Sentier d\'Or','La Table d\'Émeraude','La Toison d\'Or','Le Trésor des Templiers'];
+  const quetesHTML=ALL_QUETES.map(q=>{
+    const deg=tots.quetes&&tots.quetes[q]||0;
+    return `<div class="liste-row ${deg>0?'active':''}">
+      <span class="liste-nm">${esc(q.toUpperCase())}</span>
+      <span class="liste-val">${deg>0?deg:''}</span>
+    </div>`;
+  }).join('');
+
+  // -- Savoirs ésotériques (toutes en liste)
+  const ALL_SAVOIRS=['666','Akasha','Ar-Kaïm','Arcanes Majeurs','Architectonique',
+    'Bohémiens','Champs Magiques','Cousins','Drakaon','Effets-Dragons',
+    'Histoire Invisible','Kaïm','Lune Noire','Mystères','Nephilim',
+    'Orichalque','Révélation','Rose+Croix','Sciences Occultes','Sélenim',
+    'Synarchie','Templiers'];
+  const allSav={};
+  Object.values(S.incarnations).forEach(inc=>{
+    (inc.savoirs||[]).forEach(s=>{
+      const nm=s.replace(/\s+\d+$/,'').trim();
+      const d=parseInt(s.match(/(\d+)$/)?.[1]||'1');
+      allSav[nm]=Math.max(allSav[nm]||0,d);
+    });
+  });
+  const savoirsHTML=ALL_SAVOIRS.map(sv=>{
+    const key=Object.keys(allSav).find(k=>k.toLowerCase().includes(sv.toLowerCase().slice(0,5)))||null;
+    const deg=key?allSav[key]:0;
+    return `<div class="liste-row ${deg>0?'active':''}">
+      <span class="liste-nm">${esc(sv.toUpperCase())}</span>
+      <span class="liste-val">${deg>0?deg:''}</span>
+    </div>`;
+  }).join('');
+
+  // ════════════════════════════════════════════════
+  // PAGE 2 — Sciences : Magie + Kabbale + Alchimie
+  // ════════════════════════════════════════════════
+
+  // -- Sorts choisis
+  const effets=grimGetEffets();
+  const sortsGraves=(effets.gravés||[]).filter(e=>e.tab==='sorts');
+  const sortsRows=sortsGraves.length>0
+    ? sortsGraves.map(s=>`<tr>
+        <td class="sort-nm">${esc(s.nom||'')}</td>
+        <td>${esc(s.element||'')}</td>
+        <td>${esc(s.cercle||'')}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="3" style="font-style:italic;color:#888">Aucun sort sélectionné</td></tr>`;
+
+  // -- Invocations choisies
+  const invGraves=(effets.gravés||[]).filter(e=>e.tab==='invocations');
+  const invRows=invGraves.length>0
+    ? invGraves.map(i=>`<tr><td class="sort-nm">${esc(i.nom||'')}</td><td>${esc(i.element||'')}</td></tr>`).join('')
+    : `<tr><td colspan="2" style="font-style:italic;color:#888">Aucune invocation</td></tr>`;
+
+  // -- Formules
+  const formGraves=(effets.gravés||[]).filter(e=>e.tab==='formules');
+  const formRows=formGraves.length>0
+    ? formGraves.map(f=>`<tr><td class="sort-nm">${esc(f.nom||'')}</td><td>${esc(f.oeuvre||f.cercle||'')}</td><td>${esc(f.construct||'')}</td></tr>`).join('')
+    : `<tr><td colspan="3" style="font-style:italic;color:#888">Aucune formule</td></tr>`;
+
+  // -- Sephiroth
+  const activeSeph=Object.entries(S.sephiroth).filter(([,v])=>v>0).map(([id,v])=>{
+    const sp=SEPH.find(x=>x.id===id);
+    return sp?`<div class="seph-row"><span>${esc(sp.nm)}</span><span class="seph-val">${v}</span></div>`:'';
+  }).join('');
+
+  // ════════════════════════════════════════════════
+  // ASSEMBLAGE HTML COMPLET
+  // ════════════════════════════════════════════════
+  const nom=esc(S.nom||'— Nephilim —');
+  const profil=esc(S.profil||'—');
+  const metaName=esc(S.metamorphe||'—');
+  const kaDom=esc(S.ka_dom||'—');
+
+  const html=`<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Fiche — ${nom}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   NEPHILIM LÉGENDE — FICHE OFFICIELLE
+   A4 Portrait — Style parchemin
+   ═══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --parch:#F5EFE0;
+  --parch-mid:#EDE3CA;
+  --parch-dark:#E0D4B4;
+  --ink:#1A0A00;
+  --ink-med:#4A2800;
+  --ink-light:#6B4010;
+  --band:#7A5028;
+  --band-light:#A07040;
+  --gold:#C49040;
+  --gold-light:#DDB870;
+  --border:rgba(139,96,64,.4);
+  --blood:#8B1A1A;
+  --ka-feu:#C85020;
+  --ka-air:#4090C0;
+  --ka-eau:#206080;
+  --ka-lune:#806090;
+  --ka-terre:#508030;
+}
+
+body{
+  font-family:'EB Garamond','Garamond',Georgia,serif;
+  background:#C8B898;
+  color:var(--ink);
+  font-size:9pt;
+  line-height:1.3;
+}
+
+/* Page A4 */
+.page{
+  width:210mm;
+  min-height:297mm;
+  margin:0 auto 8mm;
+  background:var(--parch);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  padding:8mm 9mm;
+  border:1px solid var(--band-light);
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+  page-break-after:always;
+  position:relative;
+}
+.page:last-child{page-break-after:auto;}
+
+/* ── Logo + en-tête ─────────────────────── */
+.page-header{
+  display:flex;align-items:center;
+  gap:4mm;margin-bottom:3mm;
+  padding-bottom:2mm;
+  border-bottom:1.5pt solid var(--band);
+}
+.logo-text{
+  font-family:'Cinzel Decorative',serif;
+  font-size:13pt;color:var(--ink-med);
+  letter-spacing:.08em;line-height:1.1;
+  flex:1;
+}
+.logo-sub{font-family:'Cinzel',serif;font-size:7pt;
+  color:var(--ink-light);letter-spacing:.2em;display:block;}
+.nom-box{flex:2;display:flex;align-items:center;gap:3mm;}
+.nom-label{font-family:'Cinzel',serif;font-size:8pt;color:var(--ink-light);}
+.nom-val{font-family:'Cinzel',serif;font-size:12pt;color:var(--ink-med);
+  font-weight:600;border-bottom:1pt solid var(--band-light);
+  padding-bottom:1mm;min-width:50mm;letter-spacing:.04em;}
+.ps-badge{
+  border:1.5pt solid var(--band);border-radius:4px;
+  padding:1.5mm 3mm;background:var(--parch-mid);
+  text-align:center;white-space:nowrap;
+}
+.ps-label{font-family:'Cinzel',serif;font-size:5.5pt;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-light);display:block;}
+.ps-val{font-family:'Cinzel Decorative',serif;font-size:14pt;
+  color:var(--ink-med);display:block;line-height:1;}
+
+/* ── Bandeau section ────────────────────── */
+.sec{margin-bottom:2mm;break-inside:avoid;}
+.sec-hd{
+  font-family:'Cinzel',serif;
+  font-size:7pt;letter-spacing:.1em;text-transform:uppercase;
+  background:linear-gradient(90deg,var(--band) 0%,var(--band-light) 60%,#C49040 100%);
+  color:#F5EFE0;padding:1.5mm 3mm;
+  border-radius:2px 2px 0 0;
+  text-shadow:0 1px 1px rgba(0,0,0,.4);
+}
+.sec-bd{
+  background:linear-gradient(180deg,rgba(255,255,255,.5) 0%,rgba(237,227,202,.4) 100%);
+  border:1pt solid var(--border);border-top:none;
+  border-radius:0 0 2px 2px;padding:1.5mm 3mm;
+}
+
+/* ── Ligne clé/valeur ───────────────────── */
+.row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:1pt 0;border-bottom:1pt dotted rgba(139,96,64,.2);font-size:8pt;}
+.row:last-child{border-bottom:none;}
+.rk{color:var(--ink-light);font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.02em;}
+.rv{color:var(--ink);font-weight:600;text-align:right;}
+
+/* ── Layout 3 colonnes page 1 (haut) ───── */
+.grid-3{display:grid;grid-template-columns:52mm 1fr 45mm;gap:3mm;margin-bottom:3mm;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:3mm;margin-bottom:3mm;}
+.grid-inc{display:grid;grid-template-columns:55mm 1fr 35mm;gap:3mm;margin-bottom:3mm;}
+.grid-qas{display:grid;grid-template-columns:48mm 60mm 1fr;gap:3mm;}
+
+/* ── Ka table ───────────────────────────── */
+.ka-row{display:flex;align-items:center;gap:2mm;
+  padding:1.5pt 2pt;border-radius:3px;margin-bottom:1.5pt;}
+.ka-row.dom{background:rgba(139,96,64,.15);border:1pt solid rgba(139,96,64,.4);}
+.ka-ico{font-size:10pt;width:12pt;text-align:center;}
+.ka-nm{flex:1;font-family:'Cinzel',serif;font-size:7.5pt;color:var(--ink-med);}
+.ka-role{font-family:'Cinzel',serif;font-size:6pt;color:var(--ink-light);width:20pt;text-align:center;}
+.ka-val{font-family:'Cinzel Decorative',serif;font-size:12pt;font-weight:bold;min-width:16pt;text-align:right;}
+
+/* ── Attributs ──────────────────────────── */
+.attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5pt;}
+.attr-cell{display:flex;justify-content:space-between;align-items:center;
+  background:rgba(139,96,64,.06);border-radius:2px;
+  padding:1.5pt 3pt;border:1pt solid rgba(139,96,64,.1);}
+.attr-nm{font-family:'Cinzel',serif;font-size:6pt;color:var(--ink-light);}
+.attr-val{font-family:'Cinzel Decorative',serif;font-size:9pt;color:var(--ink-med);font-weight:bold;}
+
+/* ── Chutes ─────────────────────────────── */
+.chute-row{display:flex;align-items:center;gap:2mm;
+  padding:2pt 0;border-bottom:1pt dotted rgba(139,96,64,.2);}
+.chute-row:last-child{border-bottom:none;}
+.chute-lbl{font-family:'Cinzel',serif;font-size:7pt;color:var(--ink-light);
+  width:20mm;flex-shrink:0;}
+.chute-pips{flex:1;}
+.pip{display:inline-block;width:7pt;height:7pt;border-radius:50%;
+  margin:0 1pt;vertical-align:middle;}
+.pip.on{background:radial-gradient(circle at 35% 35%,#C43030,var(--blood));
+  border:1pt solid #6B0A0A;}
+.pip.off{background:var(--parch-mid);border:1pt solid rgba(139,26,26,.3);}
+.chute-val{font-family:'Cinzel Decorative',serif;font-size:10pt;color:var(--blood);
+  min-width:12pt;text-align:right;font-weight:bold;}
+
+/* ── Tableau incarnations ───────────────── */
+table.inc-tbl{width:100%;border-collapse:collapse;font-size:7.5pt;}
+table.inc-tbl td{padding:2pt 3pt;border-bottom:1pt dotted rgba(139,96,64,.2);}
+table.inc-tbl tr:last-child td{border-bottom:none;}
+table.inc-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.025);}
+.inc-ep{font-family:'Cinzel',serif;font-size:7pt;color:var(--ink-light);}
+.inc-vecu{font-weight:600;}
+.inc-vecu.dom{color:var(--band);}
+.inc-quete{font-style:italic;color:var(--ink-light);font-size:7pt;}
+
+/* ── Listes (quêtes, savoirs) ───────────── */
+.liste-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 4mm;}
+.liste-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:1pt 0;border-bottom:1pt dotted rgba(139,96,64,.12);font-size:7pt;}
+.liste-row:last-child{border-bottom:none;}
+.liste-row.active .liste-nm{color:var(--ink);font-weight:600;}
+.liste-nm{color:rgba(26,10,0,.5);letter-spacing:.02em;}
+.liste-val{font-family:'Cinzel Decorative',serif;font-size:9pt;color:var(--band);
+  min-width:10pt;text-align:right;}
+
+/* ── Sciences page 2 ────────────────────── */
+.sci-header{display:flex;gap:4mm;align-items:center;margin-bottom:2mm;}
+.sci-badge{border:1pt solid var(--border);border-radius:3px;
+  padding:1.5mm 3mm;background:var(--parch-mid);text-align:center;}
+.sci-badge-lbl{font-family:'Cinzel',serif;font-size:5.5pt;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--ink-light);display:block;}
+.sci-badge-val{font-family:'Cinzel Decorative',serif;font-size:14pt;
+  color:var(--ink-med);display:block;line-height:1;}
+
+/* ── Sorts / Invocations / Formules ─────── */
+table.sorts-tbl{width:100%;border-collapse:collapse;font-size:7.5pt;}
+table.sorts-tbl th{font-family:'Cinzel',serif;font-size:6pt;
+  text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink-light);padding:2pt 3pt;
+  border-bottom:1pt solid var(--border);text-align:left;}
+table.sorts-tbl td{padding:2pt 3pt;border-bottom:1pt dotted rgba(139,96,64,.15);}
+table.sorts-tbl tr:last-child td{border-bottom:none;}
+table.sorts-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
+.sort-nm{font-weight:600;color:var(--ink);}
+
+/* ── Sephiroth ──────────────────────────── */
+.seph-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:1.5pt 0;border-bottom:1pt dotted rgba(139,96,64,.15);font-size:8pt;}
+.seph-row:last-child{border-bottom:none;}
+.seph-val{font-family:'Cinzel Decorative',serif;font-size:10pt;color:var(--band);}
+
+/* ── Notes ──────────────────────────────── */
+.notes-zone{min-height:20mm;border:1pt dashed rgba(139,96,64,.3);
+  border-radius:3px;padding:2mm;background:rgba(255,255,255,.3);
+  font-style:italic;font-size:8pt;color:var(--ink);white-space:pre-wrap;line-height:1.5;}
+
+/* ── Phrase ─────────────────────────────── */
+.phrase-box{border:1pt solid rgba(139,96,64,.35);border-radius:3px;
+  padding:2mm 3mm;margin:2mm 0;font-style:italic;text-align:center;
+  font-size:8.5pt;color:var(--ink-med);min-height:8mm;
+  background:rgba(255,255,255,.25);}
+
+/* ── Print ──────────────────────────────── */
+@media print{
+  @page{size:A4 portrait;margin:0;}
+  body{background:none;}
+  .page{
+    width:210mm;min-height:297mm;margin:0;
+    box-shadow:none;border:none;
+    page-break-after:always;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .page:last-child{page-break-after:auto;}
+  .no-print{display:none!important;}
+}
+
+@media screen{
+  .page{box-shadow:0 4px 20px rgba(0,0,0,.5);}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ PAGE 1 ════════════════════════════════════ -->
+<div class="page">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div class="logo-text">
+      𝔫𝔢𝔭𝔥𝔦𝔩𝔦𝔪
+      <span class="logo-sub">légende</span>
+    </div>
+    <div class="nom-box">
+      <span class="nom-label">Nom</span>
+      <span class="nom-val">${nom}</span>
+    </div>
+    <div class="ps-badge">
+      <span class="ps-label">Points de Sapience</span>
+      <span class="ps-val">${psTotal}</span>
+    </div>
+  </div>
+
+  <!-- Bloc haut : Métamorphe | Pentacle+Ka | Chutes -->
+  <div class="grid-3">
+
+    <!-- Col 1 : Métamorphe + Ka -->
+    <div>
+      ${sec('Métamorphe — '+metaName, `
+        ${row('Ka Dominant', KA_ICONS[S.ka_dom]||'' + ' ' + kaDom)}
+        ${row('Profil', profil)}
+        ${row('Stase', esc(S.stase||'—'))}
+        ${mt?row('Simulacre', esc(mt.nm)):''}
+      `)}
+      <div style="height:2mm"></div>
+      ${sec('Ka — Pentacle', kaRows+kaSolRow)}
+    </div>
+
+    <!-- Col 2 : Pentacle SVG centré -->
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      ${sec('Pentacle des Ka',
+        `<div style="text-align:center;">${buildSVG()}</div>`
+      )}
+    </div>
+
+    <!-- Col 3 : Chutes + Attributs -->
+    <div>
+      ${sec('Chutes', chutesHTML)}
+      <div style="height:2mm"></div>
+      ${sec('Actions &amp; Attributs', `<div class="attr-grid">${attrs}</div>`)}
+      <div style="height:2mm"></div>
+      ${sec('Budget PI', `
+        ${row('Total', S.pi_total+(window.chutesBonusPI?chutesBonusPI():0))}
+        ${row('Dépensés', window.piSpent?piSpent():'—')}
+        ${row('Restants', window.piLeft?piLeft():'—')}
+        ${row('PS Total', psTotal)}
+      `)}
+    </div>
+  </div>
+
+  <!-- Phrase -->
+  <div class="phrase-box">${S.notes_simulacre?esc(S.notes_simulacre):'Votre Nephilim en une phrase…'}</div>
+
+  <!-- Incarnations + Quêtes + Savoirs -->
+  ${sec('Époques d\'incarnation — Vécus passés',
+    `<table class="inc-tbl"><tbody>${incRows||'<tr><td colspan="3" style="font-style:italic;color:#888">Aucune incarnation</td></tr>'}</tbody></table>`
+  )}
+
+  <div style="height:2mm"></div>
+
+  <!-- Quêtes + Attributs + Savoirs -->
+  <div class="grid-qas">
+    <div>${sec('Quêtes ésotériques', `<div class="liste-2col">${quetesHTML}</div>`)}</div>
+    <div>
+      ${sec('Stase', `<div class="notes-zone" style="min-height:12mm">${esc(S.stase||'')}</div>`)}
+    </div>
+    <div>${sec('Savoirs ésotériques', `<div class="liste-2col">${savoirsHTML}</div>`)}</div>
+  </div>
+
+</div><!-- /PAGE 1 -->
+
+
+<!-- ════ PAGE 2 ════════════════════════════════════ -->
+<div class="page">
+
+  ${sec('Magie', `
+    <div class="sci-header">
+      <div class="sci-badge">
+        <span class="sci-badge-lbl">1er Cercle</span>
+        <span class="sci-badge-val">${S.magie.bas||0}</span>
+      </div>
+      <div class="sci-badge">
+        <span class="sci-badge-lbl">2e Cercle</span>
+        <span class="sci-badge-val">${S.magie.haut||0}</span>
+      </div>
+      <div class="sci-badge">
+        <span class="sci-badge-lbl">3e Cercle</span>
+        <span class="sci-badge-val">${S.magie.grand||0}</span>
+      </div>
+      <div style="flex:1">
+        ${row('Voie initiatique', S.magie.voie||'—')}
+      </div>
+    </div>
+    <table class="sorts-tbl">
+      <thead><tr><th>Nom du sort</th><th>Ka</th><th>Cercle</th></tr></thead>
+      <tbody>${sortsRows}</tbody>
+    </table>
+  `)}
+
+  <div style="height:3mm"></div>
+
+  <div class="grid-2">
+    <div>
+      ${sec('Kabbale', `
+        <div class="sci-header" style="margin-bottom:1.5mm">
+          ${['Aresh','Sohar','Ethesh'].map(m=>{
+            const ok=S.mondes_integres&&S.mondes_integres[m.toLowerCase()];
+            return `<div class="sci-badge"><span class="sci-badge-lbl">${m}</span><span class="sci-badge-val" style="font-size:10pt;color:${ok?'var(--band)':'#ccc'}">${ok?'✓':'○'}</span></div>`;
+          }).join('')}
+        </div>
+        <div>${activeSeph||'<p style="font-style:italic;color:#888;font-size:7.5pt">Aucune Sephirah</p>'}</div>
+        <div style="height:2mm"></div>
+        <table class="sorts-tbl">
+          <thead><tr><th>Invocation</th><th>Ka</th></tr></thead>
+          <tbody>${invRows}</tbody>
+        </table>
+      `)}
+    </div>
+
+    <div>
+      ${sec('Alchimie', `
+        <div class="sci-header">
+          <div class="sci-badge">
+            <span class="sci-badge-lbl">⬛ Noir</span>
+            <span class="sci-badge-val">${S.alchimie.noir||0}</span>
+          </div>
+          <div class="sci-badge">
+            <span class="sci-badge-lbl">⬜ Blanc</span>
+            <span class="sci-badge-val">${S.alchimie.blanc||0}</span>
+          </div>
+          <div class="sci-badge">
+            <span class="sci-badge-lbl">🟥 Rouge</span>
+            <span class="sci-badge-val">${S.alchimie.rouge||0}</span>
+          </div>
+          ${S.alchimie.voie?`<div style="flex:1">${row('Voie', S.alchimie.voie)}</div>`:''}
+        </div>
+        <table class="sorts-tbl">
+          <thead><tr><th>Formule</th><th>Œuvre</th><th>Construct</th></tr></thead>
+          <tbody>${formRows}</tbody>
+        </table>
+      `)}
+    </div>
+  </div>
+
+  <div style="height:3mm"></div>
+
+  ${sec('Notes du Simulacre', `<div class="notes-zone">${esc(S.notes_simulacre||'')}</div>`)}
+
+</div><!-- /PAGE 2 -->
+
+<div class="no-print" style="text-align:center;padding:8mm;font-family:serif;color:#555">
+  <button onclick="window.print()" style="font-family:'Cinzel',serif;font-size:11pt;
+    padding:8px 24px;background:#7A5028;color:#F5EFE0;border:none;border-radius:4px;
+    cursor:pointer;letter-spacing:.08em">🖨️ Imprimer / Enregistrer PDF</button>
+  <button onclick="window.close()" style="font-family:'Cinzel',serif;font-size:10pt;
+    padding:8px 18px;background:transparent;color:#7A5028;border:1px solid #7A5028;
+    border-radius:4px;cursor:pointer;margin-left:8px">Fermer</button>
+</div>
+
+</body>
+</html>`;
+
+  const win=window.open('','_blank');
+  if(!win){alert('Autorisez les popups pour générer la fiche PDF.');return;}
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+}
+
 function exportTXT(){
   const at=calcAttrs(),sc=kaScores(),sap=sapience(),mt=getMetier();
   const psTotal=(S.ps_initial||0)+sap;
