@@ -1,3 +1,13 @@
+Je ne suis pas développeur. Je suis Senior Manager Presales avec 20 ans d'expérience en enterprise software.
+
+Ce projet est né d'une passion personnelle — le jeu de rôle — et d'une conviction : l'IA change qui peut créer, pas seulement comment on crée.
+
+Le prompt engineering et les outils No-Code rendent aujourd'hui accessibles à des profils non-techniques ce qui était réservé aux développeurs.
+
+48h. Zéro ligne écrite à la main. Une app en production.
+
+---
+
 # Nephilim — Forge des Âmes
 
 Application web de création et gestion de personnages pour un jeu de rôle sur table. Projet personnel développé avec une stack No-Code / AI-assisted, du prototypage jusqu'au déploiement en production.
@@ -13,7 +23,7 @@ Application web de création et gestion de personnages pour un jeu de rôle sur 
 | Frontend | HTML5 · CSS3 · JavaScript vanilla (ES2022) |
 | Backend & base de données | [Supabase](https://supabase.com) (PostgreSQL + Auth + Realtime) |
 | Déploiement | [Vercel](https://vercel.com) (CI/CD automatique sur push) |
-| Versioning | Git + GitHub (dépôt privé) |
+| Versioning | Git + GitHub (dépôt public) |
 | Développement | Prompt engineering via Claude AI (Anthropic) |
 
 Architecture **single-page application** sans framework — un fichier HTML/CSS/JS autonome (~215 Ko, ~3 900 lignes) déployé comme site statique.
@@ -76,9 +86,8 @@ Utilisateur → State S (mémoire)
   "effets_magiques": { "gravés": [], "focus": [] },
   "chutes": { "khaiba": 0, "narcose": 0, "ombre": 0 }
 }
-```
 
----
+```
 
 ## Interface MJ (Game Master dashboard)
 
@@ -116,4 +125,4 @@ L'ensemble représente plusieurs dizaines d'itérations de prompts techniques, d
 
 ## Auteur
 
-Développé par **mabrizard** — passionné de JDR et de No-Code.
+Développé par **Marc-Alexandre Brizard** — passionné de JDR et de No-Code.
