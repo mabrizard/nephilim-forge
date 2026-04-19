@@ -297,7 +297,194 @@ select option{background:#1a1510}
 .ver-btn{font-family:'Cinzel',serif;font-size:.72rem;padding:.3rem .8rem;border:1px solid var(--gold-d);border-radius:5px;background:transparent;color:var(--parch-d);cursor:pointer;transition:all .2s}
 .ver-btn:hover{border-color:var(--gold);color:var(--gold)}
 @media(max-width:580px){.ka-grid{grid-template-columns:repeat(2,1fr)}.prf-grid{grid-template-columns:1fr}.attr-grid{grid-template-columns:repeat(2,1fr)}.sci-tabs{flex-direction:column}}
-@media print{body{background:#fff;color:#000}body::before,body::after{display:none}.btn-row,.prog-wrap,.hdr-sigil,.pi-bar,.sync-bar,.setup-box{display:none!important}.hdr h1{color:#7a5010;text-shadow:none}.box{border-color:#ccc;background:#fff}}
+
+/* ─── FICHE OFFICIELLE STYLE PARCHEMIN ─── */
+.fp{font-family:'EB Garamond','Garamond',Georgia,serif;background:#f5efe0;color:#1a0e05;
+  border-radius:6px;padding:1.4rem;max-width:880px;margin:0 auto;
+  box-shadow:0 4px 24px rgba(0,0,0,.35);}
+.fp-hd{display:flex;align-items:center;gap:1rem;
+  padding-bottom:.8rem;margin-bottom:1rem;
+  border-bottom:2px solid #8b6530;flex-wrap:wrap;}
+.fp-name{font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:#3d1f00;
+  text-shadow:0 1px 0 rgba(255,255,255,.5);flex:1;min-width:160px;}
+.fp-ps-badge{border:2px solid #8b6530;border-radius:6px;padding:.4rem .8rem;
+  background:#e5d8b0;text-align:center;white-space:nowrap;}
+.fp-ps-lbl{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;
+  text-transform:uppercase;color:#8b6530;display:block;}
+.fp-ps-val{font-family:'Cinzel Decorative',serif;font-size:1.5rem;color:#3d1f00;display:block;}
+.fp-metamorphe-badge{border:1px solid #8b6530;border-radius:4px;padding:.3rem .6rem;
+  background:#ede3c4;font-family:'Cinzel',serif;font-size:.75rem;color:#5a3010;}
+/* Grille 2 cols principale */
+.fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;align-items:start;}
+.fp-grid-3{display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:.9rem;align-items:start;}
+/* Section */
+.fp-sec{break-inside:avoid;margin-bottom:0;}
+.fp-sec-hd{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;
+  text-transform:uppercase;color:#f5efe0;
+  background:linear-gradient(90deg,#6b4010 0%,#a0682a 60%,#c49040 100%);
+  padding:.3rem .65rem;border-radius:3px 3px 0 0;}
+.fp-sec-bd{background:rgba(255,255,255,.42);border:1px solid rgba(139,101,48,.35);
+  border-top:none;border-radius:0 0 3px 3px;padding:.45rem .6rem;}
+/* Ligne clé/valeur */
+.fp-r{display:flex;justify-content:space-between;align-items:baseline;
+  padding:.18rem 0;border-bottom:1px dotted rgba(139,101,48,.22);font-size:.84rem;}
+.fp-r:last-child{border-bottom:none;}
+.fp-rk{color:#5a3010;font-size:.75rem;font-family:'Cinzel',serif;letter-spacing:.02em;}
+.fp-rv{color:#1a0e05;font-weight:600;text-align:right;max-width:58%;}
+/* Ka table */
+.fp-ka{display:flex;align-items:center;gap:.45rem;padding:.22rem .3rem;
+  border-radius:4px;margin-bottom:.2rem;}
+.fp-ka.dom{background:rgba(139,101,48,.18);border:1px solid rgba(139,101,48,.5);}
+.fp-ka.neu{background:rgba(0,0,0,.04);border:1px solid rgba(139,101,48,.15);}
+.fp-ka.opp{background:rgba(0,0,0,.02);border:1px solid rgba(139,101,48,.1);}
+.fp-ka-ico{font-size:1rem;width:1.2rem;text-align:center;}
+.fp-ka-nm{flex:1;font-family:'Cinzel',serif;font-size:.78rem;color:#3d1f00;}
+.fp-ka-role{font-size:.62rem;color:#8b6530;font-family:'Cinzel',serif;
+  width:3.5rem;text-align:center;}
+.fp-ka-score{font-family:'Cinzel Decorative',serif;font-size:1.25rem;color:#1a0e05;
+  min-width:1.4rem;text-align:right;font-weight:700;}
+/* Chutes pips */
+.fp-pip{display:inline-block;width:9px;height:9px;border-radius:50%;
+  margin:0 1px;vertical-align:middle;}
+.fp-pip.on{background:#8b1a1a;border:1px solid #6b0a0a;}
+.fp-pip.off{background:transparent;border:1px solid rgba(139,26,26,.3);}
+/* Incarnations table */
+.fp-inc-tbl{width:100%;border-collapse:collapse;font-size:.78rem;}
+.fp-inc-tbl td{padding:.2rem .3rem;border-bottom:1px dotted rgba(139,101,48,.2);}
+.fp-inc-tbl tr:last-child td{border-bottom:none;}
+.fp-inc-era{font-family:'Cinzel',serif;font-size:.7rem;color:#5a3010;}
+.fp-inc-vecu{color:#1a0e05;}
+.fp-inc-quete{color:#6b4010;font-style:italic;font-size:.72rem;}
+/* Quêtes / Savoirs 2 cols */
+.fp-2col{display:grid;grid-template-columns:1fr 1fr;gap:.1rem .5rem;}
+.fp-qrow{display:flex;justify-content:space-between;font-size:.78rem;
+  padding:.15rem 0;border-bottom:1px dotted rgba(139,101,48,.15);}
+.fp-qrow:last-child{border-bottom:none;}
+.fp-qnm{flex:1;color:#1a0e05;}
+.fp-qdeg{font-family:'Cinzel Decorative',serif;font-size:.85rem;
+  color:#5a3010;min-width:1.5rem;text-align:right;}
+/* Attributs box */
+.fp-attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:.2rem;}
+.fp-attr{display:flex;justify-content:space-between;
+  background:rgba(139,101,48,.06);border-radius:3px;
+  padding:.22rem .4rem;font-size:.8rem;}
+.fp-attr-nm{color:#5a3010;font-family:'Cinzel',serif;font-size:.7rem;}
+.fp-attr-val{font-weight:700;color:#1a0e05;}
+/* Phrase */
+.fp-phrase{border:1px solid rgba(139,101,48,.4);border-radius:4px;
+  padding:.5rem .7rem;font-style:italic;color:#2a1000;
+  background:rgba(255,255,255,.3);margin:0 0 .9rem;text-align:center;
+  font-size:.88rem;min-height:2rem;}
+/* Stase */
+.fp-stase{font-size:.85rem;color:#2a1000;font-style:italic;}
+/* ── PRINT A4 PORTRAIT ───────────────────────────── */
+@media print{
+  @page{
+    margin:1cm 1.2cm;
+    size:A4 portrait;
+  }
+
+  /* Masquer TOUT sauf la fiche */
+  body *{visibility:hidden !important;}
+  .fp-container,
+  .fp-container *{visibility:visible !important;}
+
+  /* Positionner la fiche en haut */
+  .fp-container{
+    position:absolute !important;
+    top:0 !important;left:0 !important;
+    width:100% !important;
+    display:block !important;
+  }
+
+  .fp{
+    box-shadow:none !important;
+    border-radius:0 !important;
+    padding:.3cm !important;
+    width:100% !important;
+    max-width:none !important;
+    font-size:7.5pt !important;
+    background:#f5efe0 !important;
+    color:#1a0e05 !important;
+  }
+
+  /* Titres de sections */
+  .fp-sec-hd{
+    font-size:7pt !important;
+    padding:.2rem .5rem !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+    color:#f5efe0 !important;
+    background:linear-gradient(90deg,#6b4010,#a0682a,#c49040) !important;
+  }
+
+  /* Fond parchemin forcé */
+  .fp-sec-bd{
+    background:rgba(255,255,255,.4) !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  .fp-ka.dom{
+    background:rgba(139,101,48,.18) !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  .fp-pip.on{
+    background:#8b1a1a !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+
+  /* En-tête */
+  .fp-hd{padding-bottom:.4rem !important;margin-bottom:.6rem !important;}
+  .fp-name{font-size:1.2rem !important;}
+  .fp-ps-val{font-size:1.1rem !important;}
+
+  /* GRILLE 3 COLONNES → réduite pour A4 */
+  .fp-grid-3{
+    display:grid !important;
+    grid-template-columns:1.6fr 1fr 1fr !important;
+    gap:.5rem !important;
+  }
+  .fp-grid{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:.5rem !important;
+  }
+
+  /* Textes */
+  .fp-r{font-size:7.5pt !important;padding:.12rem 0 !important;}
+  .fp-rk{font-size:6.5pt !important;}
+  .fp-rv{font-size:7.5pt !important;}
+  .fp-ka-nm{font-size:7pt !important;}
+  .fp-ka-score{font-size:10pt !important;}
+  .fp-inc-tbl td{font-size:6.5pt !important;padding:.12rem .25rem !important;}
+  .fp-qrow{font-size:6.5pt !important;padding:.1rem 0 !important;}
+  .fp-attr{font-size:6.5pt !important;padding:.15rem .3rem !important;}
+  .fp-attr-nm{font-size:6pt !important;}
+  .fp-phrase{font-size:7.5pt !important;padding:.3rem !important;margin-bottom:.5rem !important;}
+  .fp-2col{gap:.05rem .4rem !important;}
+
+  /* Pips Chutes réduits */
+  .fp-pip{width:7px !important;height:7px !important;margin:0 1px !important;}
+
+  /* SVG Pentacle : réduire */
+  .fp-sec-bd svg{width:200px !important;height:200px !important;}
+
+  /* SAUTS DE PAGE */
+  /* Page 1 : En-tête + Bloc haut (topGrid) */
+  /* Page 2 : Bloc milieu (midGrid) + Bloc bas (botGrid) */
+  .fp-mid-grid{break-before:page !important;}
+
+  /* Ne jamais couper à l'intérieur d'une section */
+  .fp-sec{break-inside:avoid !important;}
+  .fp-inc-tbl{break-inside:avoid !important;}
+
+  /* Boutons impression masqués */
+  .fp-container > div:last-child{display:none !important;}
+
+  a{color:inherit !important;}
+}
 </style>
 </head>
 <body>
@@ -3536,271 +3723,432 @@ function s9(){
     ),
   ));
   const at=calcAttrs(),sc=kaScores(),mt=getMetier();
+  const tots=calcTotauxCumules();
 
-  // ── PENTACLE SVG DYNAMIQUE ────────────────────────────
+  // ════ FICHE STYLE OFFICIEL ═══════════════════════════
+  const fpContainer=h('div',{cls:'fp-container'});
+  const fp=h('div',{cls:'fp'});
+  fpContainer.appendChild(fp);
+
+  // Helpers fiche
+  const fpSec=(title,content)=>{
+    const s=h('div',{cls:'fp-sec'});
+    s.appendChild(h('div',{cls:'fp-sec-hd'},title));
+    const bd=h('div',{cls:'fp-sec-bd'});
+    if(typeof content==='string') bd.appendChild(h('p',{style:{fontSize:'.82rem',color:'#1a0e05',margin:0}},content));
+    else if(Array.isArray(content)){
+      content.forEach(([k,v])=>{
+        const r=h('div',{cls:'fp-r'});
+        r.appendChild(h('span',{cls:'fp-rk'},k));
+        r.appendChild(h('span',{cls:'fp-rv'},String(v)));
+        bd.appendChild(r);
+      });
+    } else { bd.appendChild(content); }
+    s.appendChild(bd);
+    return s;
+  };
+
+  // ── EN-TÊTE ──────────────────────────────────────────
+  const fpHd=h('div',{cls:'fp-hd'});
+  fpHd.appendChild(h('div',{cls:'fp-name'},S.nom||'— Nephilim —'));
+  if(S.metamorphe) fpHd.appendChild(h('div',{cls:'fp-metamorphe-badge'},`${S.metamorphe}`));
+  const psB=h('div',{cls:'fp-ps-badge'});
+  psB.appendChild(h('span',{cls:'fp-ps-lbl'},'Points de Sapience'));
+  psB.appendChild(h('span',{cls:'fp-ps-val'},String(psTotal)));
+  fpHd.appendChild(psB);
+  fp.appendChild(fpHd);
+
+  // Phrase perso
+  fp.appendChild(h('div',{cls:'fp-phrase'},S.stase
+    ? `Stase : ${S.stase}`
+    : 'Votre Nephilim en une phrase…'));
+
+  // ── BLOC HAUT : Pentacle + Identité + Chutes ─────────
+  const topGrid=h('div',{cls:'fp-grid-3'});
+
+  // Colonne 1 — Identité + Attributs + Simulacre
+  const col1=h('div',{});
+  col1.appendChild(fpSec('Identité', [
+    ['Ka Dominant', `${KA[S.ka_dom]&&KA[S.ka_dom].ico||''} ${S.ka_dom||'—'}`],
+    ['Profil',       S.profil||'—'],
+    ['Métamorphe',   S.metamorphe||'—'],
+    ['Joueur',       S.joueur||'—'],
+  ]));
+  col1.appendChild(h('div',{style:{height:'.6rem'}}));
+
+  // Ka-scores table
+  const kaSecBd=h('div',{cls:'fp-sec-bd'});
+  const sc3=kaScores();
+  const dMap9=S.ka_dom?KA[S.ka_dom]:null;
+  Object.entries(sc3).forEach(([ka,score])=>{
+    const isDom=ka===S.ka_dom;
+    const isNeu=dMap9&&dMap9.neu&&dMap9.neu.includes(ka);
+    const cls=isDom?'fp-ka dom':isNeu?'fp-ka neu':'fp-ka opp';
+    const row=h('div',{cls});
+    row.appendChild(h('span',{cls:'fp-ka-ico'},KA[ka].ico));
+    row.appendChild(h('span',{cls:'fp-ka-nm'},ka));
+    row.appendChild(h('span',{cls:'fp-ka-role'},isDom?'Dom':isNeu?'Neu':'Opp'));
+    row.appendChild(h('span',{cls:'fp-ka-score'},String(score)));
+    kaSecBd.appendChild(row);
+  });
+  // Ka-Soleil
+  const kaSolRow2=h('div',{cls:'fp-ka neu',style:{marginTop:'.3rem'}});
+  kaSolRow2.appendChild(h('span',{cls:'fp-ka-ico'},'☀️'));
+  kaSolRow2.appendChild(h('span',{cls:'fp-ka-nm'},'Ka-Soleil'));
+  kaSolRow2.appendChild(h('span',{cls:'fp-ka-role'},''));
+  kaSolRow2.appendChild(h('span',{cls:'fp-ka-score'},String(kaSoleil())));
+  kaSecBd.appendChild(kaSolRow2);
+  const kaSecWrap=h('div',{cls:'fp-sec'});
+  kaSecWrap.appendChild(h('div',{cls:'fp-sec-hd'},'Ka & Pentacle'));
+  kaSecWrap.appendChild(kaSecBd);
+  col1.appendChild(kaSecWrap);
+  col1.appendChild(h('div',{style:{height:'.6rem'}}));
+
+  // Attributs
+  const attrBd=h('div',{cls:'fp-sec-bd'});
+  const attrGrid=h('div',{cls:'fp-attr-grid'});
+  [[`Initiative`,`${at.initiative}`],[`Mouvement`,`${at.initiative}`],
+   [`Perspicacité`,`${at.perspicacite}`],[`Récupération`,`${at.recuperation}`],
+   [`Bonus Dom.`,`+${at.bonus_dom}`],[`Voile`,`${at.voile}`],
+  ].forEach(([nm,val])=>{
+    const a=h('div',{cls:'fp-attr'});
+    a.appendChild(h('span',{cls:'fp-attr-nm'},nm));
+    a.appendChild(h('span',{cls:'fp-attr-val'},val));
+    attrGrid.appendChild(a);
+  });
+  attrBd.appendChild(attrGrid);
+  const attrSec=h('div',{cls:'fp-sec'});
+  attrSec.appendChild(h('div',{cls:'fp-sec-hd'},'Actions et attributs'));
+  attrSec.appendChild(attrBd);
+  col1.appendChild(attrSec);
+  topGrid.appendChild(col1);
+
+  // Colonne 2 — Pentacle SVG (réutilisé)
+  const col2=h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center'}});
+  const pentSec=h('div',{cls:'fp-sec',style:{width:'100%'}});
+  pentSec.appendChild(h('div',{cls:'fp-sec-hd'},'Pentacle des Ka'));
+  // SVG compact pour la fiche (280px)
   {
-    const pentBox=h('div',{cls:'box',style:{marginBottom:'1.5rem'}});
-    pentBox.appendChild(h('h3',{},'✡ Pentacle des Ka'));
-
-    const ORDER=['Feu','Air','Eau','Lune','Terre']; // sens horaire — géométrie pentagramme
-    const KA_COLORS={Feu:'#e05c2a',Air:'#7eb8d4',Eau:'#3a6b8a',Lune:'#9b8fc0',Terre:'#6b8e4e'};
-    const KA_ICONS={Feu:'🜂',Air:'🜁',Eau:'🜄',Lune:'☽',Terre:'🜃'};
-    const domMap2={
-      Air:  {neu:['Feu','Eau'],   opp:['Terre','Lune']},
-      Feu:  {neu:['Terre','Air'], opp:['Lune','Eau']},
-      Terre:{neu:['Feu','Lune'],  opp:['Air','Eau']},
-      Eau:  {neu:['Air','Lune'],  opp:['Feu','Terre']},
-      Lune: {neu:['Terre','Eau'], opp:['Feu','Air']},
-    };
-    const dom2=S.ka_dom;
-    const sc2=kaScores(); // utilise kaScores() qui respecte le profil et opp_inverse
-    const chuteKhaiba=S.chutes&&S.chutes.khaiba||0;
-
-    const W=400,H=400,CX=200,CY=200,R=135,RLbl=168;
-    const ns='http://www.w3.org/2000/svg';
-    const svg=document.createElementNS(ns,'svg');
-    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-    svg.setAttribute('width','400');svg.setAttribute('height','400');
-    svg.style.cssText='max-width:100%;display:inline-block';
-
-    // Fond + cercles de référence + labels de valeur
-    [1,2,3,4,5].forEach((v,i)=>{
-      const r2=(v/5)*R;
-      const circle=document.createElementNS(ns,'circle');
-      circle.setAttribute('cx',CX);circle.setAttribute('cy',CY);circle.setAttribute('r',r2);
-      circle.setAttribute('fill','none');
-      circle.setAttribute('stroke',v===5?'rgba(201,168,76,0.2)':'rgba(201,168,76,0.08)');
-      circle.setAttribute('stroke-width',v===5?'1':'0.5');
-      circle.setAttribute('stroke-dasharray',v===5?'none':'3,3');
-      svg.appendChild(circle);
-      // Label valeur sur le cercle (axe droit)
-      const vLbl=document.createElementNS(ns,'text');
-      vLbl.setAttribute('x',CX+r2+4);vLbl.setAttribute('y',CY-2);
-      vLbl.setAttribute('font-family','Cinzel,serif');vLbl.setAttribute('font-size','8');
-      vLbl.setAttribute('fill','rgba(201,168,76,0.35)');
-      vLbl.textContent=String(v);
-      svg.appendChild(vLbl);
+    const KA_COLORS2={Feu:'#e05c2a',Air:'#5a9ec0',Eau:'#2a5a80',Lune:'#7a6ab0',Terre:'#4a7a2e'};
+    const W2=260,H2=260,CX2=130,CY2=130,R2=90,RLbl2=114;
+    const ns2='http://www.w3.org/2000/svg';
+    const svg2=document.createElementNS(ns2,'svg');
+    svg2.setAttribute('viewBox',`0 0 ${W2} ${H2}`);
+    svg2.setAttribute('width','260');svg2.setAttribute('height','260');
+    svg2.style.cssText='max-width:100%;display:block;margin:0 auto;';
+    // Fond parchemin
+    const bgR=document.createElementNS(ns2,'rect');
+    bgR.setAttribute('width',W2);bgR.setAttribute('height',H2);
+    bgR.setAttribute('fill','rgba(245,239,224,0.6)');
+    svg2.appendChild(bgR);
+    // Cercles de référence
+    [.25,.5,.75,1].forEach(f=>{
+      const rc2=document.createElementNS(ns2,'circle');
+      rc2.setAttribute('cx',CX2);rc2.setAttribute('cy',CY2);rc2.setAttribute('r',R2*f);
+      rc2.setAttribute('fill','none');
+      rc2.setAttribute('stroke',f===1?'rgba(139,101,48,.35)':'rgba(139,101,48,.12)');
+      rc2.setAttribute('stroke-width',f===1?'1':'0.5');
+      rc2.setAttribute('stroke-dasharray',f===1?'none':'2,3');
+      svg2.appendChild(rc2);
     });
-
-    // Sommets (sens horaire, départ haut = Feu)
-    const pts=ORDER.map((ka,i)=>{
+    const sc4=kaScores();
+    const pts2=['Feu','Air','Eau','Lune','Terre'].map((ka,i)=>{
       const angle=(i/5)*Math.PI*2-Math.PI/2;
-      return {ka,x:CX+Math.cos(angle)*R,y:CY+Math.sin(angle)*R,
-        lx:CX+Math.cos(angle)*RLbl,ly:CY+Math.sin(angle)*RLbl,angle};
+      return {ka,x:CX2+Math.cos(angle)*R2,y:CY2+Math.sin(angle)*R2,
+        lx:CX2+Math.cos(angle)*RLbl2,ly:CY2+Math.sin(angle)*RLbl2,angle};
     });
-
-    // Lignes du pentagramme (connexions 1-3, 2-4, 3-0, 4-1, 0-2)
-    [[0,2],[1,3],[2,4],[3,0],[4,1]].forEach(([a2,b2])=>{
-      const line=document.createElementNS(ns,'line');
-      line.setAttribute('x1',pts[a2].x);line.setAttribute('y1',pts[a2].y);
-      line.setAttribute('x2',pts[b2].x);line.setAttribute('y2',pts[b2].y);
-      line.setAttribute('stroke','rgba(201,168,76,0.2)');line.setAttribute('stroke-width','1');
-      svg.appendChild(line);
+    // Lignes pentagramme
+    [[0,2],[1,3],[2,4],[3,0],[4,1]].forEach(([a,b])=>{
+      const l=document.createElementNS(ns2,'line');
+      l.setAttribute('x1',pts2[a].x);l.setAttribute('y1',pts2[a].y);
+      l.setAttribute('x2',pts2[b].x);l.setAttribute('y2',pts2[b].y);
+      l.setAttribute('stroke','rgba(139,101,48,.2)');l.setAttribute('stroke-width','0.8');
+      svg2.appendChild(l);
     });
-
-    // Axes vers les sommets
-    pts.forEach(p=>{
-      const line=document.createElementNS(ns,'line');
-      line.setAttribute('x1',CX);line.setAttribute('y1',CY);
-      line.setAttribute('x2',p.x);line.setAttribute('y2',p.y);
-      line.setAttribute('stroke','rgba(201,168,76,0.15)');line.setAttribute('stroke-width','0.8');
-      svg.appendChild(line);
+    // Axes
+    pts2.forEach(p=>{
+      const l=document.createElementNS(ns2,'line');
+      l.setAttribute('x1',CX2);l.setAttribute('y1',CY2);
+      l.setAttribute('x2',p.x);l.setAttribute('y2',p.y);
+      l.setAttribute('stroke','rgba(139,101,48,.12)');l.setAttribute('stroke-width','0.5');
+      svg2.appendChild(l);
     });
-
-    // Polygone des scores (radar)
-    const maxKa=Math.max(...Object.values(sc2),1);
-    const polyPts=pts.map(p=>{
-      const val=sc2[p.ka]||0;
-      const r3=(val/Math.max(maxKa,10))*R;
-      const angle=p.angle;
-      return `${CX+Math.cos(angle)*r3},${CY+Math.sin(angle)*r3}`;
+    // Polygone scores
+    const maxKa2=Math.max(...Object.values(sc4),1);
+    const polyPts2=pts2.map(p=>{
+      const val=sc4[p.ka]||0;
+      const rr=(val/Math.max(maxKa2,10))*R2;
+      return `${CX2+Math.cos(p.angle)*rr},${CY2+Math.sin(p.angle)*rr}`;
     });
-    // Remplissage
-    const poly=document.createElementNS(ns,'polygon');
-    poly.setAttribute('points',polyPts.join(' '));
-    // Couleur selon Khaïba
-    if(chuteKhaiba>=2){
-      poly.setAttribute('fill','rgba(139,26,26,0.25)');
-      poly.setAttribute('stroke','rgba(139,26,26,0.8)');
-    } else if(chuteKhaiba===1){
-      poly.setAttribute('fill','rgba(139,26,26,0.12)');
-      poly.setAttribute('stroke','rgba(201,168,76,0.6)');
-    } else {
-      poly.setAttribute('fill','rgba(201,168,76,0.12)');
-      poly.setAttribute('stroke','rgba(201,168,76,0.7)');
-    }
-    poly.setAttribute('stroke-width','1.5');
-    svg.appendChild(poly);
-
-    // Points sur les sommets + lignes colorées du dominant
-    pts.forEach(p=>{
-      const val=sc2[p.ka]||0;
-      const r3=(val/Math.max(maxKa,10))*R;
-      const angle=p.angle;
-      const px=CX+Math.cos(angle)*r3;
-      const py=CY+Math.sin(angle)*r3;
-      const color=KA_COLORS[p.ka];
-      const isDom=p.ka===dom2;
-      // Ligne colorée de l'axe pour le dominant
-      if(isDom){
-        const glow=document.createElementNS(ns,'line');
-        glow.setAttribute('x1',CX);glow.setAttribute('y1',CY);
-        glow.setAttribute('x2',p.x);glow.setAttribute('y2',p.y);
-        glow.setAttribute('stroke',color);glow.setAttribute('stroke-width','1.5');glow.setAttribute('opacity','0.4');
-        svg.appendChild(glow);
-      }
-      // Point score
-      const dot=document.createElementNS(ns,'circle');
-      dot.setAttribute('cx',px);dot.setAttribute('cy',py);
-      dot.setAttribute('r',isDom?5:3.5);
-      dot.setAttribute('fill',color);
-      dot.setAttribute('stroke','rgba(13,11,8,0.8)');dot.setAttribute('stroke-width','1');
-      svg.appendChild(dot);
-    });
-
-    // Étiquettes sommets — fond coloré + tailles plus lisibles
-    pts.forEach(p=>{
-      const isDom=p.ka===dom2;
-      const val=sc2[p.ka]||0;
-      const color=KA_COLORS[p.ka];
-      const g=document.createElementNS(ns,'g');
-
-      // Fond de l'étiquette
-      const bgRect=document.createElementNS(ns,'rect');
-      const bw=isDom?54:46,bh=isDom?30:26;
-      bgRect.setAttribute('x',p.lx-bw/2);bgRect.setAttribute('y',p.ly-bh/2);
-      bgRect.setAttribute('width',bw);bgRect.setAttribute('height',bh);
-      bgRect.setAttribute('rx','6');bgRect.setAttribute('ry','6');
-      bgRect.setAttribute('fill',isDom?color+'33':'rgba(13,11,8,0.75)');
-      bgRect.setAttribute('stroke',isDom?color:'rgba(201,168,76,0.3)');
-      bgRect.setAttribute('stroke-width',isDom?'1.5':'0.8');
-      g.appendChild(bgRect);
-
-      // Nom Ka
-      const t1=document.createElementNS(ns,'text');
-      t1.setAttribute('x',p.lx);t1.setAttribute('y',p.ly-6);
+    const poly2=document.createElementNS(ns2,'polygon');
+    poly2.setAttribute('points',polyPts2.join(' '));
+    poly2.setAttribute('fill','rgba(139,101,48,.15)');
+    poly2.setAttribute('stroke','rgba(139,101,48,.6)');
+    poly2.setAttribute('stroke-width','1.5');
+    svg2.appendChild(poly2);
+    // Étiquettes
+    pts2.forEach(p=>{
+      const isDom=p.ka===S.ka_dom;
+      const color=KA_COLORS2[p.ka];
+      const val=sc4[p.ka]||0;
+      const g=document.createElementNS(ns2,'g');
+      const bw=isDom?48:40,bh=isDom?26:22;
+      const bg=document.createElementNS(ns2,'rect');
+      bg.setAttribute('x',p.lx-bw/2);bg.setAttribute('y',p.ly-bh/2);
+      bg.setAttribute('width',bw);bg.setAttribute('height',bh);
+      bg.setAttribute('rx','4');bg.setAttribute('fill',isDom?color+'44':'rgba(245,239,224,.9)');
+      bg.setAttribute('stroke',isDom?color:'rgba(139,101,48,.4)');
+      bg.setAttribute('stroke-width',isDom?'1.5':'0.8');
+      g.appendChild(bg);
+      const t1=document.createElementNS(ns2,'text');
+      t1.setAttribute('x',p.lx);t1.setAttribute('y',p.ly-4);
       t1.setAttribute('text-anchor','middle');t1.setAttribute('dominant-baseline','middle');
-      t1.setAttribute('font-family','Cinzel, serif');
-      t1.setAttribute('font-size',isDom?'10':'9');
-      t1.setAttribute('fill',isDom?'#fff':color);
-      t1.setAttribute('font-weight','600');
+      t1.setAttribute('font-family','Cinzel,serif');t1.setAttribute('font-size',isDom?'9':'8');
+      t1.setAttribute('fill',isDom?'#3d1f00':color);t1.setAttribute('font-weight',isDom?'bold':'normal');
       t1.textContent=p.ka;
-      // Score
-      const t2=document.createElementNS(ns,'text');
+      const t2=document.createElementNS(ns2,'text');
       t2.setAttribute('x',p.lx);t2.setAttribute('y',p.ly+8);
       t2.setAttribute('text-anchor','middle');t2.setAttribute('dominant-baseline','middle');
-      t2.setAttribute('font-family','Cinzel Decorative, serif');
-      t2.setAttribute('font-size',isDom?'14':'12');
-      t2.setAttribute('fill',isDom?'#fff':color);
-      t2.setAttribute('font-weight','bold');
+      t2.setAttribute('font-family','Cinzel Decorative,serif');t2.setAttribute('font-size',isDom?'12':'10');
+      t2.setAttribute('fill',isDom?'#3d1f00':color);t2.setAttribute('font-weight','bold');
       t2.textContent=String(val);
-      g.appendChild(t1);g.appendChild(t2);
-      svg.appendChild(g);
+      g.appendChild(t1);g.appendChild(t2);svg2.appendChild(g);
+      // Point
+      const dot=document.createElementNS(ns2,'circle');
+      const rr=(val/Math.max(maxKa2,10))*R2;
+      dot.setAttribute('cx',CX2+Math.cos(p.angle)*rr);dot.setAttribute('cy',CY2+Math.sin(p.angle)*rr);
+      dot.setAttribute('r',isDom?5:3.5);dot.setAttribute('fill',color);
+      dot.setAttribute('stroke','rgba(245,239,224,.8)');dot.setAttribute('stroke-width','1');
+      svg2.appendChild(dot);
     });
-
-    // Ka-Soleil au centre — plus lisible
-    const kaSol=kaSoleil();
-    const centerCircle=document.createElementNS(ns,'circle');
-    centerCircle.setAttribute('cx',CX);centerCircle.setAttribute('cy',CY);
-    centerCircle.setAttribute('r',22);
-    centerCircle.setAttribute('fill','rgba(201,168,76,0.18)');
-    centerCircle.setAttribute('stroke','rgba(201,168,76,0.7)');
-    centerCircle.setAttribute('stroke-width','1.5');
-    svg.appendChild(centerCircle);
-    const solLabel=document.createElementNS(ns,'text');
-    solLabel.setAttribute('x',CX);solLabel.setAttribute('y',CY-6);
-    solLabel.setAttribute('text-anchor','middle');solLabel.setAttribute('dominant-baseline','middle');
-    solLabel.setAttribute('font-family','Cinzel, serif');solLabel.setAttribute('font-size','8');
-    solLabel.setAttribute('fill','rgba(201,168,76,0.75)');
-    solLabel.textContent='Ka-☀';
-    const solVal=document.createElementNS(ns,'text');
-    solVal.setAttribute('x',CX);solVal.setAttribute('y',CY+9);
-    solVal.setAttribute('text-anchor','middle');solVal.setAttribute('dominant-baseline','middle');
-    solVal.setAttribute('font-family','Cinzel Decorative, serif');solVal.setAttribute('font-size','14');
-    solVal.setAttribute('fill','#e8c97a');
-    solVal.setAttribute('font-weight','bold');
-    solVal.textContent=String(kaSol);
-    svg.appendChild(solLabel);svg.appendChild(solVal);
-
-    // Indicateur Khaïba
-    if(chuteKhaiba>0){
-      const kText=document.createElementNS(ns,'text');
-      kText.setAttribute('x',CX);kText.setAttribute('y',H-8);
-      kText.setAttribute('text-anchor','middle');kText.setAttribute('font-family','Cinzel,serif');
-      kText.setAttribute('font-size','8');kText.setAttribute('fill','rgba(192,80,74,0.8)');
-      kText.textContent=`💀 Khaïba ${chuteKhaiba}° — pentacle altéré`;
-      svg.appendChild(kText);
-    }
-
-    // Disposition : SVG + tableau HTML côte à côte
-    const pentLayout=h('div',{style:{display:'flex',gap:'1.5rem',alignItems:'center',
-      justifyContent:'center',flexWrap:'wrap'}});
-    pentLayout.appendChild(svg);
-
-    // Tableau des scores Ka
-    const kaTable=h('div',{style:{minWidth:'160px'}});
-    Object.entries(sc2).forEach(([ka,score])=>{
-      const isDom2=ka===dom2;
-      const color=KA_COLORS[ka];
-      const dMap2=dom2?domMap2[dom2]:null;
-      const role=isDom2?'Dominant'
-        :(dMap2&&dMap2.neu.includes(ka)?'Neutre'
-        :(dMap2&&dMap2.opp.includes(ka)?'Opposé':''));
-      const row=h('div',{style:{
-        display:'flex',alignItems:'center',gap:'.6rem',
-        padding:'.4rem .6rem',marginBottom:'.3rem',borderRadius:'6px',
-        background:isDom2?color+'22':'rgba(13,11,8,.5)',
-        border:`1px solid ${isDom2?color:'rgba(201,168,76,.15)'}`,
-      }});
-      row.appendChild(h('span',{style:{fontSize:'1.1rem',width:'1.5rem',textAlign:'center'}},KA_ICONS[ka]));
-      row.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',
-        color:isDom2?'#fff':'var(--parch-d)',flex:1}},ka));
-      if(role) row.appendChild(h('span',{style:{fontSize:'.65rem',color:isDom2?color+'cc':'var(--gold-d)',
-        fontFamily:'Cinzel,serif'}},role));
-      row.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.2rem',
-        color:isDom2?'#e8c97a':color,fontWeight:'bold',minWidth:'1.5rem',textAlign:'right'}},String(score)));
-      kaTable.appendChild(row);
-    });
-    // Ka-Soleil
-    const kaSolRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem',
-      padding:'.4rem .6rem',marginTop:'.3rem',borderRadius:'6px',
-      background:'rgba(201,168,76,.08)',border:'1px solid rgba(201,168,76,.25)'}});
-    kaSolRow.appendChild(h('span',{style:{fontSize:'1.1rem'}},'☀️'));
-    kaSolRow.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',
-      color:'var(--parch-d)',flex:1}},'Ka-Soleil'));
-    kaSolRow.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.2rem',
-      color:'#e8c97a',fontWeight:'bold'}},String(kaSol)));
-    kaTable.appendChild(kaSolRow);
-    pentLayout.appendChild(kaTable);
-    pentBox.appendChild(pentLayout);
-
-    // Légende Ka-Soleil, Vision-Ka et annotation opposé majeur
-    const legDiv=h('div',{style:{display:'flex',justifyContent:'center',gap:'1.5rem',
-      marginTop:'.5rem',flexWrap:'wrap',fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--gold-d)'}});
-    legDiv.appendChild(h('span',{},`☀️ Ka-Soleil : ${kaSol}`));
-    legDiv.appendChild(h('span',{},`👁 Vision-Ka : ${sc2[dom2]||0}`));
-    if(S.ka_dom){
-      const dMap=domMap2[S.ka_dom];
-      const OPP_ANNOT9={
-        Feu:"Pas attiré par la passion ni les coups d'éclat.",
-        Air:"Pas attiré par le savoir ni la diplomatie.",
-        Eau:"Pas porté sur l'intuition ni la mémoire profonde.",
-        Terre:"Pas ancré dans le monde physique ni l'endurance.",
-        Lune:"Pas attiré par les mensonges ni les illusions.",
-      };
-      if(dMap){
-        const oppMajKa=S.opp_inverse?dMap.opp[0]:dMap.opp[1];
-        if(OPP_ANNOT9[oppMajKa]){
-          pentBox.appendChild(h('p',{style:{textAlign:'center',fontSize:'.72rem',
-            color:'var(--parch-d)',fontStyle:'italic',marginTop:'.3rem'}},
-            `${KA[oppMajKa].ico} Opposé majeur ${oppMajKa} : ${OPP_ANNOT9[oppMajKa]}`));
-        }
-      }
-    }
-    pentBox.appendChild(legDiv);
-    d.insertBefore(pentBox, d.querySelector('.box'));
+    // Centre Ka-Soleil
+    const cc=document.createElementNS(ns2,'circle');
+    cc.setAttribute('cx',CX2);cc.setAttribute('cy',CY2);cc.setAttribute('r',18);
+    cc.setAttribute('fill','rgba(139,101,48,.15)');cc.setAttribute('stroke','rgba(139,101,48,.5)');
+    cc.setAttribute('stroke-width','1.2');svg2.appendChild(cc);
+    const ct=document.createElementNS(ns2,'text');
+    ct.setAttribute('x',CX2);ct.setAttribute('y',CY2-4);
+    ct.setAttribute('text-anchor','middle');ct.setAttribute('dominant-baseline','middle');
+    ct.setAttribute('font-family','Cinzel,serif');ct.setAttribute('font-size','7');
+    ct.setAttribute('fill','rgba(139,101,48,.7)');ct.textContent='Ka☀';
+    const cv=document.createElementNS(ns2,'text');
+    cv.setAttribute('x',CX2);cv.setAttribute('y',CY2+8);
+    cv.setAttribute('text-anchor','middle');cv.setAttribute('dominant-baseline','middle');
+    cv.setAttribute('font-family','Cinzel Decorative,serif');cv.setAttribute('font-size','12');
+    cv.setAttribute('fill','#5a3010');cv.setAttribute('font-weight','bold');
+    cv.textContent=String(kaSoleil());
+    svg2.appendChild(ct);svg2.appendChild(cv);
+    const pentSecBd=h('div',{cls:'fp-sec-bd',style:{textAlign:'center',padding:'.4rem'}});
+    pentSecBd.appendChild(svg2);
+    pentSec.appendChild(pentSecBd);
   }
-  const rc=h('div',{cls:'box'});rc.appendChild(h('h3',{},'📜 Fiche Complète'));
+  col2.appendChild(pentSec);
+  topGrid.appendChild(col2);
+
+  // Colonne 3 — Chutes + Fraternité + Simulacre
+  const col3=h('div',{});
+  // Chutes pips
+  const chutesBd=h('div',{cls:'fp-sec-bd'});
+  ['khaiba','narcose','ombre'].forEach(cid=>{
+    const ch=CHUTES.find(x=>x.id===cid);
+    if(!ch)return;
+    const val=S.chutes[cid]||0;
+    const row=h('div',{style:{display:'flex',alignItems:'center',gap:'.4rem',marginBottom:'.35rem'}});
+    row.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',
+      color:'#5a3010',width:'4rem',flexShrink:0}},ch.ico+' '+ch.nm));
+    const pipsDiv=h('div',{style:{flex:1}});
+    for(let i=0;i<10;i++){
+      pipsDiv.appendChild(h('span',{cls:`fp-pip ${i<val?'on':'off'}`},''));
+    }
+    row.appendChild(pipsDiv);
+    row.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'.9rem',
+      color:'#8b1a1a',minWidth:'1rem',textAlign:'right'}},val>0?String(val):''));
+    chutesBd.appendChild(row);
+  });
+  const chutesSec=h('div',{cls:'fp-sec'});
+  chutesSec.appendChild(h('div',{cls:'fp-sec-hd'},'Chutes'));
+  chutesSec.appendChild(chutesBd);
+  col3.appendChild(chutesSec);
+  col3.appendChild(h('div',{style:{height:'.6rem'}}));
+
+  // Simulacre
+  col3.appendChild(fpSec('Simulacre', [
+    ['Métier', mt?mt.nm:'—'],
+    ['Vécu accordé', mt?mt.nm:'—'],
+    ['Ressources', mt?'●'.repeat(mt.rs)+'○'.repeat(5-mt.rs):'—'],
+    ['Ka-Soleil', String(kaSoleil())],
+    ['Stase', S.stase||'—'],
+  ]));
+  col3.appendChild(h('div',{style:{height:'.6rem'}}));
+
+  // PI
+  col3.appendChild(fpSec('Budget PI', [
+    ['Total PI', S.pi_total+chutesBonusPI()],
+    ['Dépensés', piSpent()],
+    ['Restants', left],
+  ]));
+  topGrid.appendChild(col3);
+  fp.appendChild(topGrid);
+  fp.appendChild(h('div',{style:{height:'.9rem'}}));
+
+  // ── BLOC MILIEU : Incarnations + Quêtes + Savoirs ──
+  const midGrid=h('div',{cls:'fp-grid fp-mid-grid'});
+
+  // Incarnations (colonne gauche)
+  const incBd=h('div',{cls:'fp-sec-bd',style:{padding:'.3rem .5rem'}});
+  const incTbl=h('table',{cls:'fp-inc-tbl'});
+  Object.entries(S.incarnations).forEach(([id,inc])=>{
+    const ep=EPOQUES.find(e=>e.id===id);
+    if(!ep)return;
+    const tr=document.createElement('tr');
+    const tdEp=document.createElement('td');
+    tdEp.className='fp-inc-era';
+    tdEp.textContent=`${ep.ico||''} ${ep.nm}`;
+    const tdVecu=document.createElement('td');
+    tdVecu.className='fp-inc-vecu';
+    const vcuObj=ep.vecus_data&&ep.vecus_data.find(v=>v.nm===inc.vecu);
+    const isKaDom=vcuObj&&vcuObj.ka===S.ka_dom;
+    tdVecu.textContent=inc.vecu||(inc.quete?'(quête)':'—');
+    if(isKaDom) tdVecu.style.fontWeight='700';
+    const tdQ=document.createElement('td');
+    tdQ.className='fp-inc-quete';
+    tdQ.textContent=inc.quete||'';
+    tr.appendChild(tdEp);tr.appendChild(tdVecu);tr.appendChild(tdQ);
+    incTbl.appendChild(tr);
+  });
+  incBd.appendChild(incTbl);
+  const incSecFp=h('div',{cls:'fp-sec'});
+  incSecFp.appendChild(h('div',{cls:'fp-sec-hd'},'Époques et vécus passés'));
+  incSecFp.appendChild(incBd);
+  midGrid.appendChild(incSecFp);
+
+  // Quêtes + Savoirs (colonne droite)
+  const col4=h('div',{});
+  // Quêtes
+  {
+    const qBd=h('div',{cls:'fp-sec-bd'});
+    const q2col=h('div',{cls:'fp-2col'});
+    const qEntries=Object.entries(tots.quetes).sort(([,a],[,b])=>b-a);
+    if(qEntries.length===0){
+      q2col.appendChild(h('p',{style:{fontSize:'.8rem',color:'#5a3010',fontStyle:'italic'}},'—'));
+    } else {
+      qEntries.forEach(([qnm,deg])=>{
+        const qr=h('div',{cls:'fp-qrow'});
+        qr.appendChild(h('span',{cls:'fp-qnm'},qnm));
+        qr.appendChild(h('span',{cls:'fp-qdeg'},String(deg)));
+        q2col.appendChild(qr);
+      });
+    }
+    qBd.appendChild(q2col);
+    const qSec=h('div',{cls:'fp-sec'});
+    qSec.appendChild(h('div',{cls:'fp-sec-hd'},'Quêtes ésotériques'));
+    qSec.appendChild(qBd);
+    col4.appendChild(qSec);
+    col4.appendChild(h('div',{style:{height:'.6rem'}}));
+  }
+  // Savoirs
+  {
+    const savBd=h('div',{cls:'fp-sec-bd'});
+    const sav2col=h('div',{cls:'fp-2col'});
+    const allSavoirs={};
+    Object.values(S.incarnations).forEach(inc=>{
+      (inc.savoirs||[]).forEach(s=>{
+        const nm=s.replace(/\s+\d+$/,'').trim();
+        const deg=parseInt(s.match(/(\d+)$/)?.[1]||'1');
+        allSavoirs[nm]=Math.max(allSavoirs[nm]||0,deg);
+      });
+    });
+    const savEntries=Object.entries(allSavoirs).sort(([a],[b])=>a.localeCompare(b));
+    if(savEntries.length===0){
+      sav2col.appendChild(h('p',{style:{fontSize:'.8rem',color:'#5a3010',fontStyle:'italic'}},'—'));
+    } else {
+      savEntries.forEach(([nm,deg])=>{
+        const sr=h('div',{cls:'fp-qrow'});
+        sr.appendChild(h('span',{cls:'fp-qnm'},nm));
+        sr.appendChild(h('span',{cls:'fp-qdeg'},String(deg)));
+        sav2col.appendChild(sr);
+      });
+    }
+    savBd.appendChild(sav2col);
+    const savSec=h('div',{cls:'fp-sec'});
+    savSec.appendChild(h('div',{cls:'fp-sec-hd'},'Savoirs ésotériques'));
+    savSec.appendChild(savBd);
+    col4.appendChild(savSec);
+  }
+  midGrid.appendChild(col4);
+  fp.appendChild(midGrid);
+  fp.appendChild(h('div',{style:{height:'.9rem'}}));
+
+  // ── BLOC BAS : Sciences + Notes ────────────────────
+  const botGrid=h('div',{cls:'fp-grid'});
+
+  // Sciences
+  const sciBd=h('div',{cls:'fp-sec-bd'});
+  [
+    ['Magie','🌑 Basse',S.magie.bas||0,'🌓 Haute',S.magie.haut||0,'🌕 Grand Secret',S.magie.grand||0],
+  ].forEach(()=>{
+    sciBd.appendChild(h('div',{style:{display:'flex',gap:'.5rem',marginBottom:'.3rem',flexWrap:'wrap'}},
+      ...[['🌑 Basse',S.magie.bas||0],['🌓 Haute',S.magie.haut||0],['🌕 Grand Secret',S.magie.grand||0]].map(([lbl,val])=>
+        h('span',{style:{background:'rgba(139,101,48,.1)',borderRadius:'4px',padding:'.2rem .5rem',
+          fontSize:'.78rem',fontFamily:'Cinzel,serif',color:'#3d1f00'}},`${lbl} : ${val}`)
+      )
+    ));
+  });
+  if(S.magie.voie) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Voie Magie'),h('span',{cls:'fp-rv'},S.magie.voie)));
+  sciBd.appendChild(h('div',{style:{height:'.4rem'}}));
+  // Kabbale
+  const totalSephFp=Object.values(S.sephiroth).reduce((a,b)=>a+b,0);
+  sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Kabbale (degrés)'),h('span',{cls:'fp-rv'},String(totalSephFp))));
+  const activeSeph=Object.entries(S.sephiroth).filter(([,v])=>v>0).map(([id,v])=>{const sp=SEPH.find(x=>x.id===id);return sp?`${sp.nm} ${v}`:''}).filter(Boolean).join('  ');
+  if(activeSeph) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Sephiroth'),h('span',{cls:'fp-rv',style:{fontSize:'.75rem'}},activeSeph)));
+  sciBd.appendChild(h('div',{style:{height:'.4rem'}}));
+  // Alchimie
+  sciBd.appendChild(h('div',{style:{display:'flex',gap:'.5rem',marginBottom:'.3rem',flexWrap:'wrap'}},
+    ...[['⬛ Noir',S.alchimie.noir||0],['⬜ Blanc',S.alchimie.blanc||0],['🟥 Rouge',S.alchimie.rouge||0]].map(([lbl,val])=>
+      h('span',{style:{background:'rgba(139,101,48,.1)',borderRadius:'4px',padding:'.2rem .5rem',
+        fontSize:'.78rem',fontFamily:'Cinzel,serif',color:'#3d1f00'}},`${lbl} : ${val}`)
+    )
+  ));
+  if(S.alchimie.voie) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Voie Alchimie'),h('span',{cls:'fp-rv'},S.alchimie.voie)));
+  const sciSec=h('div',{cls:'fp-sec'});
+  sciSec.appendChild(h('div',{cls:'fp-sec-hd'},'Sciences occultes'));
+  sciSec.appendChild(sciBd);
+  botGrid.appendChild(sciSec);
+
+  // Notes + Arcane
+  const noteCol=h('div',{});
+  if(S.notes_simulacre){
+    noteCol.appendChild(fpSec('Notes du Simulacre', S.notes_simulacre));
+    noteCol.appendChild(h('div',{style:{height:'.6rem'}}));
+  }
+  const arcAdopte2=getArcaneAdopte();
+  if(arcAdopte2){
+    const ao2=ARCANES.find(x=>x.id===arcAdopte2.arcaneId);
+    noteCol.appendChild(fpSec('Arcane adopté', [
+      ['Lame', ao2?ao2.num+' — '+ao2.nm:'?'],
+      ['Ka', ao2&&ao2.ka?ao2.ka:'—'],
+      ['Degrés', arcAdopte2.deg+'°'],
+    ]));
+    noteCol.appendChild(h('div',{style:{height:'.6rem'}}));
+  }
+  noteCol.appendChild(fpSec('Sapience', [
+    ['PS initiaux', psInit],
+    ['+ PI restants', `${left} → +${sap} PS`],
+    ['PS TOTAL', psTotal],
+  ]));
+  botGrid.appendChild(noteCol);
+  fp.appendChild(botGrid);
+
+  fpContainer.appendChild(h('div',{style:{textAlign:'center',marginTop:'1rem',display:'flex',
+    gap:'.7rem',justifyContent:'center',flexWrap:'wrap'}},
+    h('button',{cls:'btn btn-e',onClick:exportTXT},'📄 Export .TXT'),
+    h('button',{cls:'btn btn-e',onClick:()=>window.print()},'🖨️ Imprimer'),
+  ));
+
+  d.appendChild(fpContainer);
+
+  // Compatibilité : rc fantôme (non affiché) pour les fonctions addS
+  const rc=h('div',{style:{display:'none'}});
   function addS(ttl,rows){const s=h('div',{cls:'rc-sec'},h('h3',{},ttl));for(const[k,v]of rows)s.appendChild(rcRow(k,v));rc.appendChild(s);}
   addS('🔮 Identité',[['Nom',S.nom||'—'],['Joueur',S.joueur||'—'],['Ka Dominant',S.ka_dom||'—'],['Métamorphe',S.metamorphe||'—'],['Profil',S.profil||'—'],['Métier',mt?mt.nm:'—'],['Objet-Stase',S.stase||'—']]);
   const kaRows=Object.entries(sc).map(([ka,s2])=>[`${KA[ka].ico} Ka ${ka}`,String(s2)]);kaRows.push(['☀️ Ka-Soleil',String(kaSoleil())]);
@@ -3829,8 +4177,7 @@ function s9(){
   const chuteTotal=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
   const totalAlchRc=(S.alchimie.noir||0)+(S.alchimie.blanc||0)+(S.alchimie.rouge||0);
   const totalCstrRc=Object.values(S.constructs).reduce((a,b)=>a+b,0);
-  // Totaux cumulés (gratuités époques + achats PI)
-  const tots=calcTotauxCumules();
+  // tots déjà déclaré en début de s9
 
   // ── Incarnations détaillées avec Vécu et degrés ──────
   {
@@ -3934,10 +4281,7 @@ function s9(){
   d.appendChild(rc);
   const br=h('div',{cls:'btn-row'});
   br.appendChild(h('button',{cls:'btn btn-s',onClick:()=>{S.step--;render();}},'← Retour'));
-  const eg=h('div',{style:{display:'flex',gap:'.7rem',flexWrap:'wrap'}});
-  eg.appendChild(h('button',{cls:'btn btn-e',onClick:exportTXT},'📄 Export .TXT'));
-  eg.appendChild(h('button',{cls:'btn btn-e',onClick:()=>window.print()},'🖨️ Imprimer'));
-  br.appendChild(eg);d.appendChild(br);return d;
+  d.appendChild(br);return d;
 }
 
 // ════════════════════════════════════════════════════════
