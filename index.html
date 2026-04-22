@@ -1635,9 +1635,9 @@ function normalizeQuete(raw){
     .replace(/'/g,"'")
     .trim();
   // Chercher dans le dictionnaire
-  if(QUETES_CANONICAL[key]) return QUETES_CANONICAL[key];
+  if(QUETE_CANON[key]) return QUETE_CANON[key];
   // Chercher par inclusion
-  for(const[k,v] of Object.entries(QUETES_CANONICAL)){
+  for(const[k,v] of Object.entries(QUETE_CANON)){
     if(key.includes(k)||k.includes(key)) return v;
   }
   // Fallback : retourner tel quel sans le degré
