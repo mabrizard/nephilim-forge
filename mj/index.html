@@ -1760,36 +1760,16 @@ table.sorts-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
 </body>
 </html>`;
 
-  // Ouvrir dans nouvel onglet via Blob (contourne le blocage des popups)
-  try{
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.target='_blank';
-    a.rel='noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-  }catch(err){
-    // Fallback : fenêtre popup
-    const win=window.open('','_blank');
-    if(!win){
-      // Dernier recours : téléchargement direct
-      const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;
-      a.download=(typeof S!=='undefined'&&S.nom?S.nom:'nephilim')+'_fiche.html';
-      document.body.appendChild(a);a.click();document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url),5000);
-      return;
-    }
-    win.document.write(html);
-    win.document.close();
-    win.focus();
-  }
+  // Téléchargement direct en HTML — s'ouvre dans le navigateur, prêt pour Ctrl+P → PDF
+  const _blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const _url=URL.createObjectURL(_blob);
+  const _a=document.createElement('a');
+  _a.href=_url;
+  _a.download=(S&&S.nom?S.nom.replace(/[^a-z0-9]/gi,'_'):'nephilim')+'_fiche.html';
+  document.body.appendChild(_a);
+  _a.click();
+  document.body.removeChild(_a);
+  setTimeout(()=>URL.revokeObjectURL(_url),10000);
 }
 
 
@@ -1801,38 +1781,153 @@ function exportFicheTXT(pid){
   if(!p) return;
   const S = p.data_json||{};
   const sc = kaScoresFrom(S);
-  const attrs = calcAttrsFrom(sc);
+  const at = calcAttrsFrom(sc);
+  const tots = calcTotauxCumulesFrom(S);
+  const piSpent = calcPiSpent(S);
+  const piLeft = Math.max(0,(p.pi_total||0)-piSpent);
+  const sap = Math.floor(piLeft/2);
+  const psTotal = (S.ps_initial||0)+sap;
+  const arcane = getArcaneAdopteFrom(S);
+  const effets = grimGetEffetsFrom(S);
+  const chuteTotal = Object.values(S.chutes||{}).reduce((a,b)=>a+(b||0),0);
+  const chuteBonus = chuteTotal*5;
+  const sep = '═'.repeat(48);
+  const sep2 = '─'.repeat(48);
+  const ln = '\n';
+
+
   const lines = [
-    '═'.repeat(44),
-    '  NEPHILIM — FICHE DE PERSONNAGE (Export MJ)',
-    '═'.repeat(44),'',
-    `Nom          : ${p.nom||'—'}`,
-    `Ka Dominant  : ${p.ka_dom||'—'}`,
-    `Métamorphe   : ${p.metamorphe||'—'}`,
-    `Profil       : ${p.profil||'—'}`,
-    `Objet-Stase  : ${S.stase||'—'}`,'',
-    '── PENTACLE ───────────────────────────────',
-    ...Object.entries(sc).map(([ka,v])=>`  Ka ${ka.padEnd(7)}: ${v}`),'',
-    '── ATTRIBUTS ──────────────────────────────',
-    `  Perspicacité : ${attrs.perspicacite}`,
-    `  Récupération : ${attrs.recuperation}`,
-    `  Initiative   : ${attrs.initiative}`,
-    `  Bonus Dom.   : +${attrs.bonus_dom}`,'',
-    '── SCIENCES OCCULTES ──────────────────────',
-    `  Magie    : Basse ${S.magie?.bas||0} / Haute ${S.magie?.haut||0} / Grand ${S.magie?.grand||0}`,
-    `  Kabbale  : ${Object.values(S.sephiroth||{}).reduce((a,b)=>a+b,0)}°`,
-    `  Alchimie : Noir ${S.alchimie?.noir||0} / Blanc ${S.alchimie?.blanc||0} / Rouge ${S.alchimie?.rouge||0}`,'',
-    '── CHUTES ─────────────────────────────────',
-    `  Khaïba : ${S.chutes?.khaiba||0}°  Narcose : ${S.chutes?.narcose||0}°  Ombre : ${S.chutes?.ombre||0}°`,'',
-    '── PI ─────────────────────────────────────',
-    `  Budget : ${p.pi_total||0}  Dépensés : ${calcPiSpent(S)}  Restants : ${(p.pi_total||0)-calcPiSpent(S)}`,
-    '═'.repeat(44),
+    sep,
+    '  NEPHILIM LÉGENDE — FICHE DE PERSONNAGE',
+    '  Module MJ — Forge des Âmes v3',
+    sep, '',
+    // ── Identité
+    `Nom            : ${p.nom||'—'}`,
+    `Joueur         : ${S.joueur||'—'}`,
+    `Ka Dominant    : ${p.ka_dom||'—'}`,
+    `Métamorphe     : ${p.metamorphe||'—'}`,
+    `Profil         : ${p.profil||'—'}`,
+    `Métier         : ${S.metier||'—'}`,
+    `Objet-Stase    : ${S.stase||'—'}`,
+    `Étape création : ${S.step||1}/9`,
+    '',
+    // ── Ka
+    sep2,
+    '  PENTACLE DES KA',
+    sep2,
+    ...Object.entries(sc).map(([ka,v])=>`  Ka ${ka.padEnd(8)}: ${v}`),
+    `  Ka-Soleil    : ${S.ka_soleil_base||3}`,
+    '',
+    // ── Attributs
+    sep2,
+    '  ATTRIBUTS',
+    sep2,
+    `  Perspicacité   : ${at.perspicacite}  (11 − Ka Air)`,
+    `  Récupération   : ${at.recuperation}  (11 − Ka Terre)`,
+    `  Initiative     : ${at.initiative}  (Ka Eau × 2)`,
+    `  Mouvement      : ${at.initiative}  (Ka Eau × 2)`,
+    `  Voile          : ${at.voile}`,
+    `  Bonus Dommages : +${at.bonus_dom}`,
+    '',
+    // ── Chutes
+    sep2,
+    `  CHUTES  (${chuteTotal}/${S.chutes_max||2} — Bonus : +${chuteBonus} PI)`,
+    sep2,
+    `  Khaïba  💀 : ${S.chutes?.khaiba||0}°  — Corruption du Ka`,
+    `  Narcose 🌀 : ${S.chutes?.narcose||0}°  — Mélancolie mystique`,
+    `  Ombre   🌑 : ${S.chutes?.ombre||0}°  — Perte au Simulacre`,
+    '',
+    // ── Incarnations
+    sep2,
+    `  INCARNATIONS (${Object.keys(S.incarnations||{}).length} époques)`,
+    sep2,
+    ...Object.entries(S.incarnations||{}).map(([id,inc])=>{
+      const EP={
+        atlantide:"Chute de l'Atlantide",akhenaton:"Rêve d'Akhenaton",
+        troie:"Chute de Troie",perse:"Empire Perse",babylone:"Babylone",
+        alexandre:"Alexandre",carthage:"Carthage et Rome",
+        incident_jesus:"Incident Jésus",arthuriades:"Arthuriades",
+        croisades:"Croisades","buchers":"Bûchers Cathares",
+        chute_temple:"Chute du Temple",renaissance:"Renaissance",
+        sublime_porte:"Sublime Porte",roi_soleil:"Roi-Soleil",
+        revolution:"Révolution",victorien:"Vapeurs Victoriennes",
+        viennoise:"Sécession Viennoise",annees_folles:"Années Folles",
+        annees_noires:"Années Noires",grand_eveil:"Grand Éveil",
+        apocalypse:"Apocalypse",
+      };
+      const epNm = EP[id]||id;
+      const isDom = inc.ka_vecu&&inc.ka_vecu===S.ka_dom;
+      const baseV = isDom?2:1;
+      const extraV = (inc.vecus_deg&&inc.vecus_deg[inc.vecu])||0;
+      const totalV = baseV+extraV;
+      const rows = [`  ▸ ${epNm}`];
+      if(inc.vecu) rows.push(`    Vécu    : ${inc.vecu} (${totalV}°${isDom?' ⭐':''})`);
+      if(inc.quete) rows.push(`    Quête   : ${inc.quete}`);
+      if(inc.savoirs&&inc.savoirs.length>0) rows.push(`    Savoirs : ${inc.savoirs.join(', ')}`);
+      if(inc.arcane_id) rows.push(`    Arcane  : +${inc.arcane_deg||0}°`);
+      return rows.join(ln);
+    }),
+    '',
+    // ── Quêtes cumulées
+    ...( ()=>{
+      const qe=Object.entries(tots.quetes||{});
+      if(qe.length===0) return [];
+      return [sep2,'  QUÊTES ÉSOTÉRIQUES (cumulées)',sep2,
+        ...qe.sort(([,a],[,b])=>b-a).map(([q,d])=>`  ${q.padEnd(30)}: ${d}°`),''
+      ];
+    })(),
+    // ── Savoirs cumulés
+    ...( ()=>{
+      const se=Object.entries(tots.savoirs||{});
+      if(se.length===0) return [];
+      return [sep2,'  SAVOIRS ÉSOTÉRIQUES',sep2,
+        ...se.sort(([a],[b])=>a.localeCompare(b)).map(([s,d])=>`  ${s.padEnd(25)}: ${d}°`),''
+      ];
+    })(),
+    // ── Sciences
+    sep2,
+    '  SCIENCES OCCULTES',
+    sep2,
+    `  Magie    : Basse ${S.magie?.bas||0}° / Haute ${S.magie?.haut||0}° / Grand ${S.magie?.grand||0}°${S.magie?.voie?' — Voie '+S.magie.voie:''}`,
+    `  Kabbale  : ${Object.entries(S.sephiroth||{}).filter(([,v])=>v>0).map(([id,v])=>{const sp=SEPH.find(x=>x.id===id);return sp?sp.nm+'('+v+')':id+'('+v+')'}).join(', ')||'—'}${S.monde?' — Monde '+S.monde:''}`,
+    `  Alchimie : Noir ${S.alchimie?.noir||0}° / Blanc ${S.alchimie?.blanc||0}° / Rouge ${S.alchimie?.rouge||0}°${S.alchimie?.voie?' — Voie '+S.alchimie.voie:''}`,
+    '',
+    // ── Arcane
+    ...( ()=>{
+      if(!arcane) return [];
+      const a=ARCANES.find(x=>x.id===arcane.arcaneId);
+      return [sep2,'  ARCANE ADOPTÉ',sep2,
+        `  ${a?a.num+' — '+a.nm:'?'}  (${arcane.deg}° cumulés)`,''];
+    })(),
+    // ── Grimoire
+    ...( ()=>{
+      const graves=effets.gravés||[];
+      if(graves.length===0) return [];
+      const rows=[sep2,'  GRIMOIRE',sep2];
+      const byTab={};
+      graves.forEach(e=>{const t=e.tab||'divers';if(!byTab[t])byTab[t]=[];byTab[t].push(e);});
+      Object.entries(byTab).forEach(([tab,items])=>{
+        rows.push(`  ${tab.toUpperCase()} :`);
+        items.forEach(e=>rows.push(`    · ${e.nom||'—'}${e.element?' ('+e.element+')':''}${e.cercle?' — '+e.cercle:''}`));
+      });
+      rows.push('');
+      return rows;
+    })(),
+    // ── PI + Sapience
+    sep,
+    `  Budget PI  : ${p.pi_total||0} + ${chuteBonus} (chutes) = ${(p.pi_total||0)+chuteBonus}`,
+    `  Dépensés   : ${piSpent}   Restants : ${piLeft}`,
+    `  Sapience   : ${S.ps_initial||0} PS (profil) + ${sap} PS (PI restants) = ${psTotal} PS`,
+    sep,
   ];
-  const blob = new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+
+  const blob = new Blob([lines.join(ln)],{type:'text/plain;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${p.nom||'nephilim'}_mj.txt`;
+  a.download = `${(p.nom||'nephilim').replace(/[^a-z0-9]/gi,'_')}_mj.txt`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 function showRawJSON(pid){

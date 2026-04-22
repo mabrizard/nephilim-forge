@@ -5129,15 +5129,19 @@ function exportTXT(){
     '── INCARNATIONS ───────────────────────────',
     ...Object.entries(S.incarnations).map(([id,inc])=>{
       const ep=EPOQUES.find(e=>e.id===id);
-      if(!ep) return `  ${id} — Vécu: ${inc.vecu||'—'}`;
+      if(!ep) return `  ${id}\n    Vécu: ${inc.vecu||'—'}`;
       const vecusList3=ep.vecus_data||[];
       const vDobj3=vecusList3.find(v=>v.nm===inc.vecu);
       const isKaDom3=vDobj3&&vDobj3.ka===S.ka_dom;
       const baseDeg3=isKaDom3?2:1;
       const extraDeg3=inc.vecus_deg&&inc.vecus_deg[inc.vecu]||0;
       const totalVDeg3=baseDeg3+extraDeg3;
-      const vecuStr3=inc.vecu?`${inc.vecu} (${totalVDeg3}°${isKaDom3?' ⭐':''})`: '—';
-      return `  ${ep.nm} (${ep.per}) — Vécu: ${vecuStr3}${inc.quete?' · Quête: '+inc.quete:''} — Savoirs: ${(inc.savoirs||[]).join(', ')||'—'}`;
+      const rows3=[`  ▸ ${ep.nm}${ep.per?' ('+ep.per+')':''}`];
+      if(inc.vecu) rows3.push(`    Vécu    : ${inc.vecu} (${totalVDeg3}°${isKaDom3?' ⭐':''})`);
+      if(inc.quete) rows3.push(`    Quête   : ${inc.quete}`);
+      if(inc.savoirs&&inc.savoirs.length>0) rows3.push(`    Savoirs : ${inc.savoirs.join(', ')}`);
+      if(inc.arcane_id){const a2=ARCANES.find(x=>x.id===inc.arcane_id);rows3.push(`    Arcane  : ${a2?a2.num+' '+a2.nm:'?'} +${inc.arcane_deg||0}°`);}
+      return rows3.join('\n');
     }),
     ...(()=>{
       const tots2=calcTotauxCumules();
@@ -5146,6 +5150,15 @@ function exportTXT(){
       return ['  ','── QUÊTES ÉSOTÉRIQUES (cumulées) ──────────',
         ...qEntries.sort(([,a],[,b])=>b-a).map(([q,d])=>`  ${q} : ${d}°`)];
     })(),
+    ...(()=>{
+      const tots3=calcTotauxCumules();
+      const sEntries=Object.entries(tots3.savoirs||{});
+      if(sEntries.length===0) return [];
+      return ['── SAVOIRS ÉSOTÉRIQUES (cumulés) ──────────',
+        ...sEntries.sort(([a],[b])=>a.localeCompare(b)).map(([s,d])=>`  ${s.padEnd(25)}: ${d}°`),''];
+    })(),
+    '── NOTES DU SIMULACRE ─────────────────────',
+    ...(S.notes_simulacre?S.notes_simulacre.split('\n').map(l=>`  ${l}`):[`  —`]),'',
     '── SCIENCES OCCULTES ──────────────────────',
     `  Magie       : Basse ${S.magie.bas||0} / Haute ${S.magie.haut||0} / Grand Secret ${S.magie.grand||0}${S.magie.voie?' · Voie '+S.magie.voie:''}`,
     ...(()=>{
