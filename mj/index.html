@@ -199,6 +199,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .grim-item:last-child{border-bottom:none;}
 .pdf-btn{background:rgba(122,80,40,.8) !important;color:#f5efe0 !important;border-color:rgba(196,144,64,.5) !important;font-size:.85rem !important;padding:.4rem 1.2rem !important;}
 .pdf-btn:hover{background:rgba(160,104,48,.9) !important;}
+
+.inc-savoirs{display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.3rem;}
+.inc-savoirs .inc-badge{font-size:.65rem;}
 </style>
 </head>
 <body>
@@ -765,16 +768,31 @@ function renderIncarnations(pid, S){
     const ep = EPOQUES_LIGHT[id]||{nm:id,ico:'📜'};
     const row = document.createElement('div');
     row.className = 'inc-row';
-    const savoirs = (inc.savoirs||[]).slice(0,3);
+    // Score du vécu
+    const ka_dom = S.ka_dom;
+    const VECUS_KA = {
+      'Héros':'Feu','Sage':'Air','Messagère':'Eau','Décepteur':'Lune','Soigneur':'Terre',
+      'Oracle':'Feu','Matriarche':'Air','Navigateur':'Eau','Meurtrier':'Lune','Charpentier':'Terre',
+    };
+    // Chercher dans les vecus_data de l'époque si possible
+    const vecuKa = inc.vecu_ka || (inc.vecu ? (VECUS_KA[inc.vecu]||'') : '');
+    const isKaDom = vecuKa === ka_dom;
+    const baseVecu = isKaDom ? 2 : 1;
+    const extraVecu = (inc.vecus_deg && inc.vecus_deg[inc.vecu]) || 0;
+    const totalVecu = baseVecu + extraVecu;
+    const savoirs = (inc.savoirs||[]);
     row.innerHTML = `
       <span class="inc-ico">${ep.ico}</span>
       <div class="inc-info">
         <div class="inc-nm">${ep.nm}</div>
-        <div class="inc-det">${inc.vecu?'Vécu : '+inc.vecu:'Vécu non choisi'}${inc.quete?' · Quête : '+inc.quete:''}</div>
-      </div>
-      <div class="inc-badges">
-        ${savoirs.map(s=>`<span class="inc-badge">${s}</span>`).join('')}
-        ${inc.arcane_id?`<span class="inc-badge" style="color:var(--seph);border-color:rgba(192,160,255,.3)">🂠 Arcane</span>`:''}
+        <div class="inc-det">
+          ${inc.vecu
+            ? `<strong>${inc.vecu}</strong> <span style="color:var(--gold);font-family:'Cinzel Decorative',serif">${totalVecu}°</span>${isKaDom?' ⭐':''}`
+            : '<em style="opacity:.5">Vécu non choisi</em>'}
+          ${inc.quete?` &nbsp;·&nbsp; <span style="color:var(--gold-d)">⚜ ${inc.quete}</span>`:''}
+        </div>
+        ${savoirs.length>0?`<div class="inc-savoirs">${savoirs.map(s=>`<span class="inc-badge">${s}</span>`).join('')}</div>`:''}
+        ${inc.arcane_id?`<div style="margin-top:.2rem"><span class="inc-badge" style="color:var(--seph);border-color:rgba(192,160,255,.3)">🂠 Arcane +${inc.arcane_deg||0}°</span></div>`:''}
       </div>`;
     wrap.appendChild(row);
   });
@@ -1117,8 +1135,14 @@ function calcTotauxCumulesFrom(S){
 
 
 function exportFichePDFFrom(S){
-  const at=calcAttrs(), sc=kaScoresFrom(S), mt=getMetier(), tots=calcTotauxCumules();
-  const sap=sapience(), psTotal=(S.ps_initial||0)+sap;
+  const sc=kaScoresFrom(S);
+  const at=calcAttrsFrom(sc);
+  const mt=null; // pas de METIERS dans MJ
+  const tots=calcTotauxCumulesFrom(S);
+  const psInit=S.ps_initial||0;
+  const left=Math.max(0,(S.pi_total||0)-calcPiSpent(S));
+  const sap=Math.floor(left/2);
+  const psTotal=psInit+sap;
   const KA_COLORS={Feu:'#C85020',Air:'#4090C0',Eau:'#206080',Lune:'#806090',Terre:'#508030'};
   const KA_ICONS={Feu:'🜂',Air:'🜁',Eau:'🜄',Lune:'☽',Terre:'🜃'};
 

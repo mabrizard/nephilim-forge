@@ -33,11 +33,25 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .sync-dot.pulse{animation:pulse .8s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
-.prog-wrap{margin-bottom:2rem}
-.prog-steps{display:flex;gap:4px;align-items:center}
-.prog-dot{flex:1;height:3px;background:var(--gold-d);border-radius:2px;transition:background .35s}
-.prog-dot.done{background:var(--gold-l)}.prog-dot.active{background:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.5)}
-.prog-lbl{text-align:center;font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold-d);margin-top:.5rem;letter-spacing:.1em}
+.prog-wrap{margin-bottom:1.2rem}
+.frise{display:flex;align-items:center;padding:.3rem .2rem;overflow-x:auto;gap:0;scrollbar-width:none}
+.frise::-webkit-scrollbar{display:none}
+.frise-step{display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:.35rem .4rem;border-radius:6px;cursor:pointer;transition:all .2s;
+  min-width:56px;max-width:72px;flex-shrink:0;
+  border:1px solid transparent;}
+.frise-step:hover{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.2);}
+.frise-step.active{background:rgba(201,168,76,.12);border-color:var(--gold);
+  box-shadow:0 0 8px rgba(201,168,76,.2);}
+.frise-step.done{opacity:.7;}
+.frise-step.done:hover{opacity:1;}
+.frise-ico{font-size:.95rem;line-height:1;}
+.frise-lbl{font-family:'Cinzel',serif;font-size:.52rem;color:var(--parch-d);
+  text-align:center;line-height:1.2;letter-spacing:.02em;white-space:nowrap;}
+.frise-step.active .frise-lbl{color:var(--gold);}
+.frise-step.done .frise-lbl{color:var(--parch-d);}
+.frise-line{width:12px;height:2px;background:var(--gold-d);flex-shrink:0;opacity:.3;margin:0 1px;}
+.frise-line.done{opacity:.7;background:var(--gold);}
 .prog-lbl span{color:var(--gold)}
 .pi-bar{display:flex;justify-content:center;align-items:center;gap:1.2rem;background:rgba(201,168,76,.07);border:1px solid var(--gold-d);border-radius:8px;padding:.7rem 1.5rem;margin-bottom:1.8rem;font-family:'Cinzel',serif;flex-wrap:wrap}
 .pi-gem{font-size:1.4rem}.pi-lbl{color:var(--parch-d);font-size:.82rem}
@@ -2090,12 +2104,26 @@ function showAuthPanel(){
 }
 
 function buildProgress(){
-  const lbls=['Ka','Pentacle','Profil','Passé','Occulte','Stase','Simulacre','Attributs','Final'];
+  const lbls=['Ka','Métamorphe','Profil','Incarnations','Occulte','Stase','Simulacre','Attributs','Fiche'];
+  const icons=['🜁','🐉','⭐','📚','🔮','🌑','👤','⚡','✡'];
   const d=h('div',{cls:'prog-wrap'});
-  const steps=h('div',{cls:'prog-steps'});
-  lbls.forEach((_,i)=>steps.appendChild(h('div',{cls:`prog-dot ${i+1<S.step?'done':i+1===S.step?'active':''}`})));
-  d.appendChild(steps);
-  d.appendChild(h('div',{cls:'prog-lbl'},'Étape ',h('span',{},String(S.step)),' / 9 — ',lbls[S.step-1]));
+  // Frise cliquable
+  const frise=h('div',{cls:'frise'});
+  lbls.forEach((lbl,i)=>{
+    const stepNum=i+1;
+    const state=stepNum<S.step?'done':stepNum===S.step?'active':'';
+    const btn=h('div',{
+      cls:`frise-step ${state}`,
+      title:`Étape ${stepNum} — ${lbl}`,
+      onClick:()=>{S.step=stepNum;render();}
+    },
+      h('span',{cls:'frise-ico'},icons[i]),
+      h('span',{cls:'frise-lbl'},lbl),
+    );
+    frise.appendChild(btn);
+    if(i<8) frise.appendChild(h('div',{cls:`frise-line ${i+1<S.step?'done':''}`}));
+  });
+  d.appendChild(frise);
   return d;
 }
 
@@ -2330,7 +2358,80 @@ function s3(){
     );
     g.appendChild(card);
   }
-  d.appendChild(g);d.appendChild(nav(true,!!S.profil));return d;
+  d.appendChild(g);
+
+  // ── Chutes anticipées (après le profil) ───────────
+  if(S.profil){
+    const chuteMax=S.chutes_max||2;
+    const chuteUsed=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
+    const bonusCh=chutesBonusPI();
+    const chbS3=h('div',{cls:'box',style:{marginTop:'1.2rem'}});
+    chbS3.appendChild(h('h3',{},'🌑 Degrés de Chute'));
+    chbS3.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},`Facultatif - chaque degre rapporte +5 PI. Modifiable a l etape 6.`));
+    chbS3.appendChild(h('div',{style:{
+      display:'flex',gap:'1rem',flexWrap:'wrap',alignItems:'center',
+      padding:'.5rem .7rem',background:'rgba(139,26,26,.06)',border:'1px solid rgba(139,26,26,.2)',
+      borderRadius:'6px',marginBottom:'.8rem',fontFamily:'Cinzel,serif',fontSize:'.78rem',
+    }},
+      h('span',{style:{color:'var(--parch-d)'}},`Max : ${chuteMax}°`),
+      h('span',{style:{color:'var(--parch-d)'}},`Utilisés : ${chuteUsed} / ${chuteMax}`),
+      bonusCh>0
+        ? h('span',{style:{color:'var(--ok)',fontWeight:'700'}},`✓ +${bonusCh} PI bonus`)
+        : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
+    ));
+    const CHUTE_MAX_PAR=10;
+    const cgS3=h('div',{cls:'chute-grid'});
+    for(const chute of CHUTES){
+      const val=S.chutes[chute.id]||0;
+      const bonusChute=val*5;
+      const autresTotal=Object.entries(S.chutes)
+        .filter(([k])=>k!==chute.id)
+        .reduce((a,[,v2])=>a+(v2||0),0);
+      const canAdd=(autresTotal+val)<chuteMax&&val<CHUTE_MAX_PAR;
+      const cb=h('div',{cls:'chute-box'});
+      const hd2=h('div',{cls:'chute-hd'});
+      hd2.appendChild(h('span',{style:{fontSize:'.9rem'}},`${chute.ico} ${chute.nm}`));
+      const hdr2=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem'}});
+      hdr2.appendChild(h('span',{style:{color:'var(--blood-l)',fontFamily:'Cinzel Decorative,serif',
+        fontSize:'1.3rem',fontWeight:'700',lineHeight:1}},String(val)));
+      hdr2.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.7rem'}},`/ ${CHUTE_MAX_PAR}`));
+      if(bonusChute>0) hdr2.appendChild(h('span',{style:{color:'var(--ok)',fontSize:'.75rem',
+        fontFamily:'Cinzel,serif',background:'rgba(107,142,107,.12)',padding:'.1rem .4rem',
+        borderRadius:'4px'}},`+${bonusChute} PI`));
+      hd2.appendChild(hdr2);
+      cb.appendChild(hd2);
+      cb.appendChild(h('p',{style:{fontSize:'.72rem',color:'var(--parch-d)',fontStyle:'italic',
+        margin:'.2rem 0 .5rem'}},chute.dc));
+      const pipsRow2=h('div',{style:{display:'flex',gap:'4px',marginBottom:'.5rem',flexWrap:'wrap'}});
+      for(let i=0;i<CHUTE_MAX_PAR;i++){
+        pipsRow2.appendChild(h('div',{
+          style:{width:'18px',height:'18px',borderRadius:'50%',flexShrink:0,cursor:'pointer',transition:'all .15s',
+            border:`1px solid ${i<val?'rgba(192,80,74,.6)':'rgba(201,168,76,.2)'}`,
+            background:i<val?'rgba(192,80,74,.4)':'transparent'},
+          onClick:()=>{
+            const newVal=i<val?i:(i===val?val+1:val);
+            if(newVal===val) return;
+            if(newVal>val&&(autresTotal+newVal>chuteMax||newVal>CHUTE_MAX_PAR)) return;
+            S.chutes[chute.id]=newVal;render();
+          }
+        },''));
+      }
+      cb.appendChild(pipsRow2);
+      const ctrl2=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem',justifyContent:'center'}});
+      ctrl2.appendChild(h('button',{cls:'qb',disabled:val<=0,
+        onClick:()=>{S.chutes[chute.id]=Math.max(0,val-1);render();}},'−'));
+      ctrl2.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',
+        color:'var(--blood-l)',minWidth:'2rem',textAlign:'center'}},`${val}°`));
+      ctrl2.appendChild(h('button',{cls:'qb',disabled:!canAdd,
+        onClick:()=>{if(canAdd){S.chutes[chute.id]=val+1;render();}}},  '✚'));
+      cb.appendChild(ctrl2);
+      cgS3.appendChild(cb);
+    }
+    chbS3.appendChild(cgS3);
+    d.appendChild(chbS3);
+  }
+
+  d.appendChild(nav(true,!!S.profil));return d;
 }
 
 function s4(){
