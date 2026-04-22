@@ -2360,33 +2360,36 @@ function s3(){
   }
   d.appendChild(g);
 
-  // ── Chutes anticipées (après le profil) ───────────
+  // ── Chutes — résumé + règle (après le profil) ────
   if(S.profil){
     const chuteMax=S.chutes_max||2;
     const chuteUsed=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
     const bonusCh=chutesBonusPI();
+    const CHUTE_MAX_PAR=10;
     const chbS3=h('div',{cls:'box',style:{marginTop:'1.2rem'}});
     chbS3.appendChild(h('h3',{},'🌑 Degrés de Chute'));
-    chbS3.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},`Facultatif - chaque degre rapporte +5 PI. Modifiable a l etape 6.`));
+
+    // Résumé compact style s6
     chbS3.appendChild(h('div',{style:{
       display:'flex',gap:'1rem',flexWrap:'wrap',alignItems:'center',
-      padding:'.5rem .7rem',background:'rgba(139,26,26,.06)',border:'1px solid rgba(139,26,26,.2)',
-      borderRadius:'6px',marginBottom:'.8rem',fontFamily:'Cinzel,serif',fontSize:'.78rem',
+      padding:'.7rem',background:'rgba(139,26,26,.08)',border:'1px solid rgba(139,26,26,.25)',
+      borderRadius:'8px',marginBottom:'.8rem',fontFamily:'Cinzel,serif',fontSize:'.82rem',
     }},
-      h('span',{style:{color:'var(--parch-d)'}},`Max : ${chuteMax}°`),
+      h('span',{style:{color:'var(--parch-d)'}},`Profil : ${S.profil||'?'}`),
+      h('span',{style:{color:'var(--blood-l)'}},`Max : ${chuteMax} degré(s)`),
       h('span',{style:{color:'var(--parch-d)'}},`Utilisés : ${chuteUsed} / ${chuteMax}`),
       bonusCh>0
         ? h('span',{style:{color:'var(--ok)',fontWeight:'700'}},`✓ +${bonusCh} PI bonus`)
         : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
     ));
-    const CHUTE_MAX_PAR=10;
+
+    // Pips par chute
     const cgS3=h('div',{cls:'chute-grid'});
     for(const chute of CHUTES){
       const val=S.chutes[chute.id]||0;
       const bonusChute=val*5;
       const autresTotal=Object.entries(S.chutes)
-        .filter(([k])=>k!==chute.id)
-        .reduce((a,[,v2])=>a+(v2||0),0);
+        .filter(([k])=>k!==chute.id).reduce((a,[,v2])=>a+(v2||0),0);
       const canAdd=(autresTotal+val)<chuteMax&&val<CHUTE_MAX_PAR;
       const cb=h('div',{cls:'chute-box'});
       const hd2=h('div',{cls:'chute-hd'});
@@ -2405,7 +2408,8 @@ function s3(){
       const pipsRow2=h('div',{style:{display:'flex',gap:'4px',marginBottom:'.5rem',flexWrap:'wrap'}});
       for(let i=0;i<CHUTE_MAX_PAR;i++){
         pipsRow2.appendChild(h('div',{
-          style:{width:'18px',height:'18px',borderRadius:'50%',flexShrink:0,cursor:'pointer',transition:'all .15s',
+          style:{width:'18px',height:'18px',borderRadius:'50%',flexShrink:0,cursor:'pointer',
+            transition:'all .15s',
             border:`1px solid ${i<val?'rgba(192,80,74,.6)':'rgba(201,168,76,.2)'}`,
             background:i<val?'rgba(192,80,74,.4)':'transparent'},
           onClick:()=>{
@@ -2423,15 +2427,29 @@ function s3(){
       ctrl2.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.8rem',
         color:'var(--blood-l)',minWidth:'2rem',textAlign:'center'}},`${val}°`));
       ctrl2.appendChild(h('button',{cls:'qb',disabled:!canAdd,
-        onClick:()=>{if(canAdd){S.chutes[chute.id]=val+1;render();}}},  '✚'));
+        onClick:()=>{if(canAdd){S.chutes[chute.id]=val+1;render();}}},'✚'));
+      if(bonusChute>0) ctrl2.appendChild(h('span',{style:{color:'var(--ok)',fontSize:'.75rem',
+        marginLeft:'.4rem'}},`= +${bonusChute} PI`));
       cb.appendChild(ctrl2);
       cgS3.appendChild(cb);
     }
     chbS3.appendChild(cgS3);
+
+    // Règle des Chutes
+    chbS3.appendChild(h('div',{cls:'info-box',style:{marginTop:'1rem'}},
+      h('strong',{},'Règle des Chutes :'),
+      ` Chaque degré de Chute accepté rapporte `,
+      h('strong',{},'+5 PI'),
+      ` immédiatement ajoutés à votre budget. Maximum `,
+      h('strong',{},String(chuteMax)),
+      ` degré(s) selon votre profil `,
+      h('strong',{},S.profil||'?'),
+      `. Les Chutes représentent la corruption de votre âme — un pacte faustien avec vos propres failles.`
+    ));
     d.appendChild(chbS3);
   }
 
-  d.appendChild(nav(true,!!S.profil));return d;
+    d.appendChild(nav(true,!!S.profil));return d;
 }
 
 function s4(){
@@ -3739,115 +3757,6 @@ function s6(){
   sb.appendChild(ta);
   d.appendChild(sb);
 
-  // ── CHUTES OFFICIELLES ───────────────────────────────
-  const chuteMax=S.chutes_max||2;
-  const chuteUsed=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
-  const bonusActuel=chutesBonusPI();
-
-  const chb=h('div',{cls:'box'});
-  chb.appendChild(h('h3',{},'🌑 Degrés de Chute'));
-
-  // Résumé budget
-  chb.appendChild(h('div',{style:{
-    display:'flex',gap:'1rem',flexWrap:'wrap',alignItems:'center',
-    padding:'.7rem',background:'rgba(139,26,26,.08)',border:'1px solid rgba(139,26,26,.25)',
-    borderRadius:'8px',marginBottom:'1rem',fontFamily:'Cinzel,serif',fontSize:'.82rem',
-  }},
-    h('span',{style:{color:'var(--parch-d)'}},`Profil : ${S.profil||'?'}`),
-    h('span',{style:{color:'var(--blood-l)'}},`Max : ${chuteMax} degré(s)`),
-    h('span',{style:{color:'var(--parch-d)'}},`Utilisés : ${chuteUsed} / ${chuteMax}`),
-    bonusActuel>0
-      ? h('span',{style:{color:'var(--ok)',fontWeight:'700'}},`✓ +${bonusActuel} PI bonus`)
-      : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
-  ));
-
-  // Les 3 Chutes officielles — max 10, pips visuels
-  const CHUTE_MAX_PAR=10; // max individuel par Chute
-  const cg=h('div',{cls:'chute-grid'});
-  for(const chute of CHUTES){
-    const val=S.chutes[chute.id]||0;
-    const bonusChute=val*5;
-    const autresTotal=Object.entries(S.chutes)
-      .filter(([k])=>k!==chute.id)
-      .reduce((a,[,v2])=>a+(v2||0),0);
-    const canAdd=(autresTotal+val)<chuteMax&&val<CHUTE_MAX_PAR;
-    const canRemove=val>0;
-
-    const cb=h('div',{cls:'chute-box'});
-
-    // En-tête : icône + nom + valeur + bonus PI
-    const hd=h('div',{cls:'chute-hd'});
-    hd.appendChild(h('span',{style:{fontSize:'.9rem'}},`${chute.ico} ${chute.nm}`));
-    const hdr=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem'}});
-    hdr.appendChild(h('span',{style:{
-      color:'var(--blood-l)',fontFamily:'Cinzel Decorative,serif',
-      fontSize:'1.3rem',fontWeight:'700',lineHeight:1}},String(val)));
-    hdr.appendChild(h('span',{style:{color:'var(--gold-d)',fontSize:'.7rem'}},`/ ${CHUTE_MAX_PAR}`));
-    if(bonusChute>0) hdr.appendChild(h('span',{style:{
-      color:'var(--ok)',fontSize:'.75rem',fontFamily:'Cinzel,serif',
-      background:'rgba(107,142,107,.12)',padding:'.1rem .4rem',borderRadius:'4px'}},
-      `+${bonusChute} PI`));
-    hd.appendChild(hdr);
-    cb.appendChild(hd);
-
-    // Description courte
-    cb.appendChild(h('p',{style:{fontSize:'.72rem',color:'var(--parch-d)',fontStyle:'italic',
-      margin:'.25rem 0 .6rem',lineHeight:1.4}},chute.dc));
-
-    // Pips visuels (10 cases)
-    const pipsRow=h('div',{style:{display:'flex',gap:'4px',marginBottom:'.6rem',flexWrap:'wrap'}});
-    for(let i=0;i<CHUTE_MAX_PAR;i++){
-      const pip=h('div',{
-        style:{
-          width:'20px',height:'20px',borderRadius:'50%',
-          border:`1px solid ${i<val?'rgba(192,80,74,.6)':'rgba(201,168,76,.2)'}`,
-          background:i<val?'rgba(192,80,74,.4)':'transparent',
-          cursor:i===val?'pointer':i<val?'pointer':'pointer',
-          transition:'all .15s',flexShrink:0,
-        },
-        title:i<val?`Retirer jusqu'à ${i+1}`:`Ajouter degré ${i+1}`,
-        onClick:()=>{
-          // Clic sur pip déjà actif → retire jusqu'à ce niveau
-          // Clic sur pip suivant → ajoute 1
-          const newVal=i<val?i:(i===val?val+1:val);
-          if(newVal===val) return;
-          if(newVal>val){
-            // Ajouter
-            if(autresTotal+newVal>chuteMax||newVal>CHUTE_MAX_PAR) return;
-          }
-          S.chutes[chute.id]=newVal;render();
-        }
-      });
-      pipsRow.appendChild(pip);
-    }
-    cb.appendChild(pipsRow);
-
-    // Contrôles +/−
-    const ctrl=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem',justifyContent:'center'}});
-    ctrl.appendChild(h('button',{cls:'qb',disabled:!canRemove,
-      onClick:()=>{S.chutes[chute.id]=Math.max(0,val-1);render();}},'−'));
-    ctrl.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.82rem',
-      color:'var(--blood-l)',minWidth:'2rem',textAlign:'center'}},`${val}°`));
-    ctrl.appendChild(h('button',{cls:'qb',disabled:!canAdd,
-      onClick:()=>{
-        if((autresTotal+val)<chuteMax&&val<CHUTE_MAX_PAR){S.chutes[chute.id]=val+1;render();}
-      }},'✚'));
-    if(bonusChute>0) ctrl.appendChild(h('span',{style:{color:'var(--ok)',fontSize:'.75rem',marginLeft:'.4rem'}},`= +${bonusChute} PI`));
-    cb.appendChild(ctrl);
-
-    cg.appendChild(cb);
-  }
-  chb.appendChild(cg);
-
-  // Info-box règle
-  chb.appendChild(h('div',{cls:'info-box',style:{marginTop:'1rem'}},
-    h('strong',{},'Règle des Chutes :'),' Chaque degré de Chute accepté rapporte ',
-    h('strong',{},'+5 PI'),' immédiatement ajoutés à votre budget. Maximum ',
-    h('strong',{},String(chuteMax)),' degré(s) selon votre profil ',
-    h('strong',{},S.profil||'?'),'. Les Chutes représentent la corruption de votre âme — un pacte faustien avec vos propres failles.'
-  ));
-
-  d.appendChild(chb);
   d.appendChild(nav(true,true));
   return d;
 }
