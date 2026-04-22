@@ -286,6 +286,37 @@ const KA_DATA = {
   Eau:  {ico:'🜄', color:'#3a6b8a'},
   Lune: {ico:'☽',  color:'#9b8fc0'},
 };
+const CHUTES=[
+  {id:'khaiba',  nm:'Khaïba',  dc:'Corruption du Ka altérant le métamorphe. La bête prend le dessus sur l\'âme.',      ico:'💀'},
+  {id:'narcose', nm:'Narcose', dc:'Mélancolie et attachement mystique à un lieu. L\'âme s\'ancre et ne peut partir.',    ico:'🌀'},
+  {id:'ombre',   nm:'Ombre',   dc:'Perte de contrôle au profit du Simulacre. Le corps humain efface le Nephilim.',       ico:'🌑'},
+];
+
+const ARCANES=[
+  {id:'mat',        num:'0',    nm:'Le Mat',             ka:null,  special:'mat'},
+  {id:'bateleur',   num:'I',    nm:'Le Bateleur',        ka:'Feu', dc:"Maîtrise de la volonté. Pyrim."},
+  {id:'papesse',    num:'II',   nm:'La Papesse',         ka:'Eau', dc:"Connaissance cachée. Hydrim."},
+  {id:'imperatrice',num:'III',  nm:"L'Impératrice",      ka:'Terre',dc:"Fertilité et nature. Faërim."},
+  {id:'empereur',   num:'IV',   nm:"L'Empereur",         ka:'Feu', dc:"Pouvoir et autorité. Pyrim."},
+  {id:'pape',       num:'V',    nm:'Le Pape',            ka:'Air', dc:"Sagesse et tradition. Éolim."},
+  {id:'amoureux',   num:'VI',   nm:'Les Amoureux',       ka:'Eau', dc:"Choix et union. Hydrim."},
+  {id:'chariot',    num:'VII',  nm:'Le Chariot',         ka:'Feu', dc:"Victoire et maîtrise. Pyrim."},
+  {id:'justice',    num:'VIII', nm:'La Justice',         ka:'Air', dc:"Équilibre et vérité. Éolim."},
+  {id:'ermite',     num:'IX',   nm:"L'Ermite",           ka:'Lune',dc:"Sagesse intérieure. Onirim."},
+  {id:'roue',       num:'X',    nm:'La Roue de Fortune', ka:'Lune',dc:"Cycles du destin. Onirim."},
+  {id:'force',      num:'XI',   nm:'La Force',           ka:'Terre',dc:"Puissance intérieure. Faërim."},
+  {id:'pendu',      num:'XII',  nm:'Le Pendu',           ka:null,  special:'pendu'},
+  {id:'mort',       num:'XIII', nm:"L'Arcane sans Nom",  ka:'Lune',dc:"Transformation radicale. Onirim."},
+  {id:'temperance', num:'XIV',  nm:'La Tempérance',      ka:'Eau', dc:"Harmonie des contraires. Hydrim."},
+  {id:'diable',     num:'XV',   nm:'Le Diable',          ka:'Feu', dc:"Tentation et puissance. Pyrim."},
+  {id:'maison_dieu',num:'XVI',  nm:'La Maison-Dieu',     ka:'Terre',dc:"Chute et révélation. Faërim."},
+  {id:'etoile',     num:'XVII', nm:"L'Étoile",           ka:'Eau', dc:"Espoir et guidance. Hydrim."},
+  {id:'lune_arc',   num:'XVIII',nm:'La Lune',            ka:'Lune',dc:"Illusions et profondeurs. Onirim."},
+  {id:'soleil',     num:'XIX',  nm:'Le Soleil',          ka:'Feu', dc:"Clarté et vie. Pyrim."},
+  {id:'jugement',   num:'XX',   nm:'Le Jugement',        ka:'Air', dc:"Renaissance et transcendance. Éolim."},
+  {id:'monde',      num:'XXI',  nm:'Le Monde',           ka:null,  interdit:true},
+];
+
 const KA_SCORES_FROM_DOM = (dom) => {
   if(!dom) return {Air:0,Feu:0,Terre:0,Eau:0,Lune:0};
   const map = {Air:{opp:['Terre','Lune'],neu:['Feu','Eau']},Feu:{opp:['Eau','Lune'],neu:['Air','Terre']},Terre:{opp:['Air','Lune'],neu:['Feu','Eau']},Eau:{opp:['Feu','Lune'],neu:['Air','Terre']},Lune:{opp:['Terre','Eau'],neu:['Air','Feu']}};
@@ -1044,95 +1075,50 @@ function grimGetEffetsFrom(S){
 
 function calcTotauxCumulesFrom(S){
   const totaux={
-    vecus:{},         // {nom_vecu: degrés cumulés}
-    sciences:{        // UNIQUEMENT les gratuités des époques (pour le pool)
-      magie:0, kabbale:0, alchimie:0,
-    },
-    quetes:{},        // {nom_quete: degrés}
-    savoirs:{},       // {nom_savoir: degrés max}
-    sorts_offerts:0,
+    vecus:{}, sciences:{magie:0,kabbale:0,alchimie:0},
+    quetes:{}, savoirs:{}, sorts_offerts:0,
   };
-
-  // Parcours des époques choisies
-  for(const[id, inc] of Object.entries(S.incarnations)){
-    const ep=EPOQUES.find(e=>e.id===id);
-    if(!ep) continue;
-
-    // Sciences et sorts offerts gratuitement
-    for(const sci of (ep.sciences||[])){
-      const key=sci.nm.toLowerCase().replace(/[^a-z]/g,'');
-      if(key.includes('magie')) totaux.sciences.magie+=sci.deg;
-      else if(key.includes('kabbale')) totaux.sciences.kabbale+=sci.deg;
-      else if(key.includes('alchimie')) totaux.sciences.alchimie+=sci.deg;
-    }
-    totaux.sorts_offerts+=(ep.sorts||0);
-
-    // Vécus supplémentaires achetés avec PI dans cette époque
+  for(const[,inc] of Object.entries(S.incarnations||{})){
+    if(!inc) continue;
+    // Vécus achetés en PI
     if(inc.vecus_deg){
       for(const[vnm,deg] of Object.entries(inc.vecus_deg)){
         totaux.vecus[vnm]=(totaux.vecus[vnm]||0)+deg;
       }
     }
-    // Savoirs supplémentaires achetés
-    if(inc.savoirs_extra){
-      for(const[snm,deg] of Object.entries(inc.savoirs_extra)){
-        totaux.savoirs[snm]=(totaux.savoirs[snm]||0)+deg;
-      }
-    }
-    // Sciences achetées dans l'époque (en plus des gratuites)
-    if(inc.sciences_extra){
-      for(const[snm,deg] of Object.entries(inc.sciences_extra)){
-        if(snm==='magie') totaux.sciences.magie+=deg;
-        else if(snm==='kabbale') totaux.sciences.kabbale+=deg;
-        else if(snm==='alchimie') totaux.sciences.alchimie+=deg;
-      }
-    }
-
-    // Vécu choisi (1 degré, ou 2 si Ka dominant)
+    // Vécu de base (1° ou 2° si Ka dom via inc.ka_vecu)
     if(inc.vecu){
-      const vecusList=ep.vecus_data||(ep.vecus||[]).map((nm,i)=>({nm,ka:(ep.ka_vecus&&ep.ka_vecus[i])||''}));
-      const vDobj=vecusList.find(v=>v.nm===inc.vecu);
-      const degVecu=vDobj&&vDobj.ka===S.ka_dom?2:1;
-      // Stocker aussi le score séparément pour l'affichage fiche
-      if(!totaux.vecus_scores) totaux.vecus_scores={};
-      totaux.vecus_scores[inc.vecu]=(totaux.vecus_scores[inc.vecu]||0)+degVecu;
-      totaux.vecus[inc.vecu]=(totaux.vecus[inc.vecu]||0)+degVecu;
+      const isDom=inc.ka_vecu&&inc.ka_vecu===S.ka_dom;
+      totaux.vecus[inc.vecu]=(totaux.vecus[inc.vecu]||0)+(isDom?2:1);
     }
-
-    // Bonus arcane adopté : degrés supplémentaires sur la quête
-    if(inc&&inc.arcane_id){
-      const epA=EPOQUES.find(e=>e.id===id);
-      const arcDeg=inc.arcane_deg||epA&&epA.arcane_bonus||0;
-      if(arcDeg>0&&inc.quete){
-        const pts=inc.quete.match(/^(.+?)\s+(\d+)$/);
-        if(pts){
-          const qnm=normalizeQuete(pts[1]);
-          totaux.quetes[qnm]=(totaux.quetes[qnm]||0)+arcDeg;
-        }
-      }
+    // Arcane → bonus quête
+    if(inc.arcane_id&&inc.arcane_deg>0&&inc.quete){
+      const qNorm=typeof normalizeQuete==='function'
+        ?normalizeQuete(inc.quete):inc.quete.replace(/\s+\d+$/,'').trim();
+      totaux.quetes[qNorm]=(totaux.quetes[qNorm]||0)+inc.arcane_deg;
     }
-    // Quête choisie (une seule gratuite par époque)
+    // Quête choisie
     if(inc.quete){
       const parts=inc.quete.match(/^(.+?)\s+(\d+)$/);
       if(parts){
-        const qnm=normalizeQuete(parts[1]);
-        const qdeg=parseInt(parts[2]);
-        totaux.quetes[qnm]=(totaux.quetes[qnm]||0)+qdeg;
+        const qnm=typeof normalizeQuete==='function'
+          ?normalizeQuete(parts[1]+' '+parts[2]):parts[1];
+        totaux.quetes[qnm]=(totaux.quetes[qnm]||0)+parseInt(parts[2]);
       }
     }
-
-    // Savoirs choisis (max des degrés indiqués)
+    // Savoirs
     for(const sv of (inc.savoirs||[])){
       const parts=sv.match(/^(.+?)\s+(\d+)$/);
       if(parts){
-        const snm=parts[1];const sdeg=parseInt(parts[2]);
-        totaux.savoirs[snm]=Math.max(totaux.savoirs[snm]||0,sdeg);
+        totaux.savoirs[parts[1]]=Math.max(totaux.savoirs[parts[1]]||0,parseInt(parts[2]));
       }
     }
   }
+  totaux.sciences.magie=(S.magie?.bas||0)+(S.magie?.haut||0)+(S.magie?.grand||0);
+  totaux.sciences.kabbale=Object.values(S.sephiroth||{}).reduce((a,b)=>a+b,0);
+  totaux.sciences.alchimie=(S.alchimie?.noir||0)+(S.alchimie?.blanc||0)+(S.alchimie?.rouge||0);
   return totaux;
 }
-
 
 function exportFichePDFFrom(S){
   const sc=kaScoresFrom(S);
@@ -1271,12 +1257,23 @@ function exportFichePDFFrom(S){
     </div>`;
   }).join('');
 
-  // -- Incarnations
+  // -- Incarnations (sans EPOQUES — utilise EPOQUES_LIGHT local)
+  const EP_LIGHT={
+    'atlantide':{nm:"Chute de l'Atlantide",ico:'🌊'},'akhenaton':{nm:"Rêve d'Akhenaton",ico:'☀️'},
+    'troie':{nm:"Chute de Troie",ico:'⚔️'},'perse':{nm:"Empire Perse",ico:'🏛️'},
+    'babylone':{nm:"Babylone",ico:'🌙'},'alexandre':{nm:"Alexandre",ico:'🗡️'},
+    'carthage':{nm:"Carthage et Rome",ico:'🐘'},'incident_jesus':{nm:"Incident Jésus",ico:'✝️'},
+    'arthuriades':{nm:"Arthuriades",ico:'🏰'},'croisades':{nm:"Croisades",ico:'⚔️'},
+    'buchers':{nm:"Bûchers Cathares",ico:'🔥'},'chute_temple':{nm:"Chute du Temple",ico:'🔯'},
+    'renaissance':{nm:"Renaissance",ico:'🎨'},'sublime_porte':{nm:"Sublime Porte",ico:'🌙'},
+    'roi_soleil':{nm:"Roi-Soleil",ico:'👑'},'revolution':{nm:"Révolution",ico:'🗽'},
+    'victorien':{nm:"Vapeurs Victoriennes",ico:'🚂'},'viennoise':{nm:"Sécession Viennoise",ico:'🎭'},
+    'annees_folles':{nm:"Années Folles",ico:'🎷'},'annees_noires':{nm:"Années Noires",ico:'🕯️'},
+    'grand_eveil':{nm:"Grand Éveil",ico:'🌆'},'apocalypse':{nm:"Apocalypse",ico:'🌑'},
+  };
   const incRows=Object.entries(S.incarnations).map(([id,inc])=>{
-    const ep=EPOQUES.find(e=>e.id===id);
-    if(!ep) return '';
-    const vObj=ep.vecus_data&&ep.vecus_data.find(v=>v.nm===inc.vecu);
-    const isDom=vObj&&vObj.ka===S.ka_dom;
+    const ep=EP_LIGHT[id]||{nm:id,ico:'📜'};
+    const isDom=inc.ka_vecu&&inc.ka_vecu===S.ka_dom;
     const degV=isDom?2:1;
     const extraV=inc.vecus_deg&&inc.vecus_deg[inc.vecu]||0;
     const totalV=degV+extraV;
