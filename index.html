@@ -37,16 +37,16 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .frise{display:flex;align-items:center;padding:.3rem .2rem;overflow-x:auto;gap:0;scrollbar-width:none}
 .frise::-webkit-scrollbar{display:none}
 .frise-step{display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:.35rem .4rem;border-radius:6px;cursor:pointer;transition:all .2s;
-  min-width:56px;max-width:72px;flex-shrink:0;
+  padding:.25rem .3rem;border-radius:6px;cursor:pointer;transition:all .2s;
+  min-width:48px;max-width:60px;flex-shrink:0;
   border:1px solid transparent;}
 .frise-step:hover{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.2);}
 .frise-step.active{background:rgba(201,168,76,.12);border-color:var(--gold);
   box-shadow:0 0 8px rgba(201,168,76,.2);}
 .frise-step.done{opacity:.7;}
 .frise-step.done:hover{opacity:1;}
-.frise-ico{font-size:.95rem;line-height:1;}
-.frise-lbl{font-family:'Cinzel',serif;font-size:.92rem;color:var(--parch-d);
+.frise-ico{font-size:.80rem;line-height:1;}
+.frise-lbl{font-family:'Cinzel',serif;font-size:.60rem;color:var(--parch-d);
   text-align:center;line-height:1.2;letter-spacing:.02em;white-space:nowrap;}
 .frise-step.active .frise-lbl{color:var(--gold);}
 .frise-step.done .frise-lbl{color:var(--parch-d);}
@@ -1577,84 +1577,54 @@ function calcPoolGratuits(){
 // NORMALISATION DES QUÊTES — unifie les variantes de noms
 // ════════════════════════════════════════════════════════
 const QUETE_CANON={
+  // Sentier d'Or — fragments : "Or", "Le Sentier d'Or", "le sentier d or"
+  "or":"Le Sentier d'Or",
   "sentier d'or":"Le Sentier d'Or","sentier d or":"Le Sentier d'Or",
   "le sentier d'or":"Le Sentier d'Or","le sentier d or":"Le Sentier d'Or",
   "le véritable sentier d'or":"Le Sentier d'Or","véritable sentier d'or":"Le Sentier d'Or",
-  "atalante fugitive":"Atalante Fugitive","l'atalante fugitive":"Atalante Fugitive",
-  "champs de polemoka":"Les Champs de Polemoka","champs polemoka":"Les Champs de Polemoka",
-  "les champs polemoka":"Les Champs de Polemoka","les champs de polemoka":"Les Champs de Polemoka",
-  "cité des vertiges":"La Cité des Vertiges","la cité des vertiges":"La Cité des Vertiges",
-  "exode sidéral":"L'Exode Sidéral","l'exode sidéral":"L'Exode Sidéral",
-  "rex mundi":"Le Rex Mundi","le rex mundi":"Le Rex Mundi",
-  "table d'émeraude":"La Table d'Émeraude","la table d'émeraude":"La Table d'Émeraude",
-  "toison d'or":"La Toison d'Or","la toison d'or":"La Toison d'Or",
-  "trésor des templiers":"Le Trésor des Templiers","le trésor des templiers":"Le Trésor des Templiers",
-  "graal":"La Quête du Graal","la quête du graal":"La Quête du Graal","quête du graal":"La Quête du Graal",
+  // Arche d'Alliance — fragments : "Alliance", "Arche d'Alliance"
+  "alliance":"L'Arche d'Alliance",
   "arche d'alliance":"L'Arche d'Alliance","l'arche d'alliance":"L'Arche d'Alliance",
-  "hyperborée":"Hyperborée",
+  // Table d'Émeraude — fragments : "Émeraude", "La Table d'Émeraude"
+  "émeraude":"La Table d'Émeraude","emeraude":"La Table d'Émeraude",
+  "table d'émeraude":"La Table d'Émeraude","la table d'émeraude":"La Table d'Émeraude",
+  "table d emeraude":"La Table d'Émeraude",
+  // Jérusalem Céleste — fragments : "Jérusalem céleste"
   "jérusalem céleste":"La Jérusalem Céleste","la jérusalem céleste":"La Jérusalem Céleste",
-  "portes noires":"Les Portes Noires","les portes noires":"Les Portes Noires","porte noire":"Les Portes Noires",
+  "jerusalem celeste":"La Jérusalem Céleste",
+  // Graal
+  "le graal":"La Quête du Graal","graal":"La Quête du Graal",
+  "la quête du graal":"La Quête du Graal","quête du graal":"La Quête du Graal",
+  // Rex Mundi
+  "le rex mundi":"Le Rex Mundi","rex mundi":"Le Rex Mundi",
+  // Exode Sidéral
+  "exode sidéral":"L'Exode Sidéral","l'exode sidéral":"L'Exode Sidéral",
+  "exode sideral":"L'Exode Sidéral",
+  // Cité des Vertiges
+  "la cité des vertiges":"La Cité des Vertiges","cité des vertiges":"La Cité des Vertiges",
+  "cite des vertiges":"La Cité des Vertiges",
+  // Atalante Fugitive
+  "atalante fugitive":"Atalante Fugitive","l'atalante fugitive":"Atalante Fugitive",
+  // Champs de Polemoka
+  "les champs polemoka":"Les Champs de Polemoka","champs polemoka":"Les Champs de Polemoka",
+  "champs de polemoka":"Les Champs de Polemoka","les champs de polemoka":"Les Champs de Polemoka",
+  // Hyperborée
+  "hyperborée":"Hyperborée","hyperboree":"Hyperborée",
+  // Portes Noires
+  "les portes noires":"Les Portes Noires","portes noires":"Les Portes Noires",
+  "porte noire":"Les Portes Noires",
+  // Trésor des Templiers
+  "le trésor des templiers":"Le Trésor des Templiers","trésor des templiers":"Le Trésor des Templiers",
+  "tresor des templiers":"Le Trésor des Templiers",
+  // Toison d'Or
+  "la toison d'or":"La Toison d'Or","toison d'or":"La Toison d'Or",
+  "toison d or":"La Toison d'Or",
+  // Arcadia
   "arcadia":"Arcadia",
+  // Arcane XXI Le Monde
   "arcane xxi":"Arcane XXI Le Monde","arcane xxi le monde":"Arcane XXI Le Monde",
-};
-function normalizeQuete(nm){
-  if(!nm) return nm;
-  // Retirer le degré final si présent : "Sentier d'Or 1" → "Sentier d'Or"
-  const clean=nm.replace(/\s+\d+$/,'').trim();
-  const key=clean.toLowerCase().replace(/[\u2019']/g,"'");
-  return QUETE_CANON[key]||clean;
-}
-// ═══════════════════════════════════════════════════════
-// Normalisation des noms de quêtes
-// Unifie les variantes : "Sentier d'Or", "Le Sentier d'Or", "Véritable Sentier d'Or"
-// ═══════════════════════════════════════════════════════
-const QUETES_CANONICAL={
-  // Clé = variante (lowercase, sans article) → valeur = nom canonique
-  "sentier d'or":           "Le Sentier d'Or",
-  "le sentier d'or":        "Le Sentier d'Or",
-  "veritable sentier d'or": "Le Sentier d'Or",
-  "véritable sentier d'or": "Le Sentier d'Or",
-  "le véritable sentier d'or": "Le Sentier d'Or",
-  "hyperboree":             "Hyperborée",
-  "hyperborée":             "Hyperborée",
-  "atalante fugitive":      "Atalante Fugitive",
-  "l'atalante fugitive":    "Atalante Fugitive",
-  "champs polemoka":        "Les Champs Polemoka",
-  "les champs polemoka":    "Les Champs Polemoka",
-  "champs de polemoka":     "Les Champs Polemoka",
-  "cite des vertiges":      "La Cité des Vertiges",
-  "cité des vertiges":      "La Cité des Vertiges",
-  "la cité des vertiges":   "La Cité des Vertiges",
-  "exode sideral":          "L'Exode Sidéral",
-  "exode sidéral":          "L'Exode Sidéral",
-  "l'exode sidéral":        "L'Exode Sidéral",
-  "arche d'alliance":       "L'Arche d'Alliance",
-  "l'arche d'alliance":     "L'Arche d'Alliance",
-  "arche alliance":         "L'Arche d'Alliance",
-  "jerusalem celeste":      "La Jérusalem Céleste",
-  "jérusalem céleste":      "La Jérusalem Céleste",
-  "la jérusalem céleste":   "La Jérusalem Céleste",
-  "porte noire":            "Les Portes Noires",
-  "portes noires":          "Les Portes Noires",
-  "les portes noires":      "Les Portes Noires",
-  "quete du graal":         "Le Graal",
-  "quête du graal":         "Le Graal",
-  "la quête du graal":      "Le Graal",
-  "graal":                  "Le Graal",
-  "le graal":               "Le Graal",
-  "rex mundi":              "Le Rex Mundi",
-  "le rex mundi":           "Le Rex Mundi",
-  "table d'emeraude":       "La Table d'Émeraude",
-  "table d'émeraude":       "La Table d'Émeraude",
-  "la table d'émeraude":    "La Table d'Émeraude",
-  "toison d'or":            "La Toison d'Or",
-  "la toison d'or":         "La Toison d'Or",
-  "tresor des templiers":   "Le Trésor des Templiers",
-  "trésor des templiers":   "Le Trésor des Templiers",
-  "le trésor des templiers":"Le Trésor des Templiers",
-  "arcadia":                "Arcadia",
-  "arcane xxi":             "Arcane XXI — Le Monde",
-  "arcane xxi le monde":    "Arcane XXI — Le Monde",
+  // Arcanes mineurs (adoptions)
+  "arcane ii":"Arcane II","arcane iii":"Arcane III","arcane xvii":"Arcane XVII",
 };
 
 function normalizeQuete(raw){
@@ -1747,9 +1717,23 @@ function calcTotauxCumules(){
     if(inc.quete){
       const parts=inc.quete.match(/^(.+?)\s+(\d+)$/);
       if(parts){
-        const qnm=normalizeQuete(parts[1]);
+        const rawNm=parts[1].trim();
+        const normalized=normalizeQuete(rawNm);
         const qdeg=parseInt(parts[2]);
-        totaux.quetes[qnm]=(totaux.quetes[qnm]||0)+qdeg;
+        // Si normalizeQuete a changé le nom → c'est une quête ésotérique
+        // Si le nom n'a pas changé ET est connu comme savoir → c'est un savoir
+        const SAVOIRS_SET=new Set(['Kaïm','Ar-Kaïm','Champs magiques','Champs Magiques',
+          'Nephilim','Histoire invisible','Histoire Invisible','Orichalque',
+          'Mystères','Effets-Dragons','Drakaon','Akasha','Arcanes Majeurs',
+          'Templiers','Rose-Croix','Rose+Croix','Sciences occultes','Sciences Occultes',
+          'Lune Noire','Bohémiens','Cousins','Synarchie','666','Révélation',
+          'Architectonique','Sélenim','Selenim']);
+        if(SAVOIRS_SET.has(rawNm)){
+          // C'est un savoir, pas une quête
+          totaux.savoirs[rawNm]=Math.max(totaux.savoirs[rawNm]||0,qdeg);
+        } else {
+          totaux.quetes[normalized]=(totaux.quetes[normalized]||0)+qdeg;
+        }
       }
     }
 
@@ -4205,7 +4189,9 @@ function s9(){
   {
     const savBd=h('div',{cls:'fp-sec-bd'});
     const sav2col=h('div',{cls:'fp-2col'});
-    const allSavoirs={};
+    // Utiliser tots.savoirs qui cumule inc.savoirs + les savoirs des quetes[] EPOQUES
+    const allSavoirs=Object.assign({},tots.savoirs||{});
+    // Compléter avec inc.savoirs (inc.savoirs_extra sont déjà dans tots)
     Object.values(S.incarnations).forEach(inc=>{
       (inc.savoirs||[]).forEach(s=>{
         const nm=s.replace(/\s+\d+$/,'').trim();
