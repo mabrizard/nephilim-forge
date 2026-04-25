@@ -1656,11 +1656,11 @@ const SCIENCES=[
 const SEPH=[
   {id:'malkuth', nm:'Malkuth', col:1,row:5,req:null,      dc:'Le Royaume'},
   {id:'yesod',   nm:'Yesod',   col:1,row:4,req:'malkuth', dc:'La Fondation'},
-  {id:'hod',     nm:'Hod',     col:0,row:3,req:'yesod',   dc:'La Splendeur'},
-  {id:'netzah',  nm:'Netzah',  col:2,row:3,req:'yesod',   dc:'La Victoire'},
-  {id:'tipheret',nm:'Tiphareth',col:1,row:2,req:'hod',    dc:'La Beauté'},
-  {id:'geburah', nm:'Geburah', col:0,row:1,req:'tipheret',dc:'La Force'},
-  {id:'chesed',  nm:'Chesed',  col:2,row:1,req:'tipheret',dc:'La Grâce'},
+  {id:'hod',     nm:'Hod',     col:0,row:4,req:'malkuth',  dc:'La Splendeur'},
+  {id:'netzah',  nm:'Netzah',  col:2,row:4,req:'malkuth',  dc:'La Victoire'},
+  {id:'tipheret',nm:'Tiphareth',col:1,row:2,req:['hod','yesod','netzah'],dc:'La Beauté'},
+  {id:'geburah', nm:'Geburah', col:0,row:1,req:['tipheret','hod'],     dc:'La Force'},
+  {id:'chesed',  nm:'Chesed',  col:2,row:1,req:['tipheret','netzah'],  dc:'La Grâce'},
   {id:'binah',   nm:'Binah',   col:0,row:0,req:'geburah', dc:'L\'Intelligence'},
   {id:'chokmah', nm:'Chokmah', col:2,row:0,req:'chesed',  dc:'La Sagesse'},
   {id:'kether',  nm:'Kether',  col:1,row:0,req:'binah',   dc:'La Couronne'},
@@ -1968,8 +1968,10 @@ function calcTotauxCumules(){
 }
 
 function chutesBonusPI(){
-  // Chaque degré de Chute rapporte +5 PI au budget
-  return Object.values(S.chutes).reduce((a,b)=>a+(b||0),0)*5;
+  // Seuls les degrés AU-DELÀ du minimum obligatoire rapportent des PI
+  const total=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
+  const obligatoires=S.chutes_min||0;
+  return Math.max(0,total-obligatoires)*5;
 }
 function piSpent(){
   let t=0;
@@ -2001,6 +2003,8 @@ function piSpent(){
   t+=Math.max(0, totalAlchCircles-alchFromPool);
   // Constructs : 1 PI chacun
   t+=Object.values(S.constructs).reduce((a,b)=>a+b,0);
+  // Vécu contemporain Simulacre extra (1 PI = 1°)
+  t+=(S.vecu_simulacre_extra||0);
   return t;
 }
 // Budget disponible = PI total + bonus Chutes (5 PI/degré) − dépenses
@@ -2024,7 +2028,12 @@ function sapience(){return Math.floor(piLeft()/2);}
 function getMetier(){return METIERS.find(m=>m.id===S.metier)||null;}
 function kaSoleil(){const m=getMetier();return S.ka_soleil_base+(m?m.ks:0);}
 function sephOk(sp){
-  if(sp.req&&(S.sephiroth[sp.req]||0)<7) return false;
+  if(sp.req){
+    // req peut être une string ou un tableau (l'un OU l'autre suffit)
+    const reqs=Array.isArray(sp.req)?sp.req:[sp.req];
+    const ok=reqs.some(r=>(S.sephiroth[r]||0)>=7);
+    if(!ok) return false;
+  }
   if(typeof sephMondeOk==='function'&&!sephMondeOk(sp.id)) return false;
   return true;
 }
@@ -2542,14 +2551,14 @@ function s3(){
 
   // Données officielles 5e édition
   const profs=[
-    {id:'Éveillé', pi:25, ps:5,  chmax:2, ico:'🌱', dc:'Nephilim récemment réveillé. Quelques incarnations, grande flexibilité.'},
-    {id:'Révélé',  pi:30, ps:7,  chmax:3, ico:'🔮', dc:'Conscience partielle de sa nature immortelle. Pouvoirs modérés.'},
-    {id:'Immortel',pi:40, ps:10, chmax:4, ico:'⭐', dc:'Nephilim ancien et puissant. Nombreuses vies, sciences avancées.'},
+    {id:'Éveillé', pi:25, ps:5,  chmax:2, chmin:0, ico:'🌱', dc:'Nephilim récemment réveillé. Quelques incarnations, grande flexibilité.'},
+    {id:'Révélé',  pi:30, ps:7,  chmax:3, chmin:1, ico:'🔮', dc:'Conscience partielle de sa nature immortelle. Pouvoirs modérés. Chute obligatoire : 1°.'},
+    {id:'Immortel',pi:40, ps:10, chmax:4, chmin:2, ico:'⭐', dc:'Nephilim ancien et puissant. Nombreuses vies, sciences avancées. Chutes obligatoires : 2°.'},
   ];
   const g=h('div',{cls:'prf-grid'});
   for(const p of profs){
     const card=h('div',{cls:`prf-card ${S.profil===p.id?'sel':''}`,
-      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;render();}},
+      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;S.chutes_min=p.chmin||0;render();}},
       h('span',{cls:'prf-pi'},String(p.pi)+' PI'),
       h('span',{cls:'prf-nm'},`${p.ico} ${p.id}`),
       h('p',{cls:'prf-dc'},p.dc),
@@ -2572,17 +2581,23 @@ function s3(){
     chbS3.appendChild(h('h3',{},'🌑 Degrés de Chute'));
 
     // Résumé compact style s6
+    const chuteMin=S.chutes_min||0;
     chbS3.appendChild(h('div',{style:{
       display:'flex',gap:'1rem',flexWrap:'wrap',alignItems:'center',
       padding:'.7rem',background:'rgba(139,26,26,.08)',border:'1px solid rgba(139,26,26,.25)',
       borderRadius:'8px',marginBottom:'.8rem',fontFamily:'Cinzel,serif',fontSize:'.82rem',
     }},
       h('span',{style:{color:'var(--parch-d)'}},`Profil : ${S.profil||'?'}`),
+      chuteMin>0
+        ? h('span',{style:{color:'var(--blood-l)',fontWeight:'700'}},`⚠ Obligatoires : ${chuteMin}° (sans bonus PI)`)
+        : null,
       h('span',{style:{color:'var(--blood-l)'}},`Max : ${chuteMax} degré(s)`),
       h('span',{style:{color:'var(--parch-d)'}},`Utilisés : ${chuteUsed} / ${chuteMax}`),
       bonusCh>0
-        ? h('span',{style:{color:'var(--ok)',fontWeight:'700'}},`✓ +${bonusCh} PI bonus`)
-        : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
+        ? h('span',{style:{color:'var(--ok)',fontWeight:'700'}},`✓ +${bonusCh} PI bonus (facultatifs)`)
+        : chuteMin>0
+          ? h('span',{style:{color:'var(--gold-d)'}},`Degrés supplémentaires = +5 PI`)
+          : h('span',{style:{color:'var(--gold-d)'}},`Chaque degré = +5 PI`),
     ));
 
     // Pips par chute
@@ -2618,6 +2633,9 @@ function s3(){
             const newVal=i<val?i:(i===val?val+1:val);
             if(newVal===val) return;
             if(newVal>val&&(autresTotal+newVal>chuteMax||newVal>CHUTE_MAX_PAR)) return;
+            // Empêcher de descendre sous le minimum obligatoire
+            const totalSansThis=autresTotal;
+            if(newVal<val&&totalSansThis+newVal<chuteMin) return;
             S.chutes[chute.id]=newVal;render();
           }
         },''));
@@ -4013,6 +4031,53 @@ function s7(){
   notesTA.addEventListener('input',e=>{S.notes_simulacre=e.target.value;});
   notesBox.appendChild(notesTA);
   d.appendChild(notesBox);
+  // ── Vécu contemporain du Simulacre ─────────────────────────
+  if(S.metier){
+    const mt=getMetier();
+    const vcuBox=h('div',{cls:'box'});
+    vcuBox.appendChild(h('h3',{},'Vécu contemporain'));
+    vcuBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},
+      `Le Simulacre possède le vécu "`,
+      h('strong',{},mt.vcu||mt.nm),
+      `" lié à son métier. Degré de base : 1° (2° si Ka dominant). Vous pouvez acheter des degrés supplémentaires (1 PI = 1°).`
+    ));
+    // Afficher le vécu avec Ka associé si disponible
+    const vcuKa=mt.ka_vecu||null;
+    const isKaDom=vcuKa&&vcuKa===S.ka_dom;
+    const vcuBase=isKaDom?2:1;
+    const vcuExtra=S.vecu_simulacre_extra||0;
+    const vcuTotal=vcuBase+vcuExtra;
+    const vcuRow=h('div',{style:{display:'flex',alignItems:'center',gap:'1rem',
+      background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',
+      borderRadius:'8px',padding:'.7rem',marginBottom:'.5rem'}});
+    vcuRow.appendChild(h('div',{style:{flex:1}},
+      h('div',{style:{fontFamily:'Cinzel,serif',fontSize:'.9rem',color:'var(--gold)'}},
+        mt.vcu||mt.nm),
+      vcuKa?h('div',{style:{fontSize:'.78rem',color:'var(--parch-d)',marginTop:'.2rem'}},
+        `Ka : ${vcuKa}${isKaDom?' ⭐ (Ka dominant)':''}`):null,
+    ));
+    vcuRow.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem'}},
+      h('button',{cls:'qb',disabled:vcuExtra<=0,
+        onClick:()=>{S.vecu_simulacre_extra=Math.max(0,(S.vecu_simulacre_extra||0)-1);render();}},'−'),
+      h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.2rem',
+        color:'var(--gold)',minWidth:'3.5rem',textAlign:'center'}},
+        `${vcuTotal}°${isKaDom?' ⭐':''}`),
+      h('button',{cls:'qb',
+        onClick:()=>{S.vecu_simulacre_extra=(S.vecu_simulacre_extra||0)+1;render();}},'✚'),
+    ));
+    if(vcuExtra>0){
+      vcuRow.appendChild(h('span',{style:{fontSize:'.8rem',color:'var(--ok)'}},
+        `+${vcuExtra} PI dépensés`));
+    }
+    vcuBox.appendChild(vcuRow);
+    vcuBox.appendChild(h('div',{cls:'info-box',style:{marginTop:'.5rem'}},
+      h('strong',{},'Base : '),`${vcuBase}° (${isKaDom?'Ka dominant — 2°':'1°'}) · `,
+      h('strong',{},'Total : '),`${vcuTotal}° · `,
+      h('strong',{},'PI dépensés : '),`${vcuExtra}`
+    ));
+    d.appendChild(vcuBox);
+  }
+
   const ksb=h('div',{cls:'box'},h('h3',{},'Ka-Soleil de base'));
   const ksRow=h('div',{cls:'sl-row'});
   const ksLbl=h('span',{cls:'sl-lbl'},'Ka-Soleil base');
