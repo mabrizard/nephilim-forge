@@ -4551,7 +4551,13 @@ function s9(){
   // Colonne 3 — Chutes + Fraternité + Simulacre
   const col3=h('div',{});
   // Chutes pips
+  const chuteMin3=S.chutes_min||0;
   const chutesBd=h('div',{cls:'fp-sec-bd'});
+  if(chuteMin3>0){
+    chutesBd.appendChild(h('div',{style:{fontSize:'.72rem',color:'rgba(139,26,26,.7)',
+      fontFamily:'Cinzel,serif',marginBottom:'.3rem',fontStyle:'italic'}},
+      `⚠ ${chuteMin3}° obligatoire(s) — sans bonus PI`));
+  }
   ['khaiba','narcose','ombre'].forEach(cid=>{
     const ch=CHUTES.find(x=>x.id===cid);
     if(!ch)return;
@@ -4575,13 +4581,70 @@ function s9(){
   col3.appendChild(h('div',{style:{height:'.6rem'}}));
 
   // Simulacre
-  col3.appendChild(fpSec('Simulacre', [
-    ['Métier', mt?mt.nm:'—'],
-    ['Vécu accordé', mt?mt.nm:'—'],
-    ['Ressources', mt?'●'.repeat(mt.rs)+'○'.repeat(5-mt.rs):'—'],
-    ['Ka-Soleil', String(kaSoleil())],
-    ['Stase', S.stase||'—'],
-  ]));
+  // ── Simulacre — entité technique ──────────────────────
+  {
+    const simBd=h('div',{cls:'fp-sec-bd'});
+    // Identité civile
+    const idLine=h('div',{cls:'fp-r'});
+    idLine.appendChild(h('span',{cls:'fp-rk'},'Identité'));
+    idLine.appendChild(h('span',{cls:'fp-rv'},
+      [S.nom_simulacre||'—', S.genre_simulacre, S.age_simulacre?S.age_simulacre+'ans':null]
+      .filter(Boolean).join(' · ')));
+    simBd.appendChild(idLine);
+    // Ka-Soleil
+    const ksLine=h('div',{cls:'fp-r'});
+    ksLine.appendChild(h('span',{cls:'fp-rk'},'Ka-Soleil'));
+    ksLine.appendChild(h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.1rem',color:'var(--gold)'}},String(kaSoleil())));
+    simBd.appendChild(ksLine);
+    // Vécu contemporain
+    if(mt){
+      const vcuCanon=5;
+      const vcuExtra=S.vecu_simulacre_extra||0;
+      const vcuKa=mt.ka_vecu||mt.ka||null;
+      const isKaDom2=vcuKa&&vcuKa===S.ka_dom;
+      const vcuTotal2=vcuCanon+vcuExtra;
+      const vcuLine=h('div',{cls:'fp-r'});
+      vcuLine.appendChild(h('span',{cls:'fp-rk'},'Vécu'));
+      vcuLine.appendChild(h('span',{cls:'fp-rv',style:{textAlign:'right'}},
+        h('strong',{},mt.vcu||mt.nm),
+        h('span',{style:{fontFamily:'Cinzel Decorative,serif',color:'var(--gold)',marginLeft:'.4rem'}},
+          vcuTotal2+'°'+(isKaDom2?' ⭐':''))));
+      simBd.appendChild(vcuLine);
+      // Métier
+      const metLine=h('div',{cls:'fp-r'});
+      metLine.appendChild(h('span',{cls:'fp-rk'},'Simulacre'));
+      metLine.appendChild(h('span',{cls:'fp-rv'},mt.nm));
+      simBd.appendChild(metLine);
+      // Ressources
+      const rsLine=h('div',{cls:'fp-r'});
+      rsLine.appendChild(h('span',{cls:'fp-rk'},'Ressources'));
+      rsLine.appendChild(h('span',{cls:'fp-rv'},'●'.repeat(mt.rs)+'○'.repeat(Math.max(0,5-mt.rs))));
+      simBd.appendChild(rsLine);
+      // Ressources détail
+      if(mt.ressources){
+        const rdLine=h('div',{style:{fontSize:'.74rem',color:'var(--ink-light)',fontStyle:'italic',
+          padding:'.15rem 0',borderBottom:'1px dotted rgba(139,101,48,.15)'}},mt.ressources);
+        simBd.appendChild(rdLine);
+      }
+      // Contrainte
+      if(mt.contrainte){
+        const ctLine=h('div',{style:{display:'flex',gap:'.3rem',alignItems:'flex-start',
+          padding:'.2rem 0',borderBottom:'1px dotted rgba(139,26,26,.2)'}},
+          h('span',{style:{color:'var(--blood,#8b1a1a)',flexShrink:0}},'⚠'),
+          h('span',{style:{fontSize:'.74rem',color:'rgba(139,26,26,.8)',fontStyle:'italic'}},mt.contrainte));
+        simBd.appendChild(ctLine);
+      }
+    }
+    // Stase
+    const staseLine=h('div',{cls:'fp-r'});
+    staseLine.appendChild(h('span',{cls:'fp-rk'},'Stase'));
+    staseLine.appendChild(h('span',{cls:'fp-rv'},S.stase||'—'));
+    simBd.appendChild(staseLine);
+    const simSec=h('div',{cls:'fp-sec'});
+    simSec.appendChild(h('div',{cls:'fp-sec-hd'},'Simulacre'));
+    simSec.appendChild(simBd);
+    col3.appendChild(simSec);
+  }
   col3.appendChild(h('div',{style:{height:'.6rem'}}));
 
   // PI
@@ -4713,6 +4776,8 @@ function s9(){
   sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Kabbale (degrés)'),h('span',{cls:'fp-rv'},String(totalSephFp))));
   const activeSeph=Object.entries(S.sephiroth).filter(([,v])=>v>0).map(([id,v])=>{const sp=SEPH.find(x=>x.id===id);return sp?`${sp.nm} ${v}`:''}).filter(Boolean).join('  ');
   if(activeSeph) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Sephiroth'),h('span',{cls:'fp-rv',style:{fontSize:'.75rem'}},activeSeph)));
+  const mondeTut=MONDES.filter(m=>(S.mondes_integres||{})[m.id]).sort((a,b)=>b.cercle-a.cercle)[0];
+  if(mondeTut) sciBd.appendChild(h('div',{cls:'fp-r'},h('span',{cls:'fp-rk'},'Monde Tutélaire'),h('span',{cls:'fp-rv'},mondeTut.nm+' ('+['','Sceaux','Pentacles','Clés'][mondeTut.cercle]+' )')));
   sciBd.appendChild(h('div',{style:{height:'.4rem'}}));
   // Alchimie
   sciBd.appendChild(h('div',{style:{display:'flex',gap:'.5rem',marginBottom:'.3rem',flexWrap:'wrap'}},
@@ -5050,7 +5115,9 @@ function exportFichePDF(){
   ].map(([nm,val])=>`<div class="attr-cell"><span class="attr-nm">${esc(nm)}</span><span class="attr-val">${esc(String(val))}</span></div>`).join('');
 
   // -- Chutes
-  const chutesHTML=CHUTES.map(ch=>{
+  const chuteMinPDF=S.chutes_min||0;
+  const chutesHTML=(chuteMinPDF>0?`<div style="font-size:7pt;color:rgba(139,26,26,.7);font-style:italic;margin-bottom:2pt">⚠ ${chuteMinPDF}° obligatoire(s) — sans bonus PI</div>`:'')
+  +CHUTES.map(ch=>{
     const val=S.chutes[ch.id]||0;
     return `<div class="chute-row">
       <span class="chute-lbl">${esc(ch.ico)} ${esc(ch.nm)}</span>
@@ -5435,9 +5502,10 @@ table.sorts-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
       ${sec('Actions &amp; Attributs', `<div class="attr-grid">${attrs}</div>`)}
       <div style="height:2mm"></div>
       ${sec('Budget PI', `
-        ${row('Total', S.pi_total+(window.chutesBonusPI?chutesBonusPI():0))}
-        ${row('Dépensés', window.piSpent?piSpent():'—')}
-        ${row('Restants', window.piLeft?piLeft():'—')}
+        ${row('Total', (S.pi_total||0)+(Object.values(S.chutes||{}).reduce((a,b)=>a+(b||0),0)-( S.chutes_min||0))*5)}
+        ${row('Dépensés', calcPiSpent?calcPiSpent(S):'—')}
+        ${row('Restants', Math.max(0,(S.pi_total||0)+(Object.values(S.chutes||{}).reduce((a,b)=>a+(b||0),0)-(S.chutes_min||0))*5-(calcPiSpent?calcPiSpent(S):0)))}
+        ${(S.chutes_min||0)>0?row('Chutes oblig.', (S.chutes_min||0)+'° (sans PI)'):''}
         ${row('PS Total', psTotal)}
       `)}
     </div>
@@ -5498,9 +5566,9 @@ table.sorts-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
     <div>
       ${sec('Kabbale', `
         <div class="sci-header" style="margin-bottom:1.5mm">
-          ${['Aresh','Sohar','Ethesh'].map(m=>{
-            const ok=S.mondes_integres&&S.mondes_integres[m.toLowerCase()];
-            return `<div class="sci-badge"><span class="sci-badge-lbl">${m}</span><span class="sci-badge-val" style="font-size:10pt;color:${ok?'var(--band)':'#ccc'}">${ok?'✓':'○'}</span></div>`;
+          ${[['zakai','Zakaï'],['meborack','Meborack'],['sohar','Sohar'],['aresh','Aresh'],['pachad','Pachad']].map(([id,nm])=>{
+            const ok=S.mondes_integres&&S.mondes_integres[id];
+            return `<div class="sci-badge"><span class="sci-badge-lbl">${nm}</span><span class="sci-badge-val" style="font-size:9pt;color:${ok?'var(--band)':'#ccc'}">${ok?'✓':'○'}</span></div>`;
           }).join('')}
         </div>
         <div>${activeSeph||'<p style="font-style:italic;color:#888;font-size:7.5pt">Aucune Sephirah</p>'}</div>
