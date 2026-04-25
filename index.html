@@ -2961,7 +2961,23 @@ function s4(){
         const saLeft=3-(inc.savoirs||[]).length;
         sabox.appendChild(h('p',{cls:'lbl'},
           `Savoirs ésotériques — 3 gratuits (${saLeft} restant${saLeft!==1?'s':''}) + extras à 1 PI/degré :`));
+        // Hint global si savoirs encore disponibles
+        if(saLeft>0){
+          sagrid_hint=h('div',{style:{
+            fontSize:'.74rem',color:'rgba(192,160,255,.6)',fontFamily:'Cinzel,serif',
+            letterSpacing:'.04em',marginBottom:'.5rem',
+            padding:'.3rem .6rem',
+            background:'rgba(192,160,255,.06)',border:'1px dashed rgba(192,160,255,.25)',
+            borderRadius:'6px',display:'flex',alignItems:'center',gap:'.5rem',
+          }},
+          h('span',{style:{fontSize:'1rem'}},'👆'),
+          `Cliquez sur un cadre pour sélectionner un savoir (${saLeft} gratuit${saLeft>1?'s':''} restant${saLeft>1?'s':''})`
+          );
+        } else {
+          sagrid_hint=null;
+        }
         const sagrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.35rem',marginBottom:'.4rem'}});
+        if(typeof sagrid_hint!=='undefined'&&sagrid_hint) incBox.appendChild(sagrid_hint);
         ep.savoirs.forEach(sv=>{
           const isSel=(inc.savoirs||[]).includes(sv);
           const extra=inc.savoirs_extra&&inc.savoirs_extra[sv]||0;
@@ -2969,24 +2985,57 @@ function s4(){
           const baseDeg=parts?parseInt(parts[2]):1;
           const totalDeg=baseDeg+extra;
 
-          const wrap=h('div',{style:{display:'flex',flexDirection:'column',gap:'.2rem',
-            padding:'.3rem .5rem',border:`1px solid ${isSel?'var(--seph)':'rgba(192,160,255,.2)'}`,
-            borderRadius:'6px',background:isSel?'rgba(192,160,255,.1)':'transparent',minWidth:'120px'}});
-
-          // Bouton sélection gratuite
-          const selBtn=h('button',{
-            style:{fontFamily:'EB Garamond,serif',fontStyle:'italic',fontSize:'.8rem',
-              background:'transparent',border:'none',cursor:!isSel&&saLeft<=0?'not-allowed':'pointer',
-              color:isSel?'var(--seph)':'var(--parch-d)',padding:'0',textAlign:'left',
-              opacity:!isSel&&saLeft<=0?'0.4':'1'},
-            disabled:!isSel&&saLeft<=0,
+          const canSelect=!isSel&&saLeft>0;
+          const wrap=h('div',{
+            style:{display:'flex',flexDirection:'column',gap:'.2rem',
+              padding:'.4rem .6rem',
+              border:`1px solid ${isSel?'var(--seph)':canSelect?'rgba(192,160,255,.35)':'rgba(192,160,255,.12)'}`,
+              borderRadius:'8px',
+              background:isSel?'rgba(192,160,255,.12)':canSelect?'rgba(192,160,255,.04)':'rgba(0,0,0,.15)',
+              minWidth:'130px',
+              cursor:isSel?'pointer':canSelect?'pointer':'not-allowed',
+              opacity:!isSel&&!canSelect?'0.45':'1',
+              transition:'all .15s',
+              boxShadow:isSel?'0 0 0 2px rgba(192,160,255,.3)':canSelect?'0 0 0 1px rgba(192,160,255,.15)':'none',
+            },
+            title:isSel?'Cliquer pour désélectionner':canSelect?'👆 Cliquer pour sélectionner ce savoir':'Plus de savoirs gratuits disponibles',
             onClick:()=>{
               const arr=inc.savoirs||[];
-              if(isSel){S.incarnations[ep.id].savoirs=arr.filter(x=>x!==sv);}
-              else if(arr.length<3){S.incarnations[ep.id].savoirs=[...arr,sv];}
-              render();
+              if(isSel){
+                S.incarnations[ep.id].savoirs=arr.filter(x=>x!==sv);
+                render();
+              } else if(canSelect){
+                S.incarnations[ep.id].savoirs=[...arr,sv];
+                render();
+              }
             }
-          },(isSel?'✓ ':'◦ ')+sv);
+          });
+
+          // Badge indicateur
+          const badgeRow=h('div',{style:{display:'flex',alignItems:'center',gap:'.35rem',marginBottom:'.1rem'}});
+          badgeRow.appendChild(h('span',{style:{
+            fontSize:'.75rem',lineHeight:1,
+            color:isSel?'var(--seph)':canSelect?'rgba(192,160,255,.6)':'rgba(192,160,255,.25)',
+          }},isSel?'✓':canSelect?'○':'—'));
+          badgeRow.appendChild(h('span',{style:{
+            fontFamily:'EB Garamond,serif',fontStyle:'italic',fontSize:'.82rem',
+            color:isSel?'var(--seph)':canSelect?'var(--parch-d)':'rgba(255,255,255,.3)',
+            flex:1,
+          }},sv));
+          wrap.appendChild(badgeRow);
+
+          // Hint "cliquer" uniquement quand disponible et non sélectionné
+          if(canSelect){
+            wrap.appendChild(h('div',{style:{fontSize:'.62rem',color:'rgba(192,160,255,.45)',
+              letterSpacing:'.04em',fontFamily:'Cinzel,serif'}},'👆 cliquer pour ajouter'));
+          }
+
+          // Bouton sélection gratuite (invisible, le wrap entier est cliquable)
+          const selBtn=h('button',{
+            style:{display:'none'},
+            disabled:!isSel&&saLeft<=0,
+            onClick:()=>{}
+          },'');
           wrap.appendChild(selBtn);
 
           // Contrôles degrés supplémentaires
@@ -4252,14 +4301,40 @@ function s7(){
   idBox.appendChild(idGrid);
   d.appendChild(idBox);
 
-  // ── Notes ────────────────────────────────────────────────────
+  // ── Description physique ─────────────────────────────────────
+  const descBox=h('div',{cls:'box'});
+  descBox.appendChild(h('h3',{},'🪞 Description physique'));
+  descBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},
+    'Apparence, signes distinctifs, façon d\'être. Ce que voient les autres en regardant le simulacre.'));
+  const descTA=document.createElement('textarea');
+  descTA.placeholder='Ex : Grande brune aux yeux verts, cicatrice sur la joue gauche. Toujours en tenue de sport. Regard intense, parle peu mais écoute tout.';
+  descTA.style.height='70px';descTA.style.resize='vertical';
+  descTA.value=S.desc_simulacre||'';
+  descTA.addEventListener('input',e=>{S.desc_simulacre=e.target.value;});
+  descBox.appendChild(descTA);
+  d.appendChild(descBox);
+
+  // ── Proches ────────────────────────────────────────────────
+  const prochesBox=h('div',{cls:'box'});
+  prochesBox.appendChild(h('h3',{},'👥 Proches & Contacts'));
+  prochesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},
+    'Famille, amis, collègues, contacts utiles. Format libre ou : Nom (Relation, degré).'));
+  const prochesTA=document.createElement('textarea');
+  prochesTA.placeholder='Ex : Inspecteur Moreau (Police 3), Dr. Klein (Archéologie 2), Mère — Sophie, retraitée à Lyon.';
+  prochesTA.style.height='70px';prochesTA.style.resize='vertical';
+  prochesTA.value=S.proches_simulacre||'';
+  prochesTA.addEventListener('input',e=>{S.proches_simulacre=e.target.value;});
+  prochesBox.appendChild(prochesTA);
+  d.appendChild(prochesBox);
+
+  // ── Notes libres ─────────────────────────────────────────────
   const notesBox=h('div',{cls:'box'});
-  notesBox.appendChild(h('h3',{},'📝 Notes du Simulacre'));
+  notesBox.appendChild(h('h3',{},'📝 Notes libres'));
   notesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},
-    'Apparence physique, proches, contacts supplémentaires, historique, équipements notables…'));
+    'Équipements supplémentaires, historique personnel, secrets, anecdotes…'));
   const notesTA=document.createElement('textarea');
-  notesTA.placeholder='Ex : Cicatrice sur la joue gauche. Contacts : Inspecteur Moreau (Police 3), Dr. Klein (Archéologie 2). Appartement Faubourg-St-Honoré.';
-  notesTA.style.height='90px';notesTA.style.resize='vertical';
+  notesTA.placeholder='Ex : Cache une arme sous le siège de la moto. A vécu 3 ans à Tokyo. Parle couramment japonais et russe.';
+  notesTA.style.height='70px';notesTA.style.resize='vertical';
   notesTA.value=S.notes_simulacre||'';
   notesTA.addEventListener('input',e=>{S.notes_simulacre=e.target.value;});
   notesBox.appendChild(notesTA);
@@ -4794,8 +4869,16 @@ function s9(){
 
   // Notes + Arcane
   const noteCol=h('div',{});
+  if(S.desc_simulacre){
+    noteCol.appendChild(fpSec('Description', S.desc_simulacre));
+    noteCol.appendChild(h('div',{style:{height:'.5rem'}}));
+  }
+  if(S.proches_simulacre){
+    noteCol.appendChild(fpSec('Proches & Contacts', S.proches_simulacre));
+    noteCol.appendChild(h('div',{style:{height:'.5rem'}}));
+  }
   if(S.notes_simulacre){
-    noteCol.appendChild(fpSec('Notes du Simulacre', S.notes_simulacre));
+    noteCol.appendChild(fpSec('Notes libres', S.notes_simulacre));
     noteCol.appendChild(h('div',{style:{height:'.6rem'}}));
   }
   const arcAdopte2=getArcaneAdopte();
@@ -5607,7 +5690,9 @@ table.sorts-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
 
   <div style="height:3mm"></div>
 
-  ${sec('Notes du Simulacre', `<div class="notes-zone">${esc(S.notes_simulacre||'')}</div>`)}
+  ${S.desc_simulacre?sec('Description physique',`<div class="notes-zone">${esc(S.desc_simulacre)}</div>`):''}
+  ${S.proches_simulacre?sec('Proches & Contacts',`<div class="notes-zone">${esc(S.proches_simulacre)}</div>`):''}
+  ${sec('Notes libres', `<div class="notes-zone">${esc(S.notes_simulacre||'')}</div>`)}
 
 </div><!-- /PAGE 2 -->
 
