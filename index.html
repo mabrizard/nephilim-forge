@@ -2803,7 +2803,7 @@ function s4(){
         h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)',background:'rgba(192,160,255,.08)'}},
           `✦ ${s.nm} +${s.deg}`)));
       if((ep.sorts||0)>0) badgeRow.appendChild(
-        h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`📖 ${ep.sorts} sort${(ep.sorts||0)>1?'s':''}`));
+        h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`📖 ${(ep.sorts||0)} sort${(ep.sorts||0)>1?'s':''}`));
       if((ep.savoirs||[]).length>0) badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${(ep.savoirs||[]).length} savoirs`));
       (ep.quetes||[]).forEach(q=>badgeRow.appendChild(
@@ -2978,7 +2978,7 @@ function s4(){
         }
         const sagrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.35rem',marginBottom:'.4rem'}});
         if(typeof sagrid_hint!=='undefined'&&sagrid_hint) incBox.appendChild(sagrid_hint);
-        ep.savoirs.forEach(sv=>{
+        (ep.savoirs||[]).forEach(sv=>{
           const isSel=(inc.savoirs||[]).includes(sv);
           const extra=inc.savoirs_extra&&inc.savoirs_extra[sv]||0;
           const parts=sv.match(/^(.+?)\s+(\d+)$/);
@@ -3188,7 +3188,7 @@ function s4(){
           (ep.sciences||[]).forEach(s=>scibox.appendChild(
             h('span',{cls:'badge',style:{color:'var(--seph)'}},`${s.nm} +${s.deg}°`)));
           if((ep.sorts||0)>0) scibox.appendChild(
-            h('span',{cls:'badge'},`${ep.sorts} sort${(ep.sorts||0)>1?'s':''}`));
+            h('span',{cls:'badge'},`${(ep.sorts||0)} sort${(ep.sorts||0)>1?'s':''}`));
           (ep.quetes||[]).forEach(q=>scibox.appendChild(
             h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`⚜ ${q}`)));
           card.appendChild(scibox);
