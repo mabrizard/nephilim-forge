@@ -499,7 +499,33 @@ select option{background:#1a1510}
 
   a{color:inherit !important;}
 }
-</style>
+
+/* ── Action bar menu contextuel ── */
+.ab-menu-wrap{position:relative;display:inline-flex;}
+.ab-menu-btn{padding:.4rem .7rem!important;font-size:1.1rem!important;
+  background:rgba(201,168,76,.08);border:1px solid var(--gold-d);
+  border-radius:6px;cursor:pointer;color:var(--gold);line-height:1;}
+.ab-menu-btn:hover{background:rgba(201,168,76,.18);}
+.ab-dropdown{display:none;position:fixed;bottom:calc(var(--bar-h,52px) + 4px);
+  right:.5rem;background:rgba(18,14,8,.98);border:1px solid var(--gold-d);
+  border-radius:8px;padding:.4rem 0;min-width:190px;z-index:200;
+  box-shadow:0 -4px 20px rgba(0,0,0,.6);}
+.ab-dropdown.open{display:block;}
+.ab-dropdown button{display:flex;align-items:center;gap:.6rem;width:100%;
+  padding:.55rem 1rem;background:none;border:none;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:.85rem;color:var(--parch-d);
+  text-align:left;transition:background .15s;}
+.ab-dropdown button:hover{background:rgba(201,168,76,.1);color:var(--gold);}
+.ab-dropdown hr{border:none;border-top:1px solid rgba(201,168,76,.15);margin:.25rem 0;}
+@media(min-width:600px){
+  .ab-menu-btn-label{display:inline;}
+}
+@media(max-width:599px){
+  .ab-menu-btn-label{display:none;}
+  .action-bar .btn{padding:.4rem .6rem;font-size:.82rem;}
+  .action-bar-lbl{display:none;}
+  .autosave-dot{margin-right:0;}
+}</style>
 </head>
 <body>
 <div class="wrap" id="root"></div>
@@ -2155,102 +2181,130 @@ function h(tag,attr={},...ch){
 
 function buildActionBar(){
   const old=document.querySelector('.action-bar');if(old)old.remove();
+  const oldDrop=document.querySelector('.ab-dropdown');if(oldDrop)oldDrop.remove();
   const bar=document.createElement('div');bar.className='action-bar';
-  const sep=()=>{const s=document.createElement('div');s.style.cssText='width:1px;height:18px;background:var(--gold-d);margin:0 .2rem;flex-shrink:0';return s;};
 
-  // ── GROUPE 1 : Statut local ──────────────────────────
+  // ── Statut local ─────────────────────────────────
   const dot=document.createElement('div');dot.className='autosave-dot';dot.id='autosave-dot';
   const lbl=document.createElement('span');lbl.className='action-bar-lbl';lbl.id='autosave-lbl';lbl.textContent='Local';
   bar.appendChild(dot);bar.appendChild(lbl);
-  bar.appendChild(sep());
 
-  // ── GROUPE 2 : Compte & cloud ────────────────────────
-  if(supaCurrentUser){
-    const userLbl=document.createElement('span');
-    userLbl.className='action-bar-lbl';userLbl.style.cssText='color:var(--ok);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
-    userLbl.title=supaCurrentUser.email;
-    userLbl.textContent=supaCurrentUser.email.split('@')[0];
-    bar.appendChild(userLbl);
+  // ── Spacer ────────────────────────────────────────
+  const spacer=document.createElement('div');spacer.style.flex='1';bar.appendChild(spacer);
 
-    const btnSaveCloud=document.createElement('button');btnSaveCloud.className='btn btn-cloud';btnSaveCloud.innerHTML='☁ Cloud';
-    btnSaveCloud.title='Sauvegarder dans la base';
-    btnSaveCloud.onclick=async()=>{
-      if(!S.nom||!S.nom.trim()){toastError('Donnez un nom (étape 1)');return;}
-      const label='Sauvegarde — '+new Date().toLocaleDateString('fr-FR');
-      btnSaveCloud.disabled=true;btnSaveCloud.textContent='⟳';
-      const ok=await saveToSupabase(label);
-      if(ok){btnSaveCloud.innerHTML='✓';btnSaveCloud.style.cssText='border-color:var(--ok);color:var(--ok)';setTimeout(()=>{btnSaveCloud.disabled=false;btnSaveCloud.innerHTML='☁ Cloud';btnSaveCloud.style.cssText='';},2500);}
-      else{btnSaveCloud.disabled=false;btnSaveCloud.innerHTML='☁ Cloud';}
-    };
-    bar.appendChild(btnSaveCloud);
-
-    const btnLoad=document.createElement('button');btnLoad.className='btn btn-s';btnLoad.innerHTML='📂 Mes fiches';btnLoad.title='Charger une fiche sauvegardée';
-    btnLoad.onclick=loadListFromSupabase;bar.appendChild(btnLoad);
-
-    const btnVer=document.createElement('button');btnVer.className='btn btn-s';btnVer.innerHTML='🕰 Historique';btnVer.title='Voir les versions sauvegardées';
-    btnVer.onclick=showVersionsModal;bar.appendChild(btnVer);
-
-    const btnOut=document.createElement('button');btnOut.className='btn btn-s';btnOut.innerHTML='↩ Déconnexion';btnOut.title='Se déconnecter du compte';
-    btnOut.style.color='var(--parch-d)';
-    btnOut.onclick=()=>{if(confirm('Se déconnecter ?')) supaSignOut();};
-    bar.appendChild(btnOut);
-
-  } else if(SUPA_URL && SUPA_KEY){
-    const btnLogin=document.createElement('button');btnLogin.className='btn btn-cloud';btnLogin.innerHTML='⚡ Connexion';
-    btnLogin.title='Se connecter pour sauvegarder en ligne';
-    btnLogin.onclick=()=>showAuthPanel();bar.appendChild(btnLogin);
-  } else {
-    const hint=document.createElement('span');hint.className='action-bar-lbl';hint.style.color='var(--blood-l)';
-    hint.textContent='⚠ Non configuré';bar.appendChild(hint);
+  // ── Grimoire (si étape ≥ 4) ──────────────────────
+  if(S.step>=4){
+    const btnGrim=document.createElement('button');btnGrim.className='btn btn-grimoire';
+    btnGrim.innerHTML='✦ <span class="ab-menu-btn-label">Grimoire</span>';
+    btnGrim.title='Grimoire';btnGrim.onclick=()=>showGrimoire();
+    bar.appendChild(btnGrim);
   }
 
-  bar.appendChild(sep());
-
-  // ── GROUPE 3 : Enregistrer (toujours visible) ────────
+  // ── Enregistrer (toujours visible) ───────────────
   const btnSaveMain=document.createElement('button');
-  btnSaveMain.id='btn-save-main';btnSaveMain.className='btn btn-save';btnSaveMain.innerHTML='💾 Enregistrer';
-  btnSaveMain.title='Sauvegarder localement (+ cloud si connecté)';
+  btnSaveMain.id='btn-save-main';btnSaveMain.className='btn btn-save';
+  btnSaveMain.innerHTML='💾 <span class="ab-menu-btn-label">Enregistrer</span>';
+  btnSaveMain.title='Enregistrer';
   btnSaveMain.onclick=async()=>{
     if(!S.nom||!S.nom.trim()){toastError('Donnez un nom à votre personnage (étape 1)');return;}
     doLocalSave();
-    btnSaveMain.innerHTML='✓ Enregistré';btnSaveMain.className='btn btn-save saved';
+    btnSaveMain.innerHTML='✓';btnSaveMain.className='btn btn-save saved';
     if(supaCurrentUser){const label='Sauvegarde — '+new Date().toLocaleDateString('fr-FR');await saveToSupabase(label);}
     else toastSuccess('Sauvegardé localement');
-    setTimeout(()=>{btnSaveMain.innerHTML='💾 Enregistrer';btnSaveMain.className='btn btn-save';},2500);
+    setTimeout(()=>{btnSaveMain.innerHTML='💾 <span class="ab-menu-btn-label">Enregistrer</span>';btnSaveMain.className='btn btn-save';},2500);
   };
   bar.appendChild(btnSaveMain);
-  bar.appendChild(sep());
 
-  // ── GROUPE 4 : Outils fichiers ───────────────────────
-  const btnEJ=document.createElement('button');btnEJ.className='btn btn-s';btnEJ.innerHTML='📤 Export';btnEJ.title='Télécharger la fiche en JSON';
-  btnEJ.onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${S.nom||'nephilim'}_${new Date().toISOString().slice(0,10)}.json`;a.click();toastSuccess('Exporté en JSON');};
-  bar.appendChild(btnEJ);
+  // ── Menu ⋯ ───────────────────────────────────────
+  const menuWrap=document.createElement('div');menuWrap.className='ab-menu-wrap';
 
-  const btnIJ=document.createElement('button');btnIJ.className='btn btn-s';btnIJ.innerHTML='📥 Import';btnIJ.title='Charger une fiche depuis un fichier JSON';
-  btnIJ.onclick=()=>{const inp=document.createElement('input');inp.type='file';inp.accept='.json';inp.onchange=e=>{const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);Object.keys(S).forEach(k=>delete S[k]);Object.assign(S,d);supaPersonnageId=null;doLocalSave();render();toastSuccess('Fiche importée !');}catch{toastError('JSON invalide');}};r.readAsText(e.target.files[0]);};inp.click();};
-  bar.appendChild(btnIJ);
+  const menuBtn=document.createElement('button');menuBtn.className='ab-menu-btn';
+  menuBtn.innerHTML='⋯';menuBtn.title='Plus d\'options';
 
-  bar.appendChild(sep());
+  // Dropdown
+  const drop=document.createElement('div');drop.className='ab-dropdown';
 
-  // ── GROUPE 5 : Actions ───────────────────────────────
-  const btnNew=document.createElement('button');btnNew.className='btn btn-s';btnNew.innerHTML='+ Nouveau';btnNew.title='Créer un nouveau personnage';
-  btnNew.onclick=()=>{if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){
-    S={step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,pi_total:0,ps_initial:0,chutes_max:2,incarnations:{},magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,mondes_integres:{},notes_simulacre:'',effets_magiques:{gravés:[],focus:[]},arcane:null};
-    supaPersonnageId=null;
-    grimCache={sorts:null,invocations:null,formules:null};
-    syncStatus='idle';syncMsg='';  // effacer le message de l'ancien personnage
-    localStorage.removeItem('neph_v3'); // effacer le localStorage pour ne pas recharger l'ancien
-    render();
-  }};
-  bar.appendChild(btnNew);
+  const mkItem=(ico,label,fn,style='')=>{
+    const b=document.createElement('button');
+    b.innerHTML=`${ico} ${label}`;
+    if(style) b.style.cssText=style;
+    b.onclick=()=>{drop.classList.remove('open');fn();};
+    return b;
+  };
+  const mkHr=()=>{const h=document.createElement('hr');return h;};
 
-  if(S.step>=4){
-    const btnGrim=document.createElement('button');btnGrim.className='btn btn-grimoire';btnGrim.innerHTML='✦ Grimoire';
-    btnGrim.title='Consulter le grimoire des sorts, invocations et formules';
-    btnGrim.onclick=()=>showGrimoire();bar.appendChild(btnGrim);
+  // Groupe Cloud (si connecté)
+  if(supaCurrentUser){
+    const userSpan=document.createElement('div');
+    userSpan.style.cssText='padding:.35rem 1rem .1rem;font-size:.72rem;color:var(--ok);font-family:Cinzel,serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    userSpan.textContent='⚡ '+supaCurrentUser.email.split('@')[0];
+    drop.appendChild(userSpan);
+    drop.appendChild(mkItem('☁','Cloud — Sauvegarder',async()=>{
+      if(!S.nom||!S.nom.trim()){toastError('Donnez un nom (étape 1)');return;}
+      const ok=await saveToSupabase('Sauvegarde — '+new Date().toLocaleDateString('fr-FR'));
+      if(ok) toastSuccess('Sauvegardé dans le cloud');
+    }));
+    drop.appendChild(mkItem('📂','Mes fiches',()=>loadListFromSupabase()));
+    drop.appendChild(mkItem('🕰','Historique',()=>showVersionsModal()));
+    drop.appendChild(mkItem('↩','Déconnexion',()=>{if(confirm('Se déconnecter ?'))supaSignOut();},'color:var(--parch-d)'));
+    drop.appendChild(mkHr());
+  } else if(SUPA_URL && SUPA_KEY){
+    drop.appendChild(mkItem('⚡','Connexion cloud',()=>showAuthPanel()));
+    drop.appendChild(mkHr());
   }
 
+  // Groupe Fichiers
+  drop.appendChild(mkItem('📤','Export JSON',()=>{
+    const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download=`${S.nom||'nephilim'}_${new Date().toISOString().slice(0,10)}.json`;a.click();
+    toastSuccess('Exporté en JSON');
+  }));
+  drop.appendChild(mkItem('📥','Import JSON',()=>{
+    const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+    inp.onchange=e=>{const r=new FileReader();r.onload=ev=>{
+      try{const d=JSON.parse(ev.target.result);Object.keys(S).forEach(k=>delete S[k]);
+        Object.assign(S,d);supaPersonnageId=null;doLocalSave();render();toastSuccess('Fiche importée !');}
+      catch{toastError('JSON invalide');}
+    };r.readAsText(e.target.files[0]);};inp.click();
+  }));
+  drop.appendChild(mkHr());
+
+  // Nouveau personnage
+  drop.appendChild(mkItem('＋','Nouveau personnage',()=>{
+    if(confirm('Créer un nouveau personnage ? Le personnage actuel sera effacé localement.')){
+      Object.keys(S).forEach(k=>delete S[k]);
+      Object.assign(S,{step:1,nom:'',joueur:'',ka_dom:null,metamorphe:null,profil:null,
+        pi_total:0,ps_initial:0,chutes_max:2,chutes_min:0,incarnations:{},
+        magie:{bas:0,haut:0,grand:0,voie:null,sorts:0,sorts_choisis:[]},
+        sephiroth:{},monde:null,alchimie:{noir:0,blanc:0,rouge:0,voie:null},
+        constructs:{athanor:0,creuset:0,cornue:0,alambic:0,aludel:0},
+        vecus:{},sciences:{},stase:'',chutes:{khaiba:0,narcose:0,ombre:0},
+        metier:null,ka_soleil_base:3,sci_tab:'magie',inc_tab:null,opp_inverse:false,
+        mondes_integres:{},notes_simulacre:'',effets_magiques:{gravés:[],focus:[]},arcane:null,
+        vecu_simulacre_extra:0,nom_simulacre:'',genre_simulacre:'',age_simulacre:0,
+      });
+      supaPersonnageId=null;grimCache={sorts:null,invocations:null,formules:null};
+      syncStatus='idle';syncMsg='';
+      localStorage.removeItem('neph_v3');render();
+    }
+  }));
+
+  menuBtn.onclick=(e)=>{
+    e.stopPropagation();
+    drop.classList.toggle('open');
+    // Positionner le dropdown au-dessus de la barre
+    const barH=bar.offsetHeight||52;
+    document.documentElement.style.setProperty('--bar-h', barH+'px');
+  };
+
+  // Fermer le dropdown en cliquant ailleurs
+  document.addEventListener('click',()=>drop.classList.remove('open'),{capture:false});
+
+  menuWrap.appendChild(menuBtn);
+  bar.appendChild(menuWrap);
   document.body.appendChild(bar);
+  document.body.appendChild(drop);
 }
 
 function flashAutosave(){
