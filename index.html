@@ -2799,14 +2799,14 @@ function s4(){
 
       // ── BADGES D\'AVANTAGES (vue réduite ET vue développée) ──
       const badgeRow=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.3rem',marginBottom:'.5rem'}});
-      ep.sciences.forEach(s=>badgeRow.appendChild(
+      (ep.sciences||[]).forEach(s=>badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--seph)',borderColor:'rgba(192,160,255,.4)',background:'rgba(192,160,255,.08)'}},
           `✦ ${s.nm} +${s.deg}`)));
-      if(ep.sorts>0) badgeRow.appendChild(
-        h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`📖 ${ep.sorts} sort${ep.sorts>1?'s':''}`));
+      if((ep.sorts||0)>0) badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`📖 ${ep.sorts} sort${(ep.sorts||0)>1?'s':''}`));
       if(ep.savoirs.length>0) badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${ep.savoirs.length} savoirs`));
-      ep.quetes.forEach(q=>badgeRow.appendChild(
+      (ep.quetes||[]).forEach(q=>badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--gold)',background:'rgba(201,168,76,.08)'}},`⚜ ${q}`)));
       {const ad=getArcanesForEpoque(ep.id);
       if(ad.length>0){const nb=ad.length;const bonus=ep.arcane_bonus?' +'+ep.arcane_bonus+'°':'';
@@ -3064,12 +3064,12 @@ function s4(){
         card.appendChild(sabox);
 
         // ── QUÊTE (1 seule gratuite, autres à 2 PI) ─────────────
-        if(ep.quetes.length>0){
+        if((ep.quetes||[]).length>0){
           const qbox=h('div',{style:{marginBottom:'.8rem'}});
           qbox.appendChild(h('p',{cls:'lbl'},
             '⚜ Quête ésotérique — 1 gratuite, les autres : 2 PI/degré :'));
           const qgrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.4rem'}});
-          ep.quetes.forEach(q=>{
+          (ep.quetes||[]).forEach(q=>{
             const isSelQ=inc.quete===q;
             const isOtherChosen=inc.quete&&inc.quete!==q;
             qgrid.appendChild(h('button',{
@@ -3087,7 +3087,7 @@ function s4(){
             },(isSelQ?'⚜ ':'◦ ')+q+(isSelQ?' (gratuite)':'')));
           });
           qbox.appendChild(qgrid);
-          if(ep.quetes.length>1&&!inc.quete){
+          if((ep.quetes||[]).length>1&&!inc.quete){
             qbox.appendChild(h('p',{cls:'lbl',style:{color:'var(--gold-d)',fontSize:'.72rem',marginTop:'.3rem'}},
               '💡 Les quêtes non choisies restent accessibles à 2 PI/degré via l\'étape 5.'));
           }
@@ -3180,16 +3180,16 @@ function s4(){
         }
 
         // ── AVANTAGES OFFERTS (récapitulatif) ───────────────────
-        if(ep.sciences.length>0||ep.sorts>0){
+        if((ep.sciences||[]).length>0||(ep.sorts||0)>0){
           const scibox=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.4rem',
             paddingTop:'.5rem',borderTop:'1px solid rgba(201,168,76,.1)'}});
           scibox.appendChild(h('span',{style:{width:'100%',fontFamily:'Cinzel,serif',
             fontSize:'.7rem',color:'var(--gold-d)',marginBottom:'.2rem'}},'Avantages offerts :'));
-          ep.sciences.forEach(s=>scibox.appendChild(
+          (ep.sciences||[]).forEach(s=>scibox.appendChild(
             h('span',{cls:'badge',style:{color:'var(--seph)'}},`${s.nm} +${s.deg}°`)));
-          if(ep.sorts>0) scibox.appendChild(
-            h('span',{cls:'badge'},`${ep.sorts} sort${ep.sorts>1?'s':''}`));
-          ep.quetes.forEach(q=>scibox.appendChild(
+          if((ep.sorts||0)>0) scibox.appendChild(
+            h('span',{cls:'badge'},`${ep.sorts} sort${(ep.sorts||0)>1?'s':''}`));
+          (ep.quetes||[]).forEach(q=>scibox.appendChild(
             h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`⚜ ${q}`)));
           card.appendChild(scibox);
         }
