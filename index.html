@@ -2804,8 +2804,8 @@ function s4(){
           `✦ ${s.nm} +${s.deg}`)));
       if((ep.sorts||0)>0) badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--gold-l)'}},`📖 ${ep.sorts} sort${(ep.sorts||0)>1?'s':''}`));
-      if(ep.savoirs.length>0) badgeRow.appendChild(
-        h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${ep.savoirs.length} savoirs`));
+      if((ep.savoirs||[]).length>0) badgeRow.appendChild(
+        h('span',{cls:'badge',style:{color:'var(--parch-d)'}},`📚 ${(ep.savoirs||[]).length} savoirs`));
       (ep.quetes||[]).forEach(q=>badgeRow.appendChild(
         h('span',{cls:'badge',style:{color:'var(--gold)',background:'rgba(201,168,76,.08)'}},`⚜ ${q}`)));
       {const ad=getArcanesForEpoque(ep.id);
@@ -5708,11 +5708,16 @@ table.sorts-tbl tr:nth-child(odd) td{background:rgba(0,0,0,.02);}
 </body>
 </html>`;
 
-  const win=window.open('','_blank');
-  if(!win){alert('Autorisez les popups pour générer la fiche PDF.');return;}
-  win.document.write(html);
-  win.document.close();
-  win.focus();
+  // Téléchargement via Blob (pas de popup blocker)
+  const _blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const _url=URL.createObjectURL(_blob);
+  const _a=document.createElement('a');
+  _a.href=_url;
+  _a.download=(S.nom?S.nom.replace(/[^a-z0-9]/gi,'_'):'nephilim')+'_fiche.html';
+  document.body.appendChild(_a);
+  _a.click();
+  document.body.removeChild(_a);
+  setTimeout(()=>URL.revokeObjectURL(_url),10000);
 }
 
 function exportTXT(){
