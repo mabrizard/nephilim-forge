@@ -1142,38 +1142,22 @@ const VOIES_MAGIE=[
 // ═══════════════════════════════════════════════════════
 // MONDES DE KABBALE — 3 cercles officiels Nephilim
 // ═══════════════════════════════════════════════════════
-// Mondes de Kabbale — 5 territoires initiatiques
-// Chaque Monde contient l'intégralité de l'Arbre (10 Sephiroth).
-// Le Monde Tutélaire = pacte permanent. Hors Monde Tutélaire = pacte éphémère.
 const MONDES=[
-  {id:'zakai',   nm:'Zakaï',   cercle:1,
-   dc:`Monde de la pureté, lié à la forêt des ombres. 1er Cercle (Sceaux) — Malkuth, Yesod, Hod, Netzah.`},
-  {id:'meborack',nm:'Meborack', cercle:1,
-   dc:`Monde de l'abondance. 1er Cercle (Sceaux) — Malkuth, Yesod, Hod, Netzah.`},
-  {id:'sohar',   nm:'Sohar',   cercle:2,
-   dc:`Monde de la perfection et de l'équilibre. 2e Cercle (Pentacles) — Tiphereth, Chesed, Geburah. Requiert une Sephirah du 1er Cercle ≥ 7.`},
-  {id:'aresh',   nm:'Aresh',   cercle:2,
-   dc:`Monde de la fureur et de la guerre. 2e Cercle (Pentacles) — Tiphereth, Chesed, Geburah. Requiert une Sephirah du 1er Cercle ≥ 7.`},
-  {id:'pachad',  nm:'Pachad',  cercle:3,
-   dc:`Monde de la crainte et de l'ombre. 3e Cercle (Clés) — Binah, Hokmah, Kether. Requiert une Sephirah du 2e Cercle ≥ 7.`},
+  {id:'aresh',  nm:'Aresh',  cercle:1,
+   dc:`1er Cercle - Sceaux. Monde des Elements physiques. Donne acces a Malkuth, Yesod, Hod, Netzah.`},
+  {id:'sohar',  nm:'Sohar',  cercle:2,
+   dc:`2e Cercle - Pentacles. Monde de la Lumiere astrale. Donne acces a Tiphareth, Geburah, Chesed. Requiert une Sephirah du 1er cercle >= 7.`},
+  {id:'ethesh', nm:'Ethesh', cercle:3,
+   dc:`3e Cercle - Cles. Monde des Forces divines. Donne acces a Binah, Chokmah, Kether. Requiert une Sephirah du 2e cercle >= 7.`},
 ];
 const SEPH_CERCLE={malkuth:1,yesod:1,hod:1,netzah:1,tipheret:2,geburah:2,chesed:2,binah:3,chokmah:3,kether:3};
-// Mondes par cercle — plusieurs mondes peuvent partager un cercle
-function mondesDuCercle(cercle){ return MONDES.filter(m=>m.cercle===cercle); }
+const CERCLE_MONDE={1:'aresh',2:'sohar',3:'ethesh'};
 function mondeOk(mondeId){if(!S.mondes_integres)S.mondes_integres={};return !!S.mondes_integres[mondeId];}
-function sephMondeOk(sephId){
-  const cercle=SEPH_CERCLE[sephId]||1;
-  // Un monde de ce cercle (ou supérieur) doit être intégré
-  return MONDES.some(m=>m.cercle===cercle&&mondeOk(m.id));
-}
+function sephMondeOk(sephId){const cercle=SEPH_CERCLE[sephId]||1;return mondeOk(CERCLE_MONDE[cercle]);}
 function cerclePrerequis(cercle){
   if(cercle===1)return true;
-  // 2e Cercle : avoir ≥7 dans une Sephirah du 1er Cercle ET un Monde du 1er Cercle intégré
-  if(cercle===2)return ['malkuth','yesod','hod','netzah'].some(id=>(S.sephiroth[id]||0)>=7)
-    && MONDES.some(m=>m.cercle===1&&mondeOk(m.id));
-  // 3e Cercle : avoir ≥7 dans une Sephirah du 2e Cercle ET un Monde du 2e Cercle intégré
-  if(cercle===3)return ['tipheret','geburah','chesed'].some(id=>(S.sephiroth[id]||0)>=7)
-    && MONDES.some(m=>m.cercle===2&&mondeOk(m.id));
+  if(cercle===2)return['malkuth','yesod','hod','netzah'].some(id=>(S.sephiroth[id]||0)>=7);
+  if(cercle===3)return['tipheret','geburah','chesed'].some(id=>(S.sephiroth[id]||0)>=7);
   return false;
 }
 
@@ -3426,13 +3410,7 @@ function buildKabbale(){
 
   // Info règle
   wrap.appendChild(h('div',{cls:'info-box'},
-    h('strong',{},'Règle :'),' 1 PI = 3 degrés à répartir. Pool gratuit consommé en priorité.',
-    h('br',{}),
-    h('strong',{},'Cercle : '),'niveau de maîtrise (Sceaux → Pentacles → Clés).',
-    h('br',{}),
-    h('strong',{},'Sephirah : '),"l'Art Occulte testé pour invoquer.",
-    h('br',{}),
-    h('strong',{},'Monde : '),"territoire d'origine de la créature. Pacte permanent si Monde Tutélaire, éphémère sinon."
+    h('strong',{},'Règle :'),' 1 PI = 3 degrés à répartir. Pool gratuit = consommé en priorité. Sephiroth : précédente ≥ 7 pour ouvrir la suivante.'
   ));
 
   // Pool info bar
@@ -3453,7 +3431,7 @@ function buildKabbale(){
         color:'var(--seph)',padding:'.5rem',marginBottom:'.8rem',
         background:'rgba(192,160,255,.06)',borderRadius:'7px',
         border:'1px solid rgba(192,160,255,.2)'}},
-        `🌍 Monde Tutélaire : ${mondeActif.nm} — ${['','1er Cercle (Sceaux)','2e Cercle (Pentacles)','3e Cercle (Clés)'][mondeActif.cercle]} · Pactes permanents dans ce Monde`));
+        `🌍 ${mondeActif.nm} — ${['','1er Cercle (Sceaux)','2e Cercle (Pentacles)','3e Cercle (Clés)'][mondeActif.cercle]} actif`));
     } else {
       wrap.appendChild(h('div',{style:{
         textAlign:'center',fontFamily:'Cinzel,serif',fontSize:'.78rem',
@@ -3513,13 +3491,7 @@ function buildKabbale(){
     const mondesBox=h('div',{cls:'box',style:{marginTop:'1rem'}});
     mondesBox.appendChild(h('h3',{},'🌍 Mondes de la Kabbale'));
     mondesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},
-      `Les Mondes sont les 5 territoires initiatiques de la Kabbale. Chaque Cercle requiert d'intégrer un Monde :`,
-      h('br',{}),
-      h('strong',{},'1er Cercle (Sceaux) : '),'Zakaï ou Meborack — ',
-      h('strong',{},'2e Cercle (Pentacles) : '),'Sohar ou Aresh — ',
-      h('strong',{},'3e Cercle (Clés) : '),'Pachad.',
-      h('br',{}),
-      `Le Monde Tutélaire offre des pactes permanents. Hors de votre Monde, les pactes sont éphémères.`));
+      `L'accès aux Sephiroth est conditionné par l'intégration du Monde correspondant. Chaque cercle unlock de nouvelles Sephiroth.`));
 
     for(const m of MONDES){
       const isIntegre=mondeOk(m.id);
@@ -3548,8 +3520,7 @@ function buildKabbale(){
           onClick:()=>{
             if(!S.mondes_integres) S.mondes_integres={};
             S.mondes_integres[m.id]=true;
-            if(m.cercle===2) S.monde=m.nm; // héritage
-            S.monde_tutelaire=m.id;
+            if(m.cercle===2) S.monde=m.nm;
             render();
           }
         },'Intégrer ce Monde');
@@ -3567,7 +3538,6 @@ function buildKabbale(){
             const sephsDuCercle=Object.entries(SEPH_CERCLE).filter(([,cer])=>cer===m.cercle).map(([id])=>id);
             sephsDuCercle.forEach(id=>{S.sephiroth[id]=0;});
             if(m.cercle===2) S.monde=null;
-            if(S.monde_tutelaire===m.id) S.monde_tutelaire=null;
             render();
           }
         },'↩ Annuler');
@@ -5898,11 +5868,7 @@ async function renderGrimBody(bodyDiv,searchInp){
     detail.style.display=item.id===grimOpenId?'block':'none';
     if(item.effet) detail.appendChild(grimEl('p','',item.effet));
     if(item.voie) detail.appendChild(grimEl('p','',`<strong>Voie :</strong> ${item.voie}`));
-    if(item.sephirah){
-      const _tutelaire=MONDES.filter(m=>mondeOk(m.id)).sort((a,b)=>b.cercle-a.cercle)[0];
-      const _pacteLbl=item.monde?(_tutelaire&&(_tutelaire.nm===item.monde||_tutelaire.id===item.monde)?' ✓ pacte permanent':' ⚠ pacte éphémère'):'';
-      detail.appendChild(grimEl('p','',`<strong>Séphirah :</strong> ${item.sephirah}${item.monde?' · Monde : '+item.monde+_pacteLbl:''}`));
-    }
+    if(item.sephirah) detail.appendChild(grimEl('p','',`<strong>Séphirah :</strong> ${item.sephirah}${item.monde?' · Monde : '+item.monde:''}`));
     if(item.contrat) detail.appendChild(grimEl('p','',`<strong>Contrat :</strong> ${item.contrat}`));
     if(item.substance) detail.appendChild(grimEl('p','',`<strong>Substance :</strong> ${item.substance}`));
     if(item.focus) detail.appendChild(grimEl('p','',`<strong>Focus :</strong> ${item.focus}`));
