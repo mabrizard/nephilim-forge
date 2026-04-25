@@ -2978,7 +2978,6 @@ function s4(){
         }
         const sagrid=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'.35rem',marginBottom:'.4rem'}});
         if(sagrid_hint) sabox.appendChild(sagrid_hint);
-        sabox.appendChild(sagrid);
         (ep.savoirs||[]).forEach(sv=>{
           const isSel=(inc.savoirs||[]).includes(sv);
           const extra=inc.savoirs_extra&&inc.savoirs_extra[sv]||0;
