@@ -1142,22 +1142,38 @@ const VOIES_MAGIE=[
 // ═══════════════════════════════════════════════════════
 // MONDES DE KABBALE — 3 cercles officiels Nephilim
 // ═══════════════════════════════════════════════════════
+// Mondes de Kabbale — 5 territoires initiatiques
+// Chaque Monde contient l'intégralité de l'Arbre (10 Sephiroth).
+// Le Monde Tutélaire = pacte permanent. Hors Monde Tutélaire = pacte éphémère.
 const MONDES=[
-  {id:'aresh',  nm:'Aresh',  cercle:1,
-   dc:`1er Cercle - Sceaux. Monde des Elements physiques. Donne acces a Malkuth, Yesod, Hod, Netzah.`},
-  {id:'sohar',  nm:'Sohar',  cercle:2,
-   dc:`2e Cercle - Pentacles. Monde de la Lumiere astrale. Donne acces a Tiphareth, Geburah, Chesed. Requiert une Sephirah du 1er cercle >= 7.`},
-  {id:'ethesh', nm:'Ethesh', cercle:3,
-   dc:`3e Cercle - Cles. Monde des Forces divines. Donne acces a Binah, Chokmah, Kether. Requiert une Sephirah du 2e cercle >= 7.`},
+  {id:'zakai',   nm:'Zakaï',   cercle:1,
+   dc:`Monde de la pureté, lié à la forêt des ombres. 1er Cercle (Sceaux) — Malkuth, Yesod, Hod, Netzah.`},
+  {id:'meborack',nm:'Meborack', cercle:1,
+   dc:`Monde de l'abondance. 1er Cercle (Sceaux) — Malkuth, Yesod, Hod, Netzah.`},
+  {id:'sohar',   nm:'Sohar',   cercle:2,
+   dc:`Monde de la perfection et de l'équilibre. 2e Cercle (Pentacles) — Tiphereth, Chesed, Geburah. Requiert une Sephirah du 1er Cercle ≥ 7.`},
+  {id:'aresh',   nm:'Aresh',   cercle:2,
+   dc:`Monde de la fureur et de la guerre. 2e Cercle (Pentacles) — Tiphereth, Chesed, Geburah. Requiert une Sephirah du 1er Cercle ≥ 7.`},
+  {id:'pachad',  nm:'Pachad',  cercle:3,
+   dc:`Monde de la crainte et de l'ombre. 3e Cercle (Clés) — Binah, Hokmah, Kether. Requiert une Sephirah du 2e Cercle ≥ 7.`},
 ];
 const SEPH_CERCLE={malkuth:1,yesod:1,hod:1,netzah:1,tipheret:2,geburah:2,chesed:2,binah:3,chokmah:3,kether:3};
-const CERCLE_MONDE={1:'aresh',2:'sohar',3:'ethesh'};
+// Mondes par cercle — plusieurs mondes peuvent partager un cercle
+function mondesDuCercle(cercle){ return MONDES.filter(m=>m.cercle===cercle); }
 function mondeOk(mondeId){if(!S.mondes_integres)S.mondes_integres={};return !!S.mondes_integres[mondeId];}
-function sephMondeOk(sephId){const cercle=SEPH_CERCLE[sephId]||1;return mondeOk(CERCLE_MONDE[cercle]);}
+function sephMondeOk(sephId){
+  const cercle=SEPH_CERCLE[sephId]||1;
+  // Un monde de ce cercle (ou supérieur) doit être intégré
+  return MONDES.some(m=>m.cercle===cercle&&mondeOk(m.id));
+}
 function cerclePrerequis(cercle){
   if(cercle===1)return true;
-  if(cercle===2)return['malkuth','yesod','hod','netzah'].some(id=>(S.sephiroth[id]||0)>=7);
-  if(cercle===3)return['tipheret','geburah','chesed'].some(id=>(S.sephiroth[id]||0)>=7);
+  // 2e Cercle : avoir ≥7 dans une Sephirah du 1er Cercle ET un Monde du 1er Cercle intégré
+  if(cercle===2)return ['malkuth','yesod','hod','netzah'].some(id=>(S.sephiroth[id]||0)>=7)
+    && MONDES.some(m=>m.cercle===1&&mondeOk(m.id));
+  // 3e Cercle : avoir ≥7 dans une Sephirah du 2e Cercle ET un Monde du 2e Cercle intégré
+  if(cercle===3)return ['tipheret','geburah','chesed'].some(id=>(S.sephiroth[id]||0)>=7)
+    && MONDES.some(m=>m.cercle===2&&mondeOk(m.id));
   return false;
 }
 
@@ -1666,33 +1682,91 @@ const SEPH=[
   {id:'kether',  nm:'Kether',  col:1,row:0,req:'binah',   dc:'La Couronne'},
 ];
 const METIERS=[
-  // Simulacres classiques
-  {id:'detective',   nm:'Détective',          ks:1, vcu:'Espion',      rs:2, dc:'Enquêtes criminelles, filatures, contacts dans le milieu policier.',
-   ressources:'Contacts secrets, matériel de surveillance.'},
-  {id:'antiquaire',  nm:'Antiquaire',         ks:0, vcu:'Érudit',      rs:3, dc:'Spécialiste des objets anciens. Accès aux réseaux de collectionneurs.',
-   ressources:'Archives privées, bibliothèques ésotériques.'},
-  {id:'medecin',     nm:'Médecin',            ks:1, vcu:'Guérisseur',  rs:4, dc:'Hôpitaux, médecine légale, accès aux substances.',
-   ressources:'Hôpital, pharmacopée, réseau médical.'},
-  {id:'journaliste', nm:'Journaliste',        ks:1, vcu:'Érudit',      rs:2, dc:'Information, contacts variés, accès aux événements.',
-   ressources:'Presse accrédités, contacts officiels.'},
-  {id:'erudit',      nm:'Érudit',             ks:4, vcu:'Érudit',      rs:3, dc:'Chercheur ou professeur. Accès aux archives et bibliothèques.',
-   ressources:'Accès aux archives, bibliothèques universitaires.'},
-  {id:'artiste',     nm:'Artiste Mélancolique',ks:3, vcu:'Artiste',    rs:2, dc:'Milieu culturel et bohème. Atelier et renommée locale.',
-   ressources:'Atelier d\'artiste, réseau culturel.'},
-  {id:'activiste',   nm:'Activiste',          ks:5, vcu:'Noble',       rs:2, dc:'Engagement social et politique. Réseaux et logistique de terrain.',
-   ressources:'Réseaux sociaux militants, logistique terrain.'},
-  {id:'agent_ombre', nm:'Agent de l\'Ombre',  ks:2, vcu:'Espion',      rs:2, dc:'Opérateur discret. Contacts secrets et matériel de surveillance.',
-   ressources:'Contacts souterrains, équipement espionnage.'},
-  {id:'militaire',   nm:'Militaire',          ks:2, vcu:'Guerrier',    rs:2, dc:'Armée, armes, discipline et réseau militaire.',
-   ressources:'Arsenal réglementaire, réseau militaire.'},
-  {id:'clerge',      nm:'Clergé',             ks:0, vcu:'Prêtre',      rs:2, dc:'Institution religieuse et réseaux.',
-   ressources:'Édifices religieux, archives de la foi.'},
-  {id:'businessman', nm:'Homme d\'Affaires',  ks:0, vcu:'Marchand',    rs:5, dc:'Capital et influence économique.',
-   ressources:'Capital financier, réseau d\'affaires international.'},
-  {id:'scientifique',nm:'Scientifique',       ks:0, vcu:'Artisan',     rs:3, dc:'Recherche et technologie de pointe.',
-   ressources:'Laboratoires, accès aux bases de données scientifiques.'},
-  {id:'criminel',    nm:'Criminel',           ks:1, vcu:'Espion',      rs:2, dc:'Milieu souterrain. Contacts douteux et ressources illicites.',
-   ressources:'Réseau criminel, matériel de contrebande.'},
+  // ── FEU ──────────────────────────────────────────────────────
+  {id:'pompier',      ka:'Feu',  nm:'Sapeur-pompier hyperactif',   vcu:'Sportif de l\'Extrême', ks:3, age:28, rs:3,
+   dc:'Très sportif, solitaire, passionné de mécanique.',
+   ressources:'Contacts caserne (3), Matériel caserne, T3 centre-ville, Moto.',
+   contrainte:null},
+  {id:'etudiante',    ka:'Feu',  nm:'Étudiante passionnée',        vcu:'Leader Étudiant',       ks:2, age:20, rs:2,
+   dc:'Naturel optimiste, investie et leader pour ses amis.',
+   ressources:'Accès université (2), Contacts assos (2).',
+   contrainte:null},
+  {id:'banquier',     ka:'Feu',  nm:'Banquier dynamique',          vcu:'Homme d\'Affaires',    ks:3, age:45, rs:4,
+   dc:'Axé carrière, divorcé, peu de loisirs.',
+   ressources:'Comptes/Investissements (7), Maison ville, Maison mer, Monospace.',
+   contrainte:null},
+  {id:'artiste_feu',  ka:'Feu',  nm:'Artiste enflammé',            vcu:'Artiste',               ks:4, age:22, rs:3,
+   dc:'Rebelle, œuvres provocantes et choquantes.',
+   ressources:'Atelier, Contacts artistes (6), Mécène (4).',
+   contrainte:null},
+  // ── TERRE ─────────────────────────────────────────────────────
+  {id:'infirmiere',   ka:'Terre',nm:'Infirmière volontaire',        vcu:'Guérisseur',            ks:2, age:35, rs:2,
+   dc:'Contrainte : Pilier associatif (charges de temps importantes).',
+   ressources:'T2 centre-ville, Contacts médicaux (2).',
+   contrainte:'Pilier associatif — charges de temps importantes.'},
+  {id:'dirigeant',    ka:'Terre',nm:'Dirigeant matérialiste',       vcu:'Chef d\'Entreprise',   ks:3, age:45, rs:4,
+   dc:'Contrainte : Comportement étrange nuit à l\'image de l\'entreprise.',
+   ressources:'Entreprise, Maison périphérie, 2 résidences secondaires, 3 voitures.',
+   contrainte:'Comportement étrange nuit à l\'image de l\'entreprise.'},
+  {id:'chauffeuse',   ka:'Terre',nm:'Conductrice de poids lourds',  vcu:'Conducteur Expérimenté',ks:3, age:39, rs:3,
+   dc:'Solitaire, pratique intensive du E-sport.',
+   ressources:'Véhicules/Engins, Matériel info/vidéo, Pavillon.',
+   contrainte:null},
+  {id:'maraichere',   ka:'Terre',nm:'Maraîchère bio exubérante',    vcu:'Agriculteur',           ks:3, age:48, rs:3,
+   dc:'Mariage heureux, 4 enfants, symbole régional de biodiversité.',
+   ressources:'Exploitation rurale, Contacts consommateurs bio (3).',
+   contrainte:null},
+  // ── EAU ───────────────────────────────────────────────────────
+  {id:'agent_admin',  ka:'Eau',  nm:'Agent administratif',          vcu:'Bureaucrate',           ks:1, age:42, rs:2,
+   dc:'Contrainte : On ne lui connaît aucune entorse à sa routine.',
+   ressources:'Compte épargne, Pavillon banlieue, Vieille voiture.',
+   contrainte:'Aucune entorse à sa routine — toute anomalie génère des jetons de Traque.'},
+  {id:'artisane',     ka:'Eau',  nm:'Artisane consciencieuse',       vcu:'Artisan',               ks:3, age:34, rs:3,
+   dc:'Dénuée de besoins superflus, passionnée par son art.',
+   ressources:'Utilitaire, Petit atelier, Contacts artisans (5).',
+   contrainte:null},
+  {id:'commercante',  ka:'Eau',  nm:'Commerçante engagée',           vcu:'Commerçant',            ks:3, age:38, rs:3,
+   dc:'Contrainte : Figure publique respectée et écoutée du quartier.',
+   ressources:'Boutique bio-équitable, Contacts mairie (5).',
+   contrainte:'Figure publique — toute absence ou comportement déviant très remarqué.'},
+  {id:'heritier',     ka:'Eau',  nm:'Héritier philanthrope',         vcu:'Philanthrope',          ks:3, age:35, rs:3,
+   dc:'Féru de sports extrêmes, repousse ses limites.',
+   ressources:'Comptes/Actions (5), Contacts finance (3).',
+   contrainte:null},
+  // ── AIR ───────────────────────────────────────────────────────
+  {id:'cm',           ka:'Air',  nm:'Community manager',             vcu:'Influenceur',           ks:3, age:24, rs:2,
+   dc:'Bonus : Permet d\'enlever 3 jetons de Traque par mois.',
+   ressources:'Matériel de pointe, Influence réseaux sociaux.',
+   contrainte:null},
+  {id:'journaliste',  ka:'Air',  nm:'Journaliste à sensation',       vcu:'Journaliste',           ks:3, age:35, rs:2,
+   dc:'Intuitive, mère d\'une fille unique, peu d\'amis.',
+   ressources:'Contacts médias (5), Carte de presse.',
+   contrainte:null},
+  {id:'securite',     ka:'Air',  nm:'Agent de sécurité solitaire',   vcu:'Soldat',                ks:3, age:37, rs:2,
+   dc:'Ancien militaire, vit chez ses parents, fan de tir et de séries.',
+   ressources:'Armes à feu, Contacts armée/sécurité (3).',
+   contrainte:null},
+  {id:'restaurateur', ka:'Air',  nm:'Restaurateur inventif',         vcu:'Cuisinier',             ks:4, age:47, rs:4,
+   dc:'Veuf, 3 enfants, sommet de son art culinaire.',
+   ressources:'3 Restaurants, Contacts chefs/élus (3), Voilier.',
+   contrainte:null},
+  // ── LUNE ──────────────────────────────────────────────────────
+  {id:'influenceur',  ka:'Lune', nm:'Influenceur imaginatif',        vcu:'Créateur de Contenu',   ks:2, age:23, rs:2,
+   dc:'Contrainte : Faits et gestes très commentés sur les réseaux.',
+   ressources:'Appartement centre-ville, Matériel vidéo, Réseau fans.',
+   contrainte:'Faits et gestes très commentés — vie privée quasi inexistante.'},
+  {id:'psy',          ka:'Lune', nm:'Psychologue empathique',         vcu:'Psy',                   ks:4, age:41, rs:4,
+   dc:'Liens forts avec ses patients, marié, 2 enfants.',
+   ressources:'Cabinet, 2 appartements en location, Réseau patients (4).',
+   contrainte:null},
+  {id:'aide_domicile',ka:'Lune', nm:'Aide à domicile',                vcu:'Passepartout',          ks:2, age:42, rs:2,
+   dc:'Nature "passe-partout", doué en petit bricolage.',
+   ressources:'Clés (Planques), Fourgonnette, Grand appartement.',
+   contrainte:null},
+  {id:'artiste_rue',  ka:'Lune', nm:'Artiste de rue lunatique',       vcu:'Artiste de Rue',        ks:4, age:28, rs:1,
+   dc:'Sans attache, marque les murs de la ville.',
+   ressources:'Matériel de rue, réseau underground.',
+   contrainte:null},
 ];
 // Chutes officielles Nephilim Légende (3 uniquement)
 const CHUTES=[
@@ -3410,7 +3484,13 @@ function buildKabbale(){
 
   // Info règle
   wrap.appendChild(h('div',{cls:'info-box'},
-    h('strong',{},'Règle :'),' 1 PI = 3 degrés à répartir. Pool gratuit = consommé en priorité. Sephiroth : précédente ≥ 7 pour ouvrir la suivante.'
+    h('strong',{},'Règle :'),' 1 PI = 3 degrés à répartir. Pool gratuit consommé en priorité.',
+    h('br',{}),
+    h('strong',{},'Cercle : '),'niveau de maîtrise (Sceaux → Pentacles → Clés).',
+    h('br',{}),
+    h('strong',{},'Sephirah : '),"l'Art Occulte testé pour invoquer.",
+    h('br',{}),
+    h('strong',{},'Monde : '),"territoire d'origine de la créature. Pacte permanent si Monde Tutélaire, éphémère sinon."
   ));
 
   // Pool info bar
@@ -3431,7 +3511,7 @@ function buildKabbale(){
         color:'var(--seph)',padding:'.5rem',marginBottom:'.8rem',
         background:'rgba(192,160,255,.06)',borderRadius:'7px',
         border:'1px solid rgba(192,160,255,.2)'}},
-        `🌍 ${mondeActif.nm} — ${['','1er Cercle (Sceaux)','2e Cercle (Pentacles)','3e Cercle (Clés)'][mondeActif.cercle]} actif`));
+        `🌍 Monde Tutélaire : ${mondeActif.nm} — ${['','1er Cercle (Sceaux)','2e Cercle (Pentacles)','3e Cercle (Clés)'][mondeActif.cercle]} · Pactes permanents dans ce Monde`));
     } else {
       wrap.appendChild(h('div',{style:{
         textAlign:'center',fontFamily:'Cinzel,serif',fontSize:'.78rem',
@@ -3491,7 +3571,13 @@ function buildKabbale(){
     const mondesBox=h('div',{cls:'box',style:{marginTop:'1rem'}});
     mondesBox.appendChild(h('h3',{},'🌍 Mondes de la Kabbale'));
     mondesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},
-      `L'accès aux Sephiroth est conditionné par l'intégration du Monde correspondant. Chaque cercle unlock de nouvelles Sephiroth.`));
+      `Les Mondes sont les 5 territoires initiatiques de la Kabbale. Chaque Cercle requiert d'intégrer un Monde :`,
+      h('br',{}),
+      h('strong',{},'1er Cercle (Sceaux) : '),'Zakaï ou Meborack — ',
+      h('strong',{},'2e Cercle (Pentacles) : '),'Sohar ou Aresh — ',
+      h('strong',{},'3e Cercle (Clés) : '),'Pachad.',
+      h('br',{}),
+      `Le Monde Tutélaire offre des pactes permanents. Hors de votre Monde, les pactes sont éphémères.`));
 
     for(const m of MONDES){
       const isIntegre=mondeOk(m.id);
@@ -3520,7 +3606,8 @@ function buildKabbale(){
           onClick:()=>{
             if(!S.mondes_integres) S.mondes_integres={};
             S.mondes_integres[m.id]=true;
-            if(m.cercle===2) S.monde=m.nm;
+            if(m.cercle===2) S.monde=m.nm; // héritage
+            S.monde_tutelaire=m.id;
             render();
           }
         },'Intégrer ce Monde');
@@ -3538,6 +3625,7 @@ function buildKabbale(){
             const sephsDuCercle=Object.entries(SEPH_CERCLE).filter(([,cer])=>cer===m.cercle).map(([id])=>id);
             sephsDuCercle.forEach(id=>{S.sephiroth[id]=0;});
             if(m.cercle===2) S.monde=null;
+            if(S.monde_tutelaire===m.id) S.monde_tutelaire=null;
             render();
           }
         },'↩ Annuler');
@@ -3984,100 +4072,200 @@ function s6(){
 function s7(){
   const d=h('div',{cls:'step'});
   d.appendChild(h('div',{cls:'step-ttl','data-n':'VII'},'Le Simulacre'));
-  d.appendChild(h('p',{cls:'step-sub'},'L\'identité contemporaine de votre Nephilim. Le métier influence Ka-Soleil, Vécus et Ressources.'));
-  const ml=h('div',{cls:'met-list'});
-  for(const m of METIERS){
-    ml.appendChild(h('div',{cls:`met-card ${S.metier===m.id?'sel':''}`,onClick:()=>{S.metier=m.id;render();}},
-      // Titre : nom contemporain
-      h('div',{cls:'met-ttl'},m.nm),
+  d.appendChild(h('p',{cls:'step-sub'},`L'identité contemporaine de votre Nephilim. Choisissez un simulacre — entité technique active avec vécu, ressources et contraintes.`));
 
-      // Description contemporaine
-      h('div',{cls:'met-dc'},m.dc),
-      m.ressources?h('div',{style:{fontSize:'.7rem',color:'var(--gold-d)',fontStyle:'italic',marginTop:'.3rem'}},`📦 ${m.ressources}`):null,
-      // Badges
-      h('div',{style:{display:'flex',gap:'.3rem',marginTop:'.5rem',flexWrap:'wrap'}},
-        h('span',{cls:'badge'},`☀ +${m.ks}`),
-        h('span',{cls:'badge'},`Rs ${m.rs}`),
-      )));
+  // ── Grille de sélection des simulacres ──────────────────────
+  const KA_ICO={Feu:'🜂',Terre:'🜃',Eau:'🜄',Air:'🜁',Lune:'☽'};
+  const KA_COLORS={Feu:'var(--ka-feu,#C85020)',Terre:'var(--ka-terre,#508030)',
+    Eau:'var(--ka-eau,#206080)',Air:'var(--ka-air,#4090C0)',Lune:'var(--ka-lune,#806090)'};
+
+  // Grouper par Ka
+  const byKa={};
+  for(const m of METIERS){
+    if(!byKa[m.ka]) byKa[m.ka]=[]; byKa[m.ka].push(m);
   }
-  d.appendChild(h('div',{cls:'box'},h('h3',{},'Métier du Simulacre'),ml));
+
+  const selBox=h('div',{cls:'box'});
+  selBox.appendChild(h('h3',{},'Choix du Simulacre'));
+  selBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.8rem'}},
+    `Le simulacre est l'hôte humain. Son Ka-Soleil, son vécu et ses ressources sont déjà calibrés. Base : Vécu 5°, Ka-Soleil 2, Ressources 2.`));
+
+  for(const [ka, mets] of Object.entries(byKa)){
+    const kaHd=h('div',{style:{display:'flex',alignItems:'center',gap:'.5rem',
+      margin:'.8rem 0 .4rem',paddingBottom:'.3rem',
+      borderBottom:`2px solid ${KA_COLORS[ka]}`}});
+    kaHd.appendChild(h('span',{style:{fontSize:'1.1rem'}},KA_ICO[ka]||''));
+    kaHd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.9rem',
+      color:KA_COLORS[ka],letterSpacing:'.08em'}},`Ka-${ka}`));
+    selBox.appendChild(kaHd);
+    const grid=h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))',gap:'.5rem',marginBottom:'.4rem'}});
+    for(const m of mets){
+      const isSel=S.metier===m.id;
+      const card=h('div',{
+        style:{
+          border:`1px solid ${isSel?KA_COLORS[ka]:'rgba(201,168,76,.2)'}`,
+          borderRadius:'8px',padding:'.6rem .8rem',cursor:'pointer',
+          background:isSel?`rgba(${ka==='Feu'?'200,80,32':ka==='Terre'?'80,128,48':ka==='Eau'?'32,96,128':ka==='Air'?'64,144,192':'128,96,144'},.12)`:'rgba(13,11,8,.4)',
+          transition:'all .15s',
+        },
+        onClick:()=>{S.metier=m.id;render();}
+      });
+      // Titre + Ka badge
+      const hd=h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'.25rem'}});
+      hd.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.82rem',
+        color:isSel?KA_COLORS[ka]:'var(--gold)',fontWeight:isSel?'700':'normal'}},m.nm));
+      hd.appendChild(h('span',{style:{fontSize:'.7rem',color:KA_COLORS[ka],
+        fontFamily:'Cinzel,serif',background:`rgba(${ka==='Feu'?'200,80,32':ka==='Terre'?'80,128,48':ka==='Eau'?'32,96,128':ka==='Air'?'64,144,192':'128,96,144'},.15)`,
+        padding:'1px 5px',borderRadius:'4px'}},`☀ ${m.ks} · Rs ${m.rs}`));
+      card.appendChild(hd);
+      // Vécu
+      card.appendChild(h('div',{style:{fontSize:'.75rem',color:'var(--parch-d)',marginBottom:'.2rem'}},
+        `📖 ${m.vcu} · Âge ${m.age||'?'}`));
+      // Description courte
+      card.appendChild(h('div',{style:{fontSize:'.72rem',color:'rgba(240,230,200,.55)',
+        lineHeight:'1.3',fontStyle:'italic'}},m.dc));
+      if(m.contrainte) card.appendChild(h('div',{style:{fontSize:'.7rem',color:'var(--blood-l)',
+        marginTop:'.3rem',display:'flex',gap:'.3rem',alignItems:'flex-start'}},
+        h('span',{},'⚠'),h('span',{style:{fontStyle:'italic'}},m.contrainte)));
+      if(isSel) card.appendChild(h('div',{style:{textAlign:'center',fontSize:'.72rem',
+        color:KA_COLORS[ka],marginTop:'.4rem',fontFamily:'Cinzel,serif',letterSpacing:'.06em'}},'✓ Sélectionné'));
+      grid.appendChild(card);
+    }
+    selBox.appendChild(grid);
+  }
+  d.appendChild(selBox);
+
+  // ── Fiche technique du simulacre sélectionné ────────────────
   if(S.metier){
     const m=getMetier();
-    const effBox=h('div',{cls:'box',style:{background:'rgba(201,168,76,.06)'}});
-    effBox.appendChild(h('h3',{},'⚡ Effets du Métier'));
-    // Grille alignée : label à gauche, valeur à droite
-    const effGrid=h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.5rem .8rem',alignItems:'center'}});
-    const addRow=(lbl,val,color)=>{
-      effGrid.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.75rem',color:'var(--gold-d)',letterSpacing:'.05em',textTransform:'uppercase'}},lbl));
-      effGrid.appendChild(h('span',{style:{fontFamily:'Cinzel,serif',fontSize:'.88rem',color:color||'var(--gold)',fontWeight:'600'}},String(val)));
-    };
-    addRow('Ka-Soleil', kaSoleil());
-    addRow('Bonus Ka-Soleil', `+${m.ks} (base ${S.ka_soleil_base})`,'var(--parch-d)');
-    addRow('Vécu accordé', m.nm);
-    addRow('Ressources', '●'.repeat(m.rs)+'○'.repeat(5-m.rs));
-    if(m.ressources) addRow('Équipements', m.ressources, 'var(--parch-d)');
-    effBox.appendChild(effGrid);
-    d.appendChild(effBox);
+    const color=KA_COLORS[m.ka]||'var(--gold)';
+    const ficheBox=h('div',{cls:'box',style:{
+      border:`1px solid ${color.replace('var(','rgba(').replace(',#','').replace(')',',.35)')||'rgba(201,168,76,.35)'}`,
+      background:'rgba(13,11,8,.5)',marginTop:'.5rem'}});
+
+    // En-tête fiche
+    const ficheHd=h('div',{style:{display:'flex',alignItems:'center',gap:'.8rem',
+      marginBottom:'1rem',paddingBottom:'.7rem',borderBottom:`1px solid rgba(201,168,76,.2)`}});
+    ficheHd.appendChild(h('span',{style:{fontSize:'1.5rem'}},KA_ICO[m.ka]||'☽'));
+    ficheHd.appendChild(h('div',{style:{flex:1}},
+      h('div',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.1rem',color:color}},m.nm),
+      h('div',{style:{fontSize:'.78rem',color:'var(--parch-d)',marginTop:'.2rem'}},
+        `${m.vcu} · Âge ${m.age||'?'} · Ka-${m.ka}`)));
+    ficheBox.appendChild(ficheHd);
+
+    // Grille technique 3 colonnes
+    const techGrid=h('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'.7rem',marginBottom:'1rem'}});
+
+    // Ka-Soleil
+    const ksCell=h('div',{style:{background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',borderRadius:'6px',padding:'.5rem .7rem'}});
+    ksCell.appendChild(h('div',{style:{fontFamily:'Cinzel',fontSize:'.65rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--gold-d)',marginBottom:'.25rem'}},'Ka-Soleil'));
+    ksCell.appendChild(h('div',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.6rem',color:'var(--gold)',lineHeight:1}},String(kaSoleil())));
+    ksCell.appendChild(h('div',{style:{fontSize:'.7rem',color:'var(--parch-d)',marginTop:'.2rem'}},`base ${S.ka_soleil_base} + ${m.ks} métier`));
+    techGrid.appendChild(ksCell);
+
+    // Vécu
+    const vcuKa=m.ka_vecu||m.ka||null;
+    const isKaDom=vcuKa&&vcuKa===S.ka_dom;
+    const vcuBase=isKaDom?2:1;
+    const vcuCanon=m.vcu_deg||m.vcu_base||5; // degré canonique du simulacre
+    const vcuExtra=S.vecu_simulacre_extra||0;
+    const vcuTotal=vcuCanon+vcuExtra;
+    const vcuCell=h('div',{style:{background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',borderRadius:'6px',padding:'.5rem .7rem'}});
+    vcuCell.appendChild(h('div',{style:{fontFamily:'Cinzel',fontSize:'.65rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--gold-d)',marginBottom:'.25rem'}},'Vécu contemporain'));
+    vcuCell.appendChild(h('div',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.3rem',color:'var(--gold)',lineHeight:1}},
+      `${vcuTotal}°`));
+    vcuCell.appendChild(h('div',{style:{fontSize:'.7rem',color:'var(--parch-d)',marginTop:'.2rem'}},`${m.vcu} · base ${vcuCanon}°`));
+    // Contrôles +/−
+    const vcuCtrl=h('div',{style:{display:'flex',alignItems:'center',gap:'.4rem',marginTop:'.4rem'}});
+    vcuCtrl.appendChild(h('button',{cls:'qb',disabled:vcuExtra<=0,
+      onClick:()=>{S.vecu_simulacre_extra=Math.max(0,(S.vecu_simulacre_extra||0)-1);render();}},'−'));
+    vcuCtrl.appendChild(h('span',{style:{fontSize:'.75rem',color:'var(--parch-d)',minWidth:'2.5rem',textAlign:'center'}},
+      vcuExtra>0?`+${vcuExtra} PI`:'base'));
+    vcuCtrl.appendChild(h('button',{cls:'qb',
+      onClick:()=>{S.vecu_simulacre_extra=(S.vecu_simulacre_extra||0)+1;render();}},'✚'));
+    vcuCell.appendChild(vcuCtrl);
+    techGrid.appendChild(vcuCell);
+
+    // Ressources
+    const rsCell=h('div',{style:{background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',borderRadius:'6px',padding:'.5rem .7rem'}});
+    rsCell.appendChild(h('div',{style:{fontFamily:'Cinzel',fontSize:'.65rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--gold-d)',marginBottom:'.25rem'}},'Ressources'));
+    rsCell.appendChild(h('div',{style:{fontSize:'1rem',letterSpacing:'.05em',marginBottom:'.2rem'}},
+      '●'.repeat(m.rs)+'○'.repeat(Math.max(0,5-m.rs))));
+    rsCell.appendChild(h('div',{style:{fontSize:'.7rem',color:'var(--parch-d)',lineHeight:'1.4'}},m.ressources||'—'));
+    techGrid.appendChild(rsCell);
+    ficheBox.appendChild(techGrid);
+
+    // Contrainte / Charges
+    if(m.contrainte){
+      ficheBox.appendChild(h('div',{style:{
+        background:'rgba(139,26,26,.08)',border:'1px solid rgba(139,26,26,.25)',
+        borderRadius:'6px',padding:'.5rem .8rem',marginBottom:'.7rem',
+        display:'flex',gap:'.6rem',alignItems:'flex-start'}},
+        h('span',{style:{fontSize:'1.1rem',flexShrink:0}},'⚠'),
+        h('div',{},
+          h('div',{style:{fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--blood-l)',
+            letterSpacing:'.06em',textTransform:'uppercase',marginBottom:'.2rem'}},'Contrainte / Charge'),
+          h('div',{style:{fontSize:'.82rem',color:'var(--parch-d)',fontStyle:'italic'}},m.contrainte),
+          h('div',{style:{fontSize:'.72rem',color:'rgba(200,80,74,.6)',marginTop:'.25rem'}},
+            'Négliger cette contrainte génère des jetons de Traque (Effet Rosenkreutz).'),
+        )));
+    }
+
+    // Description
+    ficheBox.appendChild(h('div',{style:{fontSize:'.82rem',color:'var(--parch-d)',fontStyle:'italic',
+      padding:'.4rem .6rem',borderLeft:'2px solid rgba(201,168,76,.3)',marginBottom:'.6rem'}},m.dc));
+
+    // Règles techniques
+    ficheBox.appendChild(h('div',{cls:'info-box'},
+      h('strong',{},'Formule vécu : '),`(Vécu ${vcuTotal}° + Approche) × 10 en cas de test risqué. `,
+      h('strong',{},'Ka-Soleil '),
+      m.ks>=3?`Simulacre compétent mais risque d'Ombre accru (test KS ${kaSoleil()} pour reprendre le dessus).`
+             :`KS ${kaSoleil()} — contrôle standard.`,
+    ));
+
+    d.appendChild(ficheBox);
   }
 
-  // Champ Notes du Simulacre
+  // ── Identité civile ──────────────────────────────────────────
+  const idBox=h('div',{cls:'box'});
+  idBox.appendChild(h('h3',{},'🪪 Identité Civile'));
+  idBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.6rem'}},'Nom, genre et âge de l\'hôte humain.'));
+  const idGrid=h('div',{style:{display:'grid',gridTemplateColumns:'2fr 1fr 1fr',gap:'.6rem'}});
+  // Nom
+  const nomInp=document.createElement('input');
+  nomInp.type='text';nomInp.placeholder='Prénom Nom du Simulacre';
+  nomInp.className='supa-inp';nomInp.value=S.nom_simulacre||'';
+  nomInp.addEventListener('input',e=>{S.nom_simulacre=e.target.value;});
+  idGrid.appendChild(h('div',{},h('label',{style:{display:'block',fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--gold-d)',marginBottom:'.3rem'}},'Nom'),nomInp));
+  // Genre
+  const genreInp=document.createElement('input');
+  genreInp.type='text';genreInp.placeholder='Genre';
+  genreInp.className='supa-inp';genreInp.value=S.genre_simulacre||'';
+  genreInp.addEventListener('input',e=>{S.genre_simulacre=e.target.value;});
+  idGrid.appendChild(h('div',{},h('label',{style:{display:'block',fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--gold-d)',marginBottom:'.3rem'}},'Genre'),genreInp));
+  // Âge (depuis le métier par défaut)
+  const ageInp=document.createElement('input');
+  ageInp.type='number';ageInp.placeholder='Âge';ageInp.min='18';ageInp.max='99';
+  ageInp.className='supa-inp';ageInp.value=String(S.age_simulacre||(S.metier?getMetier().age||35:35));
+  ageInp.addEventListener('input',e=>{S.age_simulacre=parseInt(e.target.value)||35;});
+  idGrid.appendChild(h('div',{},h('label',{style:{display:'block',fontFamily:'Cinzel,serif',fontSize:'.72rem',color:'var(--gold-d)',marginBottom:'.3rem'}},'Âge'),ageInp));
+  idBox.appendChild(idGrid);
+  d.appendChild(idBox);
+
+  // ── Notes ────────────────────────────────────────────────────
   const notesBox=h('div',{cls:'box'});
   notesBox.appendChild(h('h3',{},'📝 Notes du Simulacre'));
-  notesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},'Apparence, contacts, historique contemporain, équipements notables…'));
+  notesBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.4rem'}},
+    'Apparence physique, proches, contacts supplémentaires, historique, équipements notables…'));
   const notesTA=document.createElement('textarea');
-  notesTA.placeholder='Ex: Ancien officier reconverti en antiquaire, cicatrice sur le poignet gauche. Appartement rue du Faubourg-St-Honoré. Contacts : Inspecteur Moreau (Police), Dr. Klein (Archéologie)…';
-  notesTA.style.height='100px';notesTA.style.resize='vertical';
+  notesTA.placeholder='Ex : Cicatrice sur la joue gauche. Contacts : Inspecteur Moreau (Police 3), Dr. Klein (Archéologie 2). Appartement Faubourg-St-Honoré.';
+  notesTA.style.height='90px';notesTA.style.resize='vertical';
   notesTA.value=S.notes_simulacre||'';
   notesTA.addEventListener('input',e=>{S.notes_simulacre=e.target.value;});
   notesBox.appendChild(notesTA);
   d.appendChild(notesBox);
-  // ── Vécu contemporain du Simulacre ─────────────────────────
-  if(S.metier){
-    const mt=getMetier();
-    const vcuBox=h('div',{cls:'box'});
-    vcuBox.appendChild(h('h3',{},'Vécu contemporain'));
-    vcuBox.appendChild(h('p',{cls:'lbl',style:{marginBottom:'.7rem'}},
-      `Le Simulacre possède le vécu "`,
-      h('strong',{},mt.vcu||mt.nm),
-      `" lié à son métier. Degré de base : 1° (2° si Ka dominant). Vous pouvez acheter des degrés supplémentaires (1 PI = 1°).`
-    ));
-    // Afficher le vécu avec Ka associé si disponible
-    const vcuKa=mt.ka_vecu||null;
-    const isKaDom=vcuKa&&vcuKa===S.ka_dom;
-    const vcuBase=isKaDom?2:1;
-    const vcuExtra=S.vecu_simulacre_extra||0;
-    const vcuTotal=vcuBase+vcuExtra;
-    const vcuRow=h('div',{style:{display:'flex',alignItems:'center',gap:'1rem',
-      background:'rgba(201,168,76,.06)',border:'1px solid rgba(201,168,76,.2)',
-      borderRadius:'8px',padding:'.7rem',marginBottom:'.5rem'}});
-    vcuRow.appendChild(h('div',{style:{flex:1}},
-      h('div',{style:{fontFamily:'Cinzel,serif',fontSize:'.9rem',color:'var(--gold)'}},
-        mt.vcu||mt.nm),
-      vcuKa?h('div',{style:{fontSize:'.78rem',color:'var(--parch-d)',marginTop:'.2rem'}},
-        `Ka : ${vcuKa}${isKaDom?' ⭐ (Ka dominant)':''}`):null,
-    ));
-    vcuRow.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'.6rem'}},
-      h('button',{cls:'qb',disabled:vcuExtra<=0,
-        onClick:()=>{S.vecu_simulacre_extra=Math.max(0,(S.vecu_simulacre_extra||0)-1);render();}},'−'),
-      h('span',{style:{fontFamily:'Cinzel Decorative,serif',fontSize:'1.2rem',
-        color:'var(--gold)',minWidth:'3.5rem',textAlign:'center'}},
-        `${vcuTotal}°${isKaDom?' ⭐':''}`),
-      h('button',{cls:'qb',
-        onClick:()=>{S.vecu_simulacre_extra=(S.vecu_simulacre_extra||0)+1;render();}},'✚'),
-    ));
-    if(vcuExtra>0){
-      vcuRow.appendChild(h('span',{style:{fontSize:'.8rem',color:'var(--ok)'}},
-        `+${vcuExtra} PI dépensés`));
-    }
-    vcuBox.appendChild(vcuRow);
-    vcuBox.appendChild(h('div',{cls:'info-box',style:{marginTop:'.5rem'}},
-      h('strong',{},'Base : '),`${vcuBase}° (${isKaDom?'Ka dominant — 2°':'1°'}) · `,
-      h('strong',{},'Total : '),`${vcuTotal}° · `,
-      h('strong',{},'PI dépensés : '),`${vcuExtra}`
-    ));
-    d.appendChild(vcuBox);
-  }
 
+  // ── Ka-Soleil de base ────────────────────────────────────────
   const ksb=h('div',{cls:'box'},h('h3',{},'Ka-Soleil de base'));
   const ksRow=h('div',{cls:'sl-row'});
   const ksLbl=h('span',{cls:'sl-lbl'},'Ka-Soleil base');
@@ -5868,7 +6056,11 @@ async function renderGrimBody(bodyDiv,searchInp){
     detail.style.display=item.id===grimOpenId?'block':'none';
     if(item.effet) detail.appendChild(grimEl('p','',item.effet));
     if(item.voie) detail.appendChild(grimEl('p','',`<strong>Voie :</strong> ${item.voie}`));
-    if(item.sephirah) detail.appendChild(grimEl('p','',`<strong>Séphirah :</strong> ${item.sephirah}${item.monde?' · Monde : '+item.monde:''}`));
+    if(item.sephirah){
+      const _tutelaire=MONDES.filter(m=>mondeOk(m.id)).sort((a,b)=>b.cercle-a.cercle)[0];
+      const _pacteLbl=item.monde?(_tutelaire&&(_tutelaire.nm===item.monde||_tutelaire.id===item.monde)?' ✓ pacte permanent':' ⚠ pacte éphémère'):'';
+      detail.appendChild(grimEl('p','',`<strong>Séphirah :</strong> ${item.sephirah}${item.monde?' · Monde : '+item.monde+_pacteLbl:''}`));
+    }
     if(item.contrat) detail.appendChild(grimEl('p','',`<strong>Contrat :</strong> ${item.contrat}`));
     if(item.substance) detail.appendChild(grimEl('p','',`<strong>Substance :</strong> ${item.substance}`));
     if(item.focus) detail.appendChild(grimEl('p','',`<strong>Focus :</strong> ${item.focus}`));
