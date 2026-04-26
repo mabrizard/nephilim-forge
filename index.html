@@ -2067,6 +2067,32 @@ function calcTotauxCumules(){
   return totaux;
 }
 
+// ════════════════════════════════════════════════════════
+// SORTS — règle canonique Nephilim Quintessence
+// Total = sorts offerts par les époques
+// Gravés = Ka dominant (sorts utilisables sans support)
+// Focus = reste (objets, grimoires, talismans)
+// ════════════════════════════════════════════════════════
+function calcSortsInfo(){
+  const tots=calcTotauxCumules();
+  const totalOfferts=tots.sorts_offerts||0;
+  // Ka dominant actuel (score brut)
+  const sc=kaScores();
+  const kaDom=S.ka_dom;
+  const kaDomScore=kaDom?Math.round((sc[kaDom]||0)):3;
+  const maxGraves=kaDomScore; // = degré du Ka dominant
+  const nbGraves=Math.min(totalOfferts, maxGraves);
+  const nbFocus=Math.max(0, totalOfferts-nbGraves);
+  return {
+    totalOfferts,
+    maxGraves,      // = Ka dominant
+    nbGraves,       // sorts en mémoire (tatouage)
+    nbFocus,        // sorts sur objets/grimoires
+    kaDomScore,
+  };
+}
+
+
 function chutesBonusPI(){
   // Seuls les degrés AU-DELÀ du minimum obligatoire rapportent des PI
   const total=Object.values(S.chutes).reduce((a,b)=>a+(b||0),0);
@@ -2679,14 +2705,14 @@ function s3(){
 
   // Données officielles 5e édition
   const profs=[
-    {id:'Éveillé', pi:25, ps:5,  chmax:2, chmin:0, ico:'🌱', dc:'Nephilim récemment réveillé. Quelques incarnations, grande flexibilité.'},
-    {id:'Révélé',  pi:30, ps:7,  chmax:3, chmin:1, ico:'🔮', dc:'Conscience partielle de sa nature immortelle. Pouvoirs modérés. Chute obligatoire : 1°.'},
-    {id:'Immortel',pi:40, ps:10, chmax:4, chmin:2, ico:'⭐', dc:'Nephilim ancien et puissant. Nombreuses vies, sciences avancées. Chutes obligatoires : 2°.'},
+    {id:'Éveillé', pi:25, ps:5,  chmax:2, chmin:0, maxEp:4,  ico:'🌱', dc:'Nephilim récemment réveillé. 4 époques max, grande flexibilité.'},
+    {id:'Révélé',  pi:30, ps:7,  chmax:3, chmin:1, maxEp:7,  ico:'🔮', dc:'Conscience partielle de sa nature immortelle. 7 époques max. Chute obligatoire : 1°.'},
+    {id:'Immortel',pi:40, ps:10, chmax:4, chmin:2, maxEp:12, ico:'⭐', dc:'Nephilim ancien et puissant. 12 époques max. Chutes obligatoires : 2°.'},
   ];
   const g=h('div',{cls:'prf-grid'});
   for(const p of profs){
     const card=h('div',{cls:`prf-card ${S.profil===p.id?'sel':''}`,
-      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;S.chutes_min=p.chmin||0;render();}},
+      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;S.chutes_min=p.chmin||0;S.max_ep=p.maxEp||12;render();}},
       h('span',{cls:'prf-pi'},String(p.pi)+' PI'),
       h('span',{cls:'prf-nm'},`${p.ico} ${p.id}`),
       h('p',{cls:'prf-dc'},p.dc),
@@ -2818,7 +2844,10 @@ function s4(){
       const inc=S.incarnations[ep.id]||null;
       const chosen=!!inc;
       const left=piLeft();
-      const canAdd=!chosen&&(left>=ep.cout||ep.cout===0);
+      const nbEpChoisies=Object.keys(S.incarnations).length;
+      const maxEp=S.max_ep||(S.profil==='Éveillé'?4:S.profil==='Révélé'?7:12);
+      const epLimitAtteinte=!chosen&&nbEpChoisies>=maxEp;
+      const canAdd=!chosen&&!epLimitAtteinte&&(left>=(ep.cout||0));
 
       const card=h('div',{style:{
         border:`1px solid ${chosen?'var(--gold)':'var(--gold-d)'}`,
