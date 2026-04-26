@@ -2705,14 +2705,20 @@ function s3(){
 
   // Données officielles 5e édition
   const profs=[
-    {id:'Éveillé', pi:25, ps:5,  chmax:2, chmin:0, maxEp:4,  ico:'🌱', dc:'Nephilim récemment réveillé. 4 époques max, grande flexibilité.'},
-    {id:'Révélé',  pi:30, ps:7,  chmax:3, chmin:1, maxEp:7,  ico:'🔮', dc:'Conscience partielle de sa nature immortelle. 7 époques max. Chute obligatoire : 1°.'},
-    {id:'Immortel',pi:40, ps:10, chmax:4, chmin:2, maxEp:12, ico:'⭐', dc:'Nephilim ancien et puissant. 12 époques max. Chutes obligatoires : 2°.'},
+    // maxEp = total périodes (optionnelles + Atlantide + Arcadia)
+    // maxEpOpt = époques payantes au choix
+    // Atlantide et Arcadia sont gratuites et obligatoires pour tous
+    {id:'Éveillé', pi:25, ps:5,  chmax:2, chmin:0, maxEp:5, maxEpOpt:3, ico:'🌱',
+     dc:'Nephilim récemment réveillé. 3 époques au choix + Atlantide + Arcadia = 5 périodes.'},
+    {id:'Révélé',  pi:30, ps:7,  chmax:3, chmin:1, maxEp:7, maxEpOpt:5, ico:'🔮',
+     dc:'Nephilim partiellement éveillé. 5 époques au choix + Atlantide + Arcadia = 7 périodes. Chute obligatoire : 1°. Une incarnation au Grand Éveil obligatoire.'},
+    {id:'Immortel',pi:40, ps:10, chmax:4, chmin:2, maxEp:9, maxEpOpt:7, ico:'⭐',
+     dc:'Nephilim ancien. 7 époques au choix + Atlantide + Arcadia = 9 périodes. Chutes obligatoires : 2°. Une incarnation au Grand Éveil obligatoire.'},
   ];
   const g=h('div',{cls:'prf-grid'});
   for(const p of profs){
     const card=h('div',{cls:`prf-card ${S.profil===p.id?'sel':''}`,
-      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;S.chutes_min=p.chmin||0;S.max_ep=p.maxEp||12;render();}},
+      onClick:()=>{S.profil=p.id;S.pi_total=p.pi;S.ps_initial=p.ps;S.chutes_max=p.chmax;S.chutes_min=p.chmin||0;S.max_ep=p.maxEp||9;S.max_ep_opt=p.maxEpOpt||7;render();}},
       h('span',{cls:'prf-pi'},String(p.pi)+' PI'),
       h('span',{cls:'prf-nm'},`${p.ico} ${p.id}`),
       h('p',{cls:'prf-dc'},p.dc),
@@ -2845,8 +2851,17 @@ function s4(){
       const chosen=!!inc;
       const left=piLeft();
       const nbEpChoisies=Object.keys(S.incarnations).length;
-      const maxEp=S.max_ep||(S.profil==='Éveillé'?4:S.profil==='Révélé'?7:12);
-      const epLimitAtteinte=!chosen&&nbEpChoisies>=maxEp;
+      const maxEp=S.max_ep||(S.profil==='Éveillé'?5:S.profil==='Révélé'?7:9);
+      const maxEpOpt=S.max_ep_opt||(S.profil==='Éveillé'?3:S.profil==='Révélé'?5:7);
+      // Périodes gratuites : Atlantide (cout=0 ou id='atlantide') et Arcadia (simulacre)
+      const FREE_IDS=new Set(['atlantide','arcadia']);
+      const nbEpOpt=Object.keys(S.incarnations).filter(id=>!FREE_IDS.has(id)&&(EPOQUES.find(e=>e.id===id)?.cout||0)>0).length;
+      const nbEpFree=Object.keys(S.incarnations).filter(id=>FREE_IDS.has(id)||(EPOQUES.find(e=>e.id===id)?.cout||0)===0).length;
+      const isFreeEp=FREE_IDS.has(ep.id)||(ep.cout||0)===0;
+      // Bloquer si : limite totale atteinte OU limite optionnelles atteinte (pour une époque payante)
+      const totalLimitAtteinte=nbEpChoisies>=maxEp;
+      const optLimitAtteinte=!isFreeEp&&nbEpOpt>=maxEpOpt;
+      const epLimitAtteinte=totalLimitAtteinte||optLimitAtteinte;
       const canAdd=!chosen&&!epLimitAtteinte&&(left>=(ep.cout||0));
 
       const card=h('div',{style:{
