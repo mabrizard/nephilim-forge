@@ -1447,21 +1447,27 @@ const EPOQUES=[
    quetes:['Atalante Fugitive 2','La Cité des Vertiges 1','Le Rex Mundi 1'],
    savoirs:['Mystères 1','Histoire invisible 1','Sciences occultes 1','Arcanes Majeurs 1','Templiers 1','666 2'],
   },
-  {id:'incident_jesus', ere:5, nm:'L\'Incident Jésus', per:'30',ico:'✝️',cout:2,
-   dc:`Le tournant de l'Histoire. Un Nephilim ou un avatar divin bouleverse le monde méditerranéen par ses actes et son sacrifice.`,
+  {id:'incident_jesus', ere:5, nm:"L'Incident Jésus", per:'30',ico:'✝️',cout:2,
+   dc:`Le tournant de l'Histoire. Un Nephilim bouleverse le monde méditerranéen par ses actes et son sacrifice. Temps de la rédemption, du basculement du paganisme vers le monothéisme.`,
    vecus_data:[
-     {nm:'Prêcheur',              ka:'Feu',  dc:'Disciple enflammé portant la parole révolutionnaire dans les synagogues et les rues.'},
-     {nm:'Moine Essénien',        ka:'Air',  dc:'Ascète du désert gardien des manuscrits secrets de la mer Morte.'},
-     {nm:'Diplomate polyglotte',  ka:'Eau',  dc:'Intermédiaire entre Romains, Juifs et Grecs, maître des langues et des alliances.'},
-     {nm:'Sicaire zélote',        ka:'Lune', dc:'Résistant opérant dans l\'ombre contre l\'occupant romain, assassin politique.'},
-     {nm:'Proconsul',             ka:'Terre',dc:'Fonctionnaire romain gérant l\'ordre public dans une province explosive.'},
+     {nm:'Prêcheur',             ka:'Feu',  dc:'Disciple enflammé portant la parole révolutionnaire dans les synagogues et les rues.'},
+     {nm:'Moine Essénien',       ka:'Air',  dc:'Ascète du désert, gardien des manuscrits secrets de la mer Morte.'},
+     {nm:'Diplomate polyglotte', ka:'Eau',  dc:'Intermédiaire entre Romains, Juifs et Grecs, maître des langues et des alliances.'},
+     {nm:'Sicaire zélote',       ka:'Lune', dc:"Résistant opérant dans l'ombre contre l'occupant romain, assassin politique."},
+     {nm:'Proconsul',            ka:'Terre',dc:'Fonctionnaire romain au carrefour des cultures, gestionnaire des provinces orientales.'},
    ],
-   sciences:[], sorts:1,
-   arcanes_dispo:['justice','roue'],
-   invocations:3,
-   quetes:['Les Champs Polemoka 1'],
-   savoirs:['Champs magiques 2','Nephilim 1','Histoire invisible 2'],
-  },
+   sciences:[
+     {nm:'Kabbale',  deg:6, note:'OU Magie 1 (au choix)'},
+     {nm:'Magie',    deg:1, note:'Alternative à Kabbale 6'},
+   ],
+   sorts:1,
+   quetes:["Champs Polemoka 1","Rex Mundi 2","Jérusalem céleste 2","Graal 2"],
+   savoirs:['Champs magiques 2','Nephilim 1','Histoire invisible 2',
+            'Sciences occultes 2','Arcanes Majeurs 2','Templiers 1','Bohémiens 1'],
+   arcanes_dispo:['VIII La Justice','X La Roue de Fortune'],
+   arcane_bonus:3,
+   note_sci:"Si Kabbale 6 choisie : +3 invocations. Si Magie 1 choisie : +1 sort. Pour utiliser le sort avec la Kabbale, acheter Magie 1 à 1 PI."
+},
   {id:'arthuriades', ere:5, nm:'Les Arthuriades', per:'450',ico:'⚔️',cout:1,
    dc:`Le mythe arthurien. Nephilim et humains chevauchent ensemble vers la quête du Graal dans une Bretagne mystique.`,
    vecus_data:[
@@ -6082,9 +6088,26 @@ function grimItemAccess(item, tab){
     if(cercle.includes('Noir')&&!(alch.noir>=1)) return {ok:false,reason:"Oeuvre au Noir requise"};
     if(cercle.includes('Blanc')&&!(alch.blanc>=1)) return {ok:false,reason:"Oeuvre au Blanc requise"};
     if(cercle.includes('Rouge')&&!(alch.rouge>=1)) return {ok:false,reason:"Oeuvre au Rouge requise"};
-    const elem=(item.element||'').trim();
-    if(elem&&elem!=='Un élément'&&elem!==''){
-      if(!(sc[elem]>0)) return {ok:'grise',reason:`Ka ${elem} requis`};
+    // Constructs : vérifier que le construct requis est possédé
+    const substMap={'Poudre':'athanor','Vapeur':'aludel','Ambre':'cornue',
+                    'Liqueur':'alambic','Métal':'creuset'};
+    const subst=item.substance||'';
+    if(subst&&substMap[subst]!==undefined){
+      const constructKey=substMap[subst];
+      const constructs=S.constructs||{};
+      if(!(constructs[constructKey]>=1)) return {ok:'grise',reason:`Construct ${subst} requis`};
+    }
+    // Éléments : support multi-éléments (ex: "Terre/Eau", "Feu/Lune", "Air/Variable")
+    const elemRaw=(item.element||'').trim();
+    if(elemRaw&&elemRaw!=='Un élément'&&elemRaw!==''){
+      // Splitter sur / et ,
+      const elems=elemRaw.split(/[\/,]/).map(e=>e.trim())
+        .filter(e=>e&&e!=='Variable'&&e!=='Un élément'&&e!=='');
+      if(elems.length>0){
+        // Toutes les éléments doivent être disponibles (Ka > 0)
+        const missing=elems.filter(e=>!(sc[e]>0));
+        if(missing.length>0) return {ok:'grise',reason:`Ka ${missing.join('+')} requis`};
+      }
     }
     return {ok:true};
   }
